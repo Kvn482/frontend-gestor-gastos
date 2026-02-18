@@ -13,18 +13,17 @@ import { signal } from '@angular/core';
 })
 export class Register {
   nombre = '';
-  apellido = '';
   username = '';
   email = '';
   password = '';
 
   errorMessage = signal('');
   successMessage = signal('');
+  successRegister = signal(false);
   
   // Signals para validación
   erroresValidacion = signal({
     nombre: false,
-    apellido: false,
     username: false,
     email: false,
     password: false
@@ -38,11 +37,11 @@ export class Register {
   register() {
     this.errorMessage.set('');
     this.successMessage.set('');
+    this.successRegister.set(false);
     
     // Validar que todos los campos estén llenos
     const errores = {
       nombre: !this.nombre.trim(),
-      apellido: !this.apellido.trim(),
       username: !this.username.trim(),
       email: !this.email.trim(),
       password: !this.password.trim()
@@ -58,18 +57,18 @@ export class Register {
 
     this.authService.register({
       nombre: this.nombre,
-      apellido: this.apellido,
       username: this.username,
       email: this.email,
       password: this.password
     }).subscribe({
       next: () => {
 
-        this.successMessage.set('Registro exitoso. Revisa tu correo para verificar tu cuenta.');
+        // this.successMessage.set('Registro exitoso. Revisa tu correo para verificar tu cuenta.');
+        this.successRegister.set(true);
 
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+        // setTimeout(() => {
+        //   this.router.navigate(['/login']);
+        // }, 2000);
       },
       error: (err) => {
         if (err.error?.message) {

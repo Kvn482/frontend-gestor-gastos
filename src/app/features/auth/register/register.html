@@ -1,127 +1,169 @@
-<h1>Registro</h1>
+<nav class="fixed w-full z-20 top-0 start-0 border-disabled headernav">
+  <div class="w-full flex flex-wrap items-center justify-between px-6 p-4">
+    <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
+      <!-- <img src="https://flowbite.com/docs/images/logo.svg" class="h-7" alt="Flowbite Logo" /> -->
+      <span class="self-center text-2xl text-heading font-semibold whitespace-nowrap">Monetra</span>
+    </a>
+    <button data-collapse-toggle="navbar-default" type="button"
+      class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
+      aria-controls="navbar-default" aria-expanded="false">
+      <span class="sr-only">Open main menu</span>
+      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+        viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14" />
+      </svg>
+    </button>
+    <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+      <p class="text-gray-500 text-sm">
+        ¿Ya tienes cuenta?
+        <button routerLink="/login" type="button"
+          class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 ms-3 py-1.5 focus:outline-none">Inicia
+          sesión</button>
+      </p>
+    </div>
+  </div>
+</nav>
 
-<form class="max-w-sm mx-auto">
-  <!-- Nombre -->
-  <div class="mb-6">
-    <label for="nombre" class="block mb-2.5 text-sm font-medium" [class.text-fg-danger-strong]="erroresValidacion().nombre">Nombre</label>
-    <input 
-      type="text" 
-      id="nombre"
-      [(ngModel)]="nombre" 
-      name="nombre"
-      placeholder="Tu nombre"
-      [class.bg-danger-soft]="erroresValidacion().nombre"
-      [class.border-danger-subtle]="erroresValidacion().nombre"
-      [class.text-fg-danger-strong]="erroresValidacion().nombre"
-      [class.focus:ring-danger]="erroresValidacion().nombre"
-      [class.focus:border-danger]="erroresValidacion().nombre"
-      class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs"
-    >
-    @if (erroresValidacion().nombre) {
-      <p class="mt-2.5 text-sm text-fg-danger-strong"><span class="font-medium">¡Error!</span> Este campo es requerido.</p>
-    }
+@if (!successRegister()) {
+<div class="flex flex-col items-center justify-center bg-neutral-primary pt-20">
+
+  <div class="bg-neutral-primary-soft w-full max-w-sm p-8 border border-default rounded-base shadow-xs">
+
+    <h5 class="mb-5 text-2xl font-semibold tracking-tight text-heading leading-8">
+      Registro
+    </h5>
+
+    <form class="w-full">
+
+      <!-- Nombre -->
+      <div class="mb-6">
+        <label for="nombre" class="block mb-2.5 text-sm font-medium"
+          [class.text-fg-danger-strong]="erroresValidacion().nombre">
+          Nombre
+        </label>
+
+        <input type="text" id="nombre" [(ngModel)]="nombre" name="nombre" placeholder="Nombre"
+          [class.bg-danger-soft]="erroresValidacion().nombre" [class.border-danger-subtle]="erroresValidacion().nombre"
+          [class.text-fg-danger-strong]="erroresValidacion().nombre"
+          [class.focus:ring-danger]="erroresValidacion().nombre"
+          [class.focus:border-danger]="erroresValidacion().nombre"
+          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+
+        @if (erroresValidacion().nombre) {
+        <p class="mt-2.5 text-sm text-fg-danger-strong">
+          <span class="font-medium">¡Error!</span> Este campo es requerido.
+        </p>
+        }
+      </div>
+
+      <!-- Username -->
+      <div class="mb-6">
+        <label for="username" class="block mb-2.5 text-sm font-medium"
+          [class.text-fg-danger-strong]="erroresValidacion().username">
+          Username
+        </label>
+
+        <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Username"
+          [class.bg-danger-soft]="erroresValidacion().username"
+          [class.border-danger-subtle]="erroresValidacion().username"
+          [class.text-fg-danger-strong]="erroresValidacion().username"
+          [class.focus:ring-danger]="erroresValidacion().username"
+          [class.focus:border-danger]="erroresValidacion().username"
+          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+
+        @if (erroresValidacion().username) {
+        <p class="mt-2.5 text-sm text-fg-danger-strong">
+          <span class="font-medium">¡Error!</span> Este campo es requerido.
+        </p>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="mb-6">
+        <label for="email" class="block mb-2.5 text-sm font-medium"
+          [class.text-fg-danger-strong]="erroresValidacion().email">
+          Email
+        </label>
+
+        <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Email"
+          [class.bg-danger-soft]="erroresValidacion().email" [class.border-danger-subtle]="erroresValidacion().email"
+          [class.text-fg-danger-strong]="erroresValidacion().email"
+          [class.focus:ring-danger]="erroresValidacion().email" [class.focus:border-danger]="erroresValidacion().email"
+          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+
+        @if (erroresValidacion().email) {
+        <p class="mt-2.5 text-sm text-fg-danger-strong">
+          <span class="font-medium">¡Error!</span> Este campo es requerido.
+        </p>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="mb-6">
+        <label for="password" class="block mb-2.5 text-sm font-medium"
+          [class.text-fg-danger-strong]="erroresValidacion().password">
+          Contraseña
+        </label>
+
+        <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="Contraseña"
+          [class.bg-danger-soft]="erroresValidacion().password"
+          [class.border-danger-subtle]="erroresValidacion().password"
+          [class.text-fg-danger-strong]="erroresValidacion().password"
+          [class.focus:ring-danger]="erroresValidacion().password"
+          [class.focus:border-danger]="erroresValidacion().password"
+          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+
+        @if (erroresValidacion().password) {
+        <p class="mt-2.5 text-sm text-fg-danger-strong">
+          <span class="font-medium">¡Error!</span> Este campo es requerido.
+        </p>
+        }
+      </div>
+
+      <button (click)="register()" type="button"
+        class="text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2.5 w-full transition-colors">
+        Crear cuenta
+      </button>
+
+      @if (successMessage()) {
+      <p class="mt-4 p-3 bg-green-100 text-green-700 rounded-base border border-green-300">
+        {{ successMessage() }}
+      </p>
+      }
+
+      @if (errorMessage()) {
+      <p class="mt-4 p-3 bg-red-100 text-red-700 rounded-base border border-red-300">
+        {{ errorMessage() }}
+      </p>
+      }
+
+    </form>
+
   </div>
 
-  <!-- Apellido -->
-  <div class="mb-6">
-    <label for="apellido" class="block mb-2.5 text-sm font-medium" [class.text-fg-danger-strong]="erroresValidacion().apellido">Apellido</label>
-    <input 
-      type="text" 
-      id="apellido"
-      [(ngModel)]="apellido" 
-      name="apellido"
-      placeholder="Tu apellido"
-      [class.bg-danger-soft]="erroresValidacion().apellido"
-      [class.border-danger-subtle]="erroresValidacion().apellido"
-      [class.text-fg-danger-strong]="erroresValidacion().apellido"
-      [class.focus:ring-danger]="erroresValidacion().apellido"
-      [class.focus:border-danger]="erroresValidacion().apellido"
-      class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs"
-    >
-    @if (erroresValidacion().apellido) {
-      <p class="mt-2.5 text-sm text-fg-danger-strong"><span class="font-medium">¡Error!</span> Este campo es requerido.</p>
-    }
-  </div>
+  <p class="text-gray-500 text-sm pt-3">
+    ¿Ya tienes cuenta?
+    <a routerLink="/login" class="font-medium text-blue-600 hover:text-blue-800">Inicia sesión</a>
+  </p>
+</div>
+}
 
-  <!-- Username -->
-  <div class="mb-6">
-    <label for="username" class="block mb-2.5 text-sm font-medium" [class.text-fg-danger-strong]="erroresValidacion().username">Username</label>
-    <input 
-      type="text" 
-      id="username"
-      [(ngModel)]="username" 
-      name="username"
-      placeholder="Tu nombre de usuario"
-      [class.bg-danger-soft]="erroresValidacion().username"
-      [class.border-danger-subtle]="erroresValidacion().username"
-      [class.text-fg-danger-strong]="erroresValidacion().username"
-      [class.focus:ring-danger]="erroresValidacion().username"
-      [class.focus:border-danger]="erroresValidacion().username"
-      class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs"
-    >
-    @if (erroresValidacion().username) {
-      <p class="mt-2.5 text-sm text-fg-danger-strong"><span class="font-medium">¡Error!</span> Este campo es requerido.</p>
-    }
-  </div>
-
-  <!-- Email -->
-  <div class="mb-6">
-    <label for="email" class="block mb-2.5 text-sm font-medium" [class.text-fg-danger-strong]="erroresValidacion().email">Email</label>
-    <input 
-      type="email" 
-      id="email"
-      [(ngModel)]="email" 
-      name="email"
-      placeholder="Tu email"
-      [class.bg-danger-soft]="erroresValidacion().email"
-      [class.border-danger-subtle]="erroresValidacion().email"
-      [class.text-fg-danger-strong]="erroresValidacion().email"
-      [class.focus:ring-danger]="erroresValidacion().email"
-      [class.focus:border-danger]="erroresValidacion().email"
-      class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs"
-    >
-    @if (erroresValidacion().email) {
-      <p class="mt-2.5 text-sm text-fg-danger-strong"><span class="font-medium">¡Error!</span> Este campo es requerido.</p>
-    }
-  </div>
-
-  <!-- Password -->
-  <div class="mb-6">
-    <label for="password" class="block mb-2.5 text-sm font-medium" [class.text-fg-danger-strong]="erroresValidacion().password">Contraseña</label>
-    <input 
-      type="password" 
-      id="password"
-      [(ngModel)]="password" 
-      name="password"
-      placeholder="Tu contraseña"
-      [class.bg-danger-soft]="erroresValidacion().password"
-      [class.border-danger-subtle]="erroresValidacion().password"
-      [class.text-fg-danger-strong]="erroresValidacion().password"
-      [class.focus:ring-danger]="erroresValidacion().password"
-      [class.focus:border-danger]="erroresValidacion().password"
-      class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs"
-    >
-    @if (erroresValidacion().password) {
-      <p class="mt-2.5 text-sm text-fg-danger-strong"><span class="font-medium">¡Error!</span> Este campo es requerido.</p>
-    }
-  </div>
-
-  <button (click)="register()" type="button" class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none w-full">Crear cuenta</button>
-
-  @if (successMessage()) {
-    <p class="mt-4 p-3 bg-green-100 text-green-700 rounded-base border border-green-300">
-      {{ successMessage() }}
+@if (successRegister()) {
+<div class="flex flex-col items-center justify-center bg-neutral-primary pt-20">
+  <div class="bg-neutral-primary-soft block max-w-lg w-full p-6 border border-default rounded-base shadow-xs">
+    <h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">Registro exitoso
+    </h5>
+    <p class="text-body mb-6">Revisa tu correo para verificar tu cuenta.
     </p>
-  }
-
-  @if (errorMessage()) {
-    <p class="mt-4 p-3 bg-red-100 text-red-700 rounded-base border border-red-300">
-      {{ errorMessage() }}
-    </p>
-  }
-</form>
-
-<p>
-  ¿Ya tienes cuenta?
-  <a routerLink="/login">Inicia sesión</a>
-</p>
+    <a routerLink="/login"
+      class="inline-flex items-center text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
+      Iniciar sesión
+      <svg class="w-4 h-4 ms-1.5 rtl:rotate-180 -me-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+        width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 12H5m14 0-4 4m4-4-4-4" />
+      </svg>
+    </a>
+  </div>
+</div>
+}
