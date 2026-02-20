@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -21,6 +22,8 @@ export class Register {
   errorMessage = signal('');
   successMessage = signal('');
   successRegister = signal(false);
+
+  isloading = signal(false);
   
   // Signals para validación
   erroresValidacion = signal({
@@ -50,6 +53,10 @@ export class Register {
   }
 
   register() {
+    if (this.isloading()) return;
+
+    this.isloading.set(true);
+
     this.errorMessage.set('');
     this.successMessage.set('');
     this.successRegister.set(false);
@@ -67,6 +74,7 @@ export class Register {
     // Si hay errores, no enviar
     if (Object.values(errores).some(error => error)) {
       this.errorMessage.set('Por favor, completa todos los campos');
+      this.isloading.set(false);
       return;
     }
 
@@ -75,7 +83,11 @@ export class Register {
       username: this.username,
       email: this.email,
       password: this.password
-    }).subscribe({
+    }).pipe(
+      finalize(() => {
+        this.isloading.set(false);
+      })
+    ).subscribe({
       next: () => {
 
         // this.successMessage.set('Registro exitoso. Revisa tu correo para verificar tu cuenta.');
