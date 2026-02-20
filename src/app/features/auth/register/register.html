@@ -17,7 +17,7 @@
       <p class="text-gray-500 text-sm">
         ¿Ya tienes cuenta?
         <button routerLink="/login" type="button"
-          class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 ms-3 py-1.5 focus:outline-none">Inicia
+          class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 ms-3 py-1.5 focus:outline-none cursor-pointer">Inicia
           sesión</button>
       </p>
     </div>
@@ -25,8 +25,7 @@
 </nav>
 
 @if (!successRegister()) {
-<div class="flex flex-col items-center justify-center bg-neutral-primary pt-20">
-
+<div class="min-h-screen flex flex-col items-center justify-center bg-neutral-primary pt-20">
   <div class="bg-neutral-primary-soft w-full max-w-sm p-8 border border-default rounded-base shadow-xs">
 
     <h5 class="mb-5 text-2xl font-semibold tracking-tight text-heading leading-8">
@@ -35,93 +34,135 @@
 
     <form class="w-full">
 
-      <!-- Nombre -->
       <div class="mb-6">
-        <label for="nombre" class="block mb-2.5 text-sm font-medium"
-          [class.text-fg-danger-strong]="erroresValidacion().nombre">
-          Nombre
-        </label>
-
-        <input type="text" id="nombre" [(ngModel)]="nombre" name="nombre" placeholder="Nombre"
-          [class.bg-danger-soft]="erroresValidacion().nombre" [class.border-danger-subtle]="erroresValidacion().nombre"
-          [class.text-fg-danger-strong]="erroresValidacion().nombre"
-          [class.focus:ring-danger]="erroresValidacion().nombre"
-          [class.focus:border-danger]="erroresValidacion().nombre"
-          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
-
+        <div class="relative">
+          <input type="text" id="nombre" [(ngModel)]="nombre" name="nombre" placeholder=" "
+            aria-describedby="outlined_error_help" (input)="filtrarNombre($event)" maxlength="100"
+            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+            [ngClass]="{
+            'border-default-medium focus:border-brand text-heading': !erroresValidacion().nombre,
+            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().nombre
+          }" />
+          <label for="nombre" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+          peer-placeholder-shown:scale-100
+          peer-placeholder-shown:-translate-y-1/2
+          peer-placeholder-shown:top-1/2
+          peer-focus:top-2
+          peer-focus:scale-75
+          peer-focus:-translate-y-4
+          start-1" [ngClass]="{
+            'text-body peer-focus:text-fg-brand': !erroresValidacion().nombre,
+            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().nombre
+          }">
+            Nombre completo
+          </label>
+        </div>
         @if (erroresValidacion().nombre) {
-        <p class="mt-2.5 text-sm text-fg-danger-strong">
+        <p id="outlined_error_help" class="mt-2 text-sm text-fg-danger-strong">
           <span class="font-medium">¡Error!</span> Este campo es requerido.
         </p>
         }
       </div>
 
-      <!-- Username -->
       <div class="mb-6">
-        <label for="username" class="block mb-2.5 text-sm font-medium"
-          [class.text-fg-danger-strong]="erroresValidacion().username">
-          Username
-        </label>
+        <div class="relative">
+          <input type="text" id="username" [(ngModel)]="username" name="username" placeholder=" " maxlength="50"
+            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+            [ngClass]="{
+              'border-default-medium focus:border-brand text-heading': !erroresValidacion().username,
+              'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().username
+            }" />
 
-        <input type="text" id="username" [(ngModel)]="username" name="username" placeholder="Username"
-          [class.bg-danger-soft]="erroresValidacion().username"
-          [class.border-danger-subtle]="erroresValidacion().username"
-          [class.text-fg-danger-strong]="erroresValidacion().username"
-          [class.focus:ring-danger]="erroresValidacion().username"
-          [class.focus:border-danger]="erroresValidacion().username"
-          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+          <label for="username" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+          peer-placeholder-shown:scale-100
+          peer-placeholder-shown:-translate-y-1/2
+          peer-placeholder-shown:top-1/2
+          peer-focus:top-2
+          peer-focus:scale-75
+          peer-focus:-translate-y-4
+          start-1" [ngClass]="{
+            'text-body peer-focus:text-fg-brand': !erroresValidacion().username,
+            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().username
+          }">
+            Username
+          </label>
+        </div>
 
         @if (erroresValidacion().username) {
-        <p class="mt-2.5 text-sm text-fg-danger-strong">
+        <p class="mt-2 text-sm text-fg-danger-strong">
           <span class="font-medium">¡Error!</span> Este campo es requerido.
         </p>
         }
       </div>
 
-      <!-- Email -->
       <div class="mb-6">
-        <label for="email" class="block mb-2.5 text-sm font-medium"
-          [class.text-fg-danger-strong]="erroresValidacion().email">
-          Email
-        </label>
+        <div class="relative">
+          <input type="email" id="email" [(ngModel)]="email" name="email" placeholder=" "
+            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+            [ngClass]="{
+              'border-default-medium focus:border-brand text-heading': !erroresValidacion().email,
+              'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().email
+            }" />
 
-        <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Email"
-          [class.bg-danger-soft]="erroresValidacion().email" [class.border-danger-subtle]="erroresValidacion().email"
-          [class.text-fg-danger-strong]="erroresValidacion().email"
-          [class.focus:ring-danger]="erroresValidacion().email" [class.focus:border-danger]="erroresValidacion().email"
-          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+          <label for="email"
+            class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+            peer-placeholder-shown:scale-100
+            peer-placeholder-shown:-translate-y-1/2
+            peer-placeholder-shown:top-1/2
+            peer-focus:top-2
+            peer-focus:scale-75
+            peer-focus:-translate-y-4
+            start-1"
+            [ngClass]="{
+              'text-body peer-focus:text-fg-brand': !erroresValidacion().email,
+              'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().email
+            }">
+            Email
+          </label>
+        </div>
 
         @if (erroresValidacion().email) {
-        <p class="mt-2.5 text-sm text-fg-danger-strong">
-          <span class="font-medium">¡Error!</span> Este campo es requerido.
-        </p>
+          <p class="mt-2 text-sm text-fg-danger-strong">
+            <span class="font-medium">¡Error!</span> Este campo es requerido.
+          </p>
         }
       </div>
 
-      <!-- Password -->
       <div class="mb-6">
-        <label for="password" class="block mb-2.5 text-sm font-medium"
-          [class.text-fg-danger-strong]="erroresValidacion().password">
-          Contraseña
-        </label>
+        <div class="relative">
+          <input type="password" id="password" [(ngModel)]="password" name="password" placeholder=" "
+            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+            [ngClass]="{
+              'border-default-medium focus:border-brand text-heading': !erroresValidacion().password,
+              'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().password
+            }" />
 
-        <input type="password" id="password" [(ngModel)]="password" name="password" placeholder="Contraseña"
-          [class.bg-danger-soft]="erroresValidacion().password"
-          [class.border-danger-subtle]="erroresValidacion().password"
-          [class.text-fg-danger-strong]="erroresValidacion().password"
-          [class.focus:ring-danger]="erroresValidacion().password"
-          [class.focus:border-danger]="erroresValidacion().password"
-          class="border text-sm rounded-base block w-full px-3 py-2.5 shadow-xs">
+          <label for="password"
+            class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+            peer-placeholder-shown:scale-100
+            peer-placeholder-shown:-translate-y-1/2
+            peer-placeholder-shown:top-1/2
+            peer-focus:top-2
+            peer-focus:scale-75
+            peer-focus:-translate-y-4
+            start-1"
+            [ngClass]="{
+              'text-body peer-focus:text-fg-brand': !erroresValidacion().password,
+              'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().password
+            }">
+            Contraseña
+          </label>
+        </div>
 
         @if (erroresValidacion().password) {
-        <p class="mt-2.5 text-sm text-fg-danger-strong">
-          <span class="font-medium">¡Error!</span> Este campo es requerido.
-        </p>
+          <p class="mt-2 text-sm text-fg-danger-strong">
+            <span class="font-medium">¡Error!</span> Este campo es requerido.
+          </p>
         }
       </div>
 
       <button (click)="register()" type="button"
-        class="text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2.5 w-full transition-colors">
+        class="text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2.5 w-full transition-colors cursor-pointer">
         Crear cuenta
       </button>
 

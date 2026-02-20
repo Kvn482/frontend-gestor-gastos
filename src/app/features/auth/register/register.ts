@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CommonModule],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -34,6 +35,20 @@ export class Register {
     private router: Router
   ) { }
 
+  filtrarNombre(event: Event) {
+    const input = event.target as HTMLInputElement;
+
+    // Permite solo letras, espacios, guion y apóstrofe
+    input.value = input.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]/g, '');
+
+    this.nombre = input.value;
+  }
+
+  isValidEmail(email: string): boolean {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
+
   register() {
     this.errorMessage.set('');
     this.successMessage.set('');
@@ -43,7 +58,7 @@ export class Register {
     const errores = {
       nombre: !this.nombre.trim(),
       username: !this.username.trim(),
-      email: !this.email.trim(),
+      email: !this.email || !this.isValidEmail(this.email),
       password: !this.password.trim()
     };
     
