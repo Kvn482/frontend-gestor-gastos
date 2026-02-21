@@ -23,8 +23,13 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify(user));
   }
 
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
   logout() {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 
   isLoggedIn(): boolean {

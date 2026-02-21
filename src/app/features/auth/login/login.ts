@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { finalize } from 'rxjs';
@@ -29,7 +29,8 @@ export class Login {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   isValidEmail(email: string): boolean {
@@ -72,10 +73,12 @@ export class Login {
       next: (res: any) => {
 
         this.authService.saveSession(res.token, res.user);
-
-        // this.router.navigate(['/dashboard']);
-
         this.successMessage.set('Inicio de sesión exitoso.');
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+
+        setTimeout(() => {
+          this.router.navigate([returnUrl]);
+        }, 800);
 
       },
       error: (err) => {

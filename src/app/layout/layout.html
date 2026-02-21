@@ -1,0 +1,26 @@
+<div class="flex h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-900 text-white p-4">
+    <h2 class="text-xl font-bold mb-6">Gestor de Gastos</h2>
+
+    <nav class="space-y-2">
+      <a routerLink="/dashboard" class="block p-2 hover:bg-gray-700 rounded">
+        Dashboard
+      </a>
+      <a routerLink="/expenses" class="block p-2 hover:bg-gray-700 rounded">
+        Gastos
+      </a>
+    </nav>
+
+    <button (click)="logout()" class="mt-6 bg-red-500 px-4 py-2 rounded w-full">
+      Cerrar sesión
+    </button>
+  </aside>
+
+  <!-- Contenido dinámico -->
+  <main class="flex-1 bg-gray-100 p-6">
+    <router-outlet />
+  </main>
+
+</div>
