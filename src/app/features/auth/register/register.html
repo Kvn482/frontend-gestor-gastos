@@ -1,19 +1,10 @@
 <nav class="fixed w-full z-20 top-0 start-0 border-disabled headernav">
   <div class="w-full flex flex-wrap items-center justify-between px-6 p-4">
-    <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
+    <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
       <!-- <img src="https://flowbite.com/docs/images/logo.svg" class="h-7" alt="Flowbite Logo" /> -->
       <span class="self-center text-2xl text-heading font-semibold whitespace-nowrap">Monetra</span>
     </a>
-    <button data-collapse-toggle="navbar-default" type="button"
-      class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-body rounded-base md:hidden hover:bg-neutral-secondary-soft hover:text-heading focus:outline-none focus:ring-2 focus:ring-neutral-tertiary"
-      aria-controls="navbar-default" aria-expanded="false">
-      <span class="sr-only">Open main menu</span>
-      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-        viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14" />
-      </svg>
-    </button>
-    <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+    <div class="w-full md:block md:w-auto" id="navbar-default">
       <p class="text-gray-500 text-sm">
         ¿Ya tienes cuenta?
         <button routerLink="/login" type="button"
@@ -25,7 +16,7 @@
 </nav>
 
 @if (!successRegister()) {
-<div class="min-h-screen flex flex-col items-center justify-center bg-neutral-primary pt-20">
+<div class="min-h-screen flex flex-col items-center justify-center bg-neutral-primary pt-10">
   <div class="bg-neutral-primary-soft w-full max-w-sm p-8 border border-default rounded-base shadow-xs">
 
     <h5 class="mb-5 text-2xl font-semibold tracking-tight text-heading leading-8">
@@ -59,7 +50,7 @@
         </div>
         @if (erroresValidacion().nombre) {
         <p id="outlined_error_help" class="mt-2 text-sm text-fg-danger-strong">
-          <span class="font-medium">¡Error!</span> Este campo es requerido.
+          <span class="font-medium">¡Error!</span> El nombre no puede estar vacio
         </p>
         }
       </div>
@@ -90,7 +81,7 @@
 
         @if (erroresValidacion().username) {
         <p class="mt-2 text-sm text-fg-danger-strong">
-          <span class="font-medium">¡Error!</span> Este campo es requerido.
+          <span class="font-medium">¡Error!</span> El nombre de usuario no puede estar vacio
         </p>
         }
       </div>
@@ -123,7 +114,7 @@
 
         @if (erroresValidacion().email) {
           <p class="mt-2 text-sm text-fg-danger-strong">
-            <span class="font-medium">¡Error!</span> Este campo es requerido.
+            <span class="font-medium">¡Error!</span> El email no puede estar vacio
           </p>
         }
       </div>
@@ -156,7 +147,7 @@
 
         @if (erroresValidacion().password) {
           <p class="mt-2 text-sm text-fg-danger-strong">
-            <span class="font-medium">¡Error!</span> Este campo es requerido.
+            <span class="font-medium">¡Error!</span> La contraseña no puede estar vacia.
           </p>
         }
       </div>
