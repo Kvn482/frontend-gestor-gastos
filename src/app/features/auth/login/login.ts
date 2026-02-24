@@ -72,7 +72,7 @@ export class Login {
     ).subscribe({
       next: (res: any) => {
 
-        this.authService.saveSession(res.token, res.user);
+        this.authService.saveSession(res.accessToken, res.refreshToken);
         this.successMessage.set('Inicio de sesión exitoso.');
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
 
