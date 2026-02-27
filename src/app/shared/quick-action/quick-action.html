@@ -1,0 +1,21 @@
+<button (click)="go()" 
+  class="group flex flex-col items-center justify-center
+  p-6 rounded-2xl
+  bg-white
+  shadow-sm
+  hover:shadow-md
+  transition-all duration-200
+  hover:-translate-y-1
+  w-full cursor-pointer">
+
+  <!-- Ícono -->
+  <div class="mb-3 text-gray-500 group-hover:text-blue-600 transition">
+    <ng-content select="[icon]"></ng-content>
+  </div>
+
+  <!-- Texto -->
+  <span class="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition">
+    {{ label }}
+  </span>
+
+</button>
