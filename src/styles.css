@@ -58,3 +58,7 @@
 .modal-fade-out {
   animation: modal-fade-out 0.25s ease forwards;
 }
+
+body {
+  background-color: #fbfbfc;
+}
