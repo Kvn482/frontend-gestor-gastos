@@ -4,89 +4,142 @@
 
     <div class="mb-6">
       <div class="relative">
-        <input type="email" id="email" name="email" placeholder=" "
-          class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0" />
-
-        <label for="email" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
-            peer-placeholder-shown:scale-100
-            peer-placeholder-shown:-translate-y-1/2
-            peer-placeholder-shown:top-1/2
-            peer-focus:top-2
-            peer-focus:scale-75
-            peer-focus:-translate-y-4
-            start-1">
-          Email
-        </label>
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+            fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z" />
+          </svg>
+        </div>
+        <input #datepicker [(ngModel)]="movimiento.fecha" name="fecha" id="datepicker-autohide" datepicker
+          datepicker-autohide type="text"
+          class="block w-full ps-9 pe-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand px-3 py-2.5 shadow-xs placeholder:text-body"
+          placeholder="Selecciona una fecha" [ngClass]="{
+            'border-default-medium focus:border-brand text-heading': !erroresValidacion().fecha,
+            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().fecha
+          }">
       </div>
-
-      <!-- @if (erroresValidacion().email) { -->
+      @if (erroresValidacion().fecha) {
       <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> El email no puede estar vacio
+        <span class="font-medium">¡Error!</span> Ingresa la fecha del movimiento
       </p>
-      <!-- } -->
+      }
     </div>
 
     <div class="mb-6">
-      <label for="underline_select" class="sr-only">Tipo Movimiento</label>
-      <select id="underline_select"
-        class="block py-2.5 ps-0 w-full text-sm text-body bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer">
-        <option selected>Choose a country</option>
-        <option value="US">United States</option>
-        <option value="CA">Canada</option>
-        <option value="FR">France</option>
-        <option value="DE">Germany</option>
+      <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Movimiento</label> -->
+      <select id="countries" [(ngModel)]="movimiento.tipoMovimiento" name="tipoMovimiento" (change)="validarErrores('tipoMovimiento')"
+        class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+        [ngClass]="{
+          'border-default-medium focus:border-brand text-heading': !erroresValidacion().tipoMovimiento,
+          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().tipoMovimiento
+        }">
+
+        <option value="0" disabled>Selecciona el movimiento</option>
+        @for (tipo of tiposMovimiento; track tipo.id) {
+        <option [value]="tipo.id">{{ tipo.movimiento }}</option>
+        }
+      </select>
+      @if (erroresValidacion().tipoMovimiento) {
+      <p class="mt-2 text-sm text-fg-danger-strong">
+        <span class="font-medium">¡Error!</span> Ingresa el tipo de movimiento
+      </p>
+      }
+    </div>
+
+    <div class="mb-6">
+      <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Categoria</label> -->
+      <select id="countries" [(ngModel)]="movimiento.categoria" name="categoria" (change)="validarErrores('categoria')"
+        class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+        [ngClass]="{
+          'border-default-medium focus:border-brand text-heading': !erroresValidacion().tipoMovimiento,
+          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().tipoMovimiento
+        }">
+
+        <option value="0" disabled>Seleccione una categoría</option>
+        @for (cat of categorias; track cat.id) {
+        <option [value]="cat.id">{{ cat.nombre }}</option>
+        }
       </select>
     </div>
 
     <div class="mb-6">
-      <label for="underline_select" class="sr-only">Categoria</label>
-      <select id="underline_select"
-        class="block py-2.5 ps-0 w-full text-sm text-body bg-transparent border-0 border-b-2 border-default-medium appearance-none focus:outline-none focus:ring-0 focus:border-brand peer">
-        <option selected>Choose a country</option>
-        <option value="US">United States</option>
-        <option value="CA">Canada</option>
-        <option value="FR">France</option>
-        <option value="DE">Germany</option>
-      </select>
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 mt-1.5 pointer-events-none">
+          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+            fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17.345a4.76 4.76 0 0 0 2.558 1.618c2.274.589 4.512-.446 4.999-2.31.487-1.866-1.273-3.9-3.546-4.49-2.273-.59-4.034-2.623-3.547-4.488.486-1.865 2.724-2.899 4.998-2.31.982.236 1.87.793 2.538 1.592m-3.879 12.171V21m0-18v2.2"/>
+          </svg>
+        </div>
+        <input type="text" id="monto" [(ngModel)]="movimiento.monto" name="monto" placeholder="0.00" maxlength="12"
+          (input)="soloNumeros($event)"
+          (blur)="validarErrores('monto')"
+          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+          [ngClass]="{
+            'border-default-medium focus:border-brand text-heading': !erroresValidacion().monto,
+            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().monto
+          }" />
+
+        <label for="monto" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+          peer-placeholder-shown:scale-100
+          peer-placeholder-shown:-translate-y-1/2
+          peer-placeholder-shown:top-1/2
+          peer-focus:top-2
+          peer-focus:scale-75
+          peer-focus:-translate-y-4
+          start-1" 
+          [ngClass]="{
+            'text-body peer-focus:text-fg-brand': !erroresValidacion().monto,
+            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().monto
+          }">
+          Monto
+        </label>
+      </div>
+
+      @if (erroresValidacion().monto) {
+      <p class="mt-2 text-sm text-fg-danger-strong">
+        <span class="font-medium">¡Error!</span> El monto no puede estar vacio o ser 0
+      </p>
+      }
     </div>
 
     <div class="mb-6">
-      <div class="relative z-0">
-        <input type="text" id="standard_error" aria-describedby="standard_error_help"
-          class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-danger appearance-none focus:outline-none focus:ring-0 focus:border-danger peer"
-          placeholder=" " value="0" />
-        <label for="standard_error"
-          class="absolute text-sm text-fg-danger-strong duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">Monto
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 mt-1.5 pointer-events-none">
+          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+            fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6h8m-8 4h12M6 14h8m-8 4h12"/>
+          </svg>
+        </div>
+        <input type="text" id="descripcion" [(ngModel)]="movimiento.descripcion" name="descripcion" placeholder="" 
+          (change)="validarErrores('descripcion')"
+          maxlength="100"
+          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+          [ngClass]="{
+            'border-default-medium focus:border-brand text-heading': !erroresValidacion().descripcion,
+            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().descripcion
+          }" />
+
+        <label for="descripcion" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+          peer-placeholder-shown:scale-100
+          peer-placeholder-shown:-translate-y-1/2
+          peer-placeholder-shown:top-1/2
+          peer-focus:top-2
+          peer-focus:scale-75
+          peer-focus:-translate-y-4
+          start-1" [ngClass]="{
+            'text-body peer-focus:text-fg-brand': !erroresValidacion().descripcion,
+            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().descripcion
+          }">
+          Descripcion
         </label>
       </div>
-      <p id="standard_error_help" class="mt-2 text-xs text-fg-danger-strong"><span class="font-medium">Oh,
-          snapp!</span> Some error message.</p>
-    </div>
 
-    <div class="mb-6">
-      <div class="relative z-0">
-        <input type="text" id="standard_error" aria-describedby="standard_error_help"
-          class="block py-2.5 px-0 w-full text-sm text-heading bg-transparent border-0 border-b-2 border-danger appearance-none focus:outline-none focus:ring-0 focus:border-danger peer"
-          placeholder=" " />
-        <label for="standard_error"
-          class="absolute text-sm text-fg-danger-strong duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">Descripcion
-        </label>
-      </div>
-      <p id="standard_error_help" class="mt-2 text-xs text-fg-danger-strong"><span class="font-medium">Oh,
-          snapp!</span> Some error message.</p>
-    </div>
-
-    <div class="relative max-w-sm">
-      <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-          fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z" />
-        </svg>
-      </div>
-      <input id="datepicker-autohide" datepicker datepicker-autohide type="text"
-        class="block w-full ps-9 pe-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand px-3 py-2.5 shadow-xs placeholder:text-body"
-        placeholder="Select date">
+      @if (erroresValidacion().descripcion) {
+      <p class="mt-2 text-sm text-fg-danger-strong">
+        <span class="font-medium">¡Error!</span> La descripcion no debe estar vacia
+      </p>
+      }
     </div>
 
   </form>
@@ -98,7 +151,7 @@
       Cancelar
     </button>
 
-    <button class="text-white bg-brand hover:bg-brand-strong cursor-pointer
+    <button (click)="guardar()" class="text-white bg-brand hover:bg-brand-strong cursor-pointer
       rounded-base text-sm px-4 py-2.5">
       Guardar
     </button>
