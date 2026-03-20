@@ -2,6 +2,10 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChange
 import { FormsModule } from '@angular/forms';
 import { Modal } from '../../../shared/modal/modal';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth.service';
+import { MovimientosService } from '../../../core/services/movimientos.service';
+import { finalize } from 'rxjs';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-nuevo-movimiento-modal',
@@ -13,6 +17,11 @@ export class NuevoMovimientoModal implements OnChanges {
   @Input() isOpen: boolean = false;
   @Output() closed = new EventEmitter<void>();
   @ViewChild('datepicker') datepickerInput!: ElementRef;
+
+  constructor(
+    private movimientosService: MovimientosService,
+    private toastService:ToastService
+  ) { }
 
   // Listas para los selects
   tiposMovimiento = [
@@ -134,14 +143,37 @@ export class NuevoMovimientoModal implements OnChanges {
     return Object.values(erroresActuales).some(v => v)
   }
 
+  isloading = signal(false);
+
   guardar() {
 
+    if (this.isloading()) return;
+
+    this.isloading.set(true);
+
     const tieneErrores = this.validarErrores()
+    if (tieneErrores) this.isloading.set(false);
 
     if (!tieneErrores) {
       console.log('Datos listos para enviar:', this.movimiento);
-      // Aquí iría tu lógica de guardado
-      this.closed.emit();
+
+      this.movimientosService.crearMovimiento(this.movimiento)
+      .pipe(
+        finalize(() => {
+          this.isloading.set(false);
+        })
+      ).subscribe({
+        next: (res: any) => {
+
+          this.toastService.show(res.message, 'success');
+          this.closed.emit();
+
+        },
+        error: (err) => {
+          this.toastService.show(err.error.message, 'danger');
+        }
+      });
+
     } else {
       console.log('Faltan campos por llenar');
     }

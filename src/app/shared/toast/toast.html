@@ -1,0 +1,24 @@
+@if (toastService.toast(); as toast) {
+<div id="toast-top-right"
+  class="fixed z-[9999] flex items-center w-full max-w-xs p-4 text-body rounded-base shadow-xs border top-5 end-5"
+  [class.toast-enter]="!toast.exiting"
+  [class.toast-exit]="toast.exiting"
+  [ngClass]="{
+    'text-fg-success-strong bg-success-soft border-success-subtle': toast.type === 'success',
+    'text-fg-danger-strong bg-danger-soft border-danger-subtle': toast.type === 'error',
+    'text-fg-warning-strong bg-warning-soft border-warning-subtle': toast.type === 'warning'
+  }">
+  
+  <div class="text-sm font-normal">
+    {{ toast.message }}
+  </div>
+
+  <div class="ms-auto">
+    <button type="button" (click)="toastService.clear()" class="p-1 hover:bg-black/5 rounded cursor-pointer">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path d="M6 18 17.94 6M18 18 6.06 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+}

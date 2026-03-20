@@ -1,10 +1,9 @@
 import { Component, AfterViewInit } from '@angular/core';
 import { QuickAction } from '../../shared/quick-action/quick-action';
-import { Modal } from '../../shared/modal/modal';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
 @Component({
   selector: 'app-dashboard',
-  imports: [QuickAction, NuevoMovimientoModal, Modal],
+  imports: [QuickAction, NuevoMovimientoModal],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
