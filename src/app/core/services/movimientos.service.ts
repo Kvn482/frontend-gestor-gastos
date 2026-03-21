@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { jwtDecode } from 'jwt-decode';
+import { BalanceResponse } from '../models/balance-response.interface';
+import { Subject, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,27 @@ export class MovimientosService {
 
   constructor(private http: HttpClient) { }
 
+  // Subject para notificar cambios
+  private refreshBalance$ = new Subject<void>();
+
+  // Observable público
+  refreshBalanceObservable$ = this.refreshBalance$.asObservable();
+
+  // Método para emitir evento
+  private notificarCambioBalance() {
+    this.refreshBalance$.next();
+  }
+
+
   crearMovimiento(data: any) {
-    return this.http.post(`${this.api}/movimientos`, data);
+    return this.http.post(`${this.api}/movimientos`, data).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
+  }
+
+  consultarBalanceGeneral() {
+    return this.http.get<BalanceResponse>(`${this.api}/movimientos/balance-general`);
   }
 }
