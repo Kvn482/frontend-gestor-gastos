@@ -31,10 +31,10 @@ export class NuevoMovimientoModal implements OnChanges {
   ];
 
   categorias = [
-    { id: 1, nombre: 'Comida' },
-    { id: 2, nombre: 'Transporte' },
-    { id: 3, nombre: 'Servicios' },
-    { id: 4, nombre: 'Entretenimiento' }
+    { id: 1, categoria: 'Comida' },
+    { id: 2, categoria: 'Transporte' },
+    { id: 3, categoria: 'Servicios' },
+    { id: 4, categoria: 'Entretenimiento' }
   ];
 
   // Objeto único para ngModel
@@ -57,6 +57,15 @@ export class NuevoMovimientoModal implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true) {
       this.resetFormulario();
+
+      this.movimientosService.consultarCategorias().subscribe((res: any) => {
+        this.categorias = res;
+      });
+
+      this.movimientosService.consultarTiposMovimiento().subscribe((res: any) => {
+        this.tiposMovimiento = res;
+      });
+
       setTimeout(() => this.initDatepicker(), 100);
     }
   }

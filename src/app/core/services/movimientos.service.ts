@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BalanceResponse } from '../models/balance-response.interface';
+import { CategoriasResponse } from '../models/categorias.interface';
 import { Subject, tap } from 'rxjs';
 
 @Injectable({
@@ -34,5 +35,13 @@ export class MovimientosService {
 
   consultarBalanceGeneral() {
     return this.http.get<BalanceResponse>(`${this.api}/movimientos/balance-general`);
+  }
+
+  consultarCategorias() {
+    return this.http.get<CategoriasResponse[]>(`${this.api}/movimientos/categorias`);
+  }
+
+  consultarTiposMovimiento() {
+    return this.http.get(`${this.api}/movimientos/tipos-movimiento`);
   }
 }
