@@ -10,6 +10,9 @@
 @source "../node_modules/flowbite";
 @source "../node_modules/flowbite-datepicker";
 
+/* ── Dark mode: class-based ───────────────────────────── */
+@variant dark (&:where(.dark, .dark *));
+
 /* ── Brand override: indigo ───────────────────────────── */
 @theme {
   --color-brand-softer:  #eef2ff;

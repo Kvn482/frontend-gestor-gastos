@@ -1,5 +1,5 @@
 <!-- Minimal nav -->
-<nav class="fixed w-full z-20 top-0 start-0 bg-white/80 backdrop-blur-sm border-b border-slate-100">
+<nav class="fixed w-full z-20 top-0 start-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800">
   <div class="flex items-center justify-between px-6 py-3">
     <div class="flex items-center gap-2.5">
       <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -8,24 +8,40 @@
             d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
         </svg>
       </div>
-      <span class="text-gray-900 text-lg font-bold">Monetra</span>
+      <span class="text-gray-900 dark:text-white text-lg font-bold">Monetra</span>
     </div>
-    <p class="text-gray-500 text-sm">
-      ¿No tienes cuenta?
+    <div class="flex items-center gap-3">
+      <button id="theme-toggle-login" type="button" (click)="toggleDarkMode()"
+        class="p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        @if (darkMode) {
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7Zm0-4v2m0 14v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        } @else {
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        </svg>
+        }
+      </button>
+      <p class="text-gray-500 dark:text-slate-400 text-sm">
+        ¿No tienes cuenta?
       <button routerLink="/register" type="button"
         class="text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-4 ms-2 py-1.5 cursor-pointer transition-colors">
         Regístrate
       </button>
     </p>
+    </div>
   </div>
 </nav>
 
 <!-- Page -->
-<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+<div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
   <div class="w-full max-w-sm">
 
     <!-- Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
       <!-- Top accent -->
       <div class="h-1.5" style="background: linear-gradient(90deg, #4f46e5, #7c3aed, #9333ea)"></div>
 
@@ -38,23 +54,23 @@
                 d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
             </svg>
           </div>
-          <span class="text-gray-900 text-xl font-bold">Monetra</span>
+          <span class="text-gray-900 dark:text-white text-xl font-bold">Monetra</span>
         </div>
 
-        <h5 class="text-2xl font-bold text-gray-900 mb-1">Bienvenido de vuelta</h5>
-        <p class="text-gray-400 text-sm mb-7">Ingresa tus credenciales para continuar</p>
+        <h5 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Bienvenido de vuelta</h5>
+        <p class="text-gray-400 dark:text-slate-500 text-sm mb-7">Ingresa tus credenciales para continuar</p>
 
         <form class="w-full">
 
           <div class="mb-5">
             <div class="relative">
               <input type="email" id="email" [(ngModel)]="email" name="email" placeholder=" "
-                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-xl appearance-none border bg-white focus:outline-none focus:ring-0"
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm text-gray-900 dark:text-white rounded-xl appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
                 [ngClass]="{
-                  'border-slate-200 focus:border-indigo-500 text-gray-900': !erroresValidacion().email,
+                  'border-slate-200 dark:border-slate-600 focus:border-indigo-500': !erroresValidacion().email,
                   'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().email
                 }" />
-              <label for="email" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              <label for="email" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
                 peer-placeholder-shown:scale-100
                 peer-placeholder-shown:-translate-y-1/2
                 peer-placeholder-shown:top-1/2
@@ -63,7 +79,7 @@
                 peer-focus:-translate-y-4
                 start-1"
                 [ngClass]="{
-                  'text-gray-400 peer-focus:text-indigo-600': !erroresValidacion().email,
+                  'text-gray-400 dark:text-slate-400 peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400': !erroresValidacion().email,
                   'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().email
                 }">
                 Email
@@ -79,12 +95,12 @@
           <div class="mb-6">
             <div class="relative">
               <input type="password" id="password" [(ngModel)]="password" name="password" placeholder=" "
-                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-xl appearance-none border bg-white focus:outline-none focus:ring-0"
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm text-gray-900 dark:text-white rounded-xl appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
                 [ngClass]="{
-                  'border-slate-200 focus:border-indigo-500 text-gray-900': !erroresValidacion().password,
+                  'border-slate-200 dark:border-slate-600 focus:border-indigo-500': !erroresValidacion().password,
                   'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().password
                 }" />
-              <label for="password" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+              <label for="password" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
                 peer-placeholder-shown:scale-100
                 peer-placeholder-shown:-translate-y-1/2
                 peer-placeholder-shown:top-1/2
@@ -93,7 +109,7 @@
                 peer-focus:-translate-y-4
                 start-1"
                 [ngClass]="{
-                  'text-gray-400 peer-focus:text-indigo-600': !erroresValidacion().password,
+                  'text-gray-400 dark:text-slate-400 peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400': !erroresValidacion().password,
                   'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().password
                 }">
                 Contraseña
@@ -135,7 +151,7 @@
       </div>
     </div>
 
-    <p class="text-gray-400 text-sm text-center mt-5">
+    <p class="text-gray-400 dark:text-slate-500 text-sm text-center mt-5">
       ¿No tienes cuenta?
       <a routerLink="/register" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
         Regístrate gratis

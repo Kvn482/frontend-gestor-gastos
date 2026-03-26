@@ -19,12 +19,15 @@ export class Layout {
   username = ''
   profileImageUrl = `https://ui-avatars.com/api/?name=`
   sidebarOpen = false
+  darkMode = false
 
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser();
     this.nombre = currentUser.nombre.split(" ")[0]
     this.profileImageUrl = `https://ui-avatars.com/api/?name=${this.nombre}`
     this.username = currentUser.username
+    this.darkMode = localStorage.getItem('theme') === 'dark';
+    this.applyTheme();
   }
 
   logout() {
@@ -34,6 +37,20 @@ export class Layout {
 
   closeSidebar() {
     this.sidebarOpen = false;
+  }
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+    this.applyTheme();
+  }
+
+  private applyTheme() {
+    if (this.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }
 
 }

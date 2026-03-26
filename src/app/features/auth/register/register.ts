@@ -17,6 +17,7 @@ export class Register {
   username = '';
   email = '';
   password = '';
+  darkMode = false;
 
   errorMessage = signal('');
   successMessage = signal('');
@@ -35,7 +36,16 @@ export class Register {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {
+    this.darkMode = localStorage.getItem('theme') === 'dark';
+  }
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+    if (this.darkMode) { document.documentElement.classList.add('dark'); }
+    else { document.documentElement.classList.remove('dark'); }
+  }
 
   filtrarNombre(event: Event) {
     const input = event.target as HTMLInputElement;

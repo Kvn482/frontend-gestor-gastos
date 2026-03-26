@@ -93,6 +93,22 @@
         </svg>
         <span class="text-sm font-medium">Configuración</span>
       </a>
+      <!-- Dark mode toggle -->
+      <button (click)="toggleDarkMode()" type="button"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white w-full transition-all duration-150">
+        @if (darkMode) {
+        <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm7.071 2.929a1 1 0 0 1 0 1.414l-.707.707a1 1 0 1 1-1.414-1.414l.707-.707a1 1 0 0 1 1.414 0ZM20 11h1a1 1 0 1 1 0 2h-1a1 1 0 1 1 0-2ZM17.657 16.243a1 1 0 0 1 1.414 1.414l-.707.707a1 1 0 0 1-1.414-1.414l.707-.707ZM12 18a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM7.757 16.243l-.707.707a1 1 0 0 1-1.414-1.414l.707-.707a1 1 0 0 1 1.414 1.414ZM4 11H3a1 1 0 1 1 0 2h1a1 1 0 1 1 0-2ZM6.343 4.929l-.707-.707a1 1 0 0 0-1.414 1.414l.707.707a1 1 0 0 0 1.414-1.414ZM12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7Z"/>
+        </svg>
+        <span class="text-sm font-medium">Modo claro</span>
+        } @else {
+        <svg class="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 22c5.523 0 10-4.477 10-10 0-.463-.694-.54-.933-.143a6.5 6.5 0 1 1-8.924-8.924C12.54 2.694 12.463 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10Z"/>
+        </svg>
+        <span class="text-sm font-medium">Modo oscuro</span>
+        }
+      </button>
+
       <!-- Logout -->
       <a href="#" (click)="logout()"
         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-all duration-150">
@@ -108,7 +124,7 @@
 </aside>
 
 <!-- Main content -->
-<div class="sm:ml-64 min-h-screen bg-slate-50">
+<div class="sm:ml-64 min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
   <div class="p-6 pt-16 sm:pt-6 md:p-8 max-w-5xl">
     <router-outlet />
   </div>

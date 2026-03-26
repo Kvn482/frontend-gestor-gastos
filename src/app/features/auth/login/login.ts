@@ -15,6 +15,7 @@ import { finalize } from 'rxjs';
 export class Login {
   email = '';
   password = '';
+  darkMode = false;
 
   errorMessage = signal('');
   successMessage = signal('');
@@ -31,7 +32,16 @@ export class Login {
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) {
+    this.darkMode = localStorage.getItem('theme') === 'dark';
+  }
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+    localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
+    if (this.darkMode) { document.documentElement.classList.add('dark'); }
+    else { document.documentElement.classList.remove('dark'); }
+  }
 
   isValidEmail(email: string): boolean {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
