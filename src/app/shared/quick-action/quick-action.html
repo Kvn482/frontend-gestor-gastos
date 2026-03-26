@@ -1,21 +1,27 @@
-<button (click)="go()" 
-  class="group flex flex-col items-center justify-center
-  p-6 rounded-2xl
-  bg-white
-  shadow-sm
-  hover:shadow-md
+<button (click)="go()"
+  class="group flex items-center gap-4
+  p-5 rounded-2xl
+  bg-white border border-slate-100
+  shadow-sm hover:shadow-md hover:border-indigo-100
   transition-all duration-200
-  hover:-translate-y-1
-  w-full cursor-pointer">
+  w-full cursor-pointer text-left">
 
-  <!-- Ícono -->
-  <div class="mb-3 text-gray-500 group-hover:text-blue-600 transition">
+  <!-- Icon container -->
+  <div class="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center
+    text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white
+    transition-all duration-200 shrink-0">
     <ng-content select="[icon]"></ng-content>
   </div>
 
-  <!-- Texto -->
-  <span class="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition">
+  <!-- Label -->
+  <span class="flex-1 text-sm font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">
     {{ label }}
   </span>
+
+  <!-- Arrow -->
+  <svg class="w-4 h-4 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all shrink-0"
+    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/>
+  </svg>
 
 </button>

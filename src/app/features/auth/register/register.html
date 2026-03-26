@@ -1,201 +1,208 @@
-<nav class="fixed w-full z-20 top-0 start-0 border-disabled headernav">
-  <div class="w-full flex flex-wrap items-center justify-between px-6 p-4">
-    <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
-      <!-- <img src="https://flowbite.com/docs/images/logo.svg" class="h-7" alt="Flowbite Logo" /> -->
-      <span class="self-center text-2xl text-heading font-semibold whitespace-nowrap">Monetra</span>
-    </a>
-    <div class="w-full md:block md:w-auto" id="navbar-default">
-      <p class="text-gray-500 text-sm">
-        ¿Ya tienes cuenta?
-        <button routerLink="/login" type="button"
-          class="text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 ms-3 py-1.5 focus:outline-none cursor-pointer">Inicia
-          sesión</button>
-      </p>
+<!-- Minimal nav -->
+<nav class="fixed w-full z-20 top-0 start-0 bg-white/80 backdrop-blur-sm border-b border-slate-100">
+  <div class="flex items-center justify-between px-6 py-3">
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
+        </svg>
+      </div>
+      <span class="text-gray-900 text-lg font-bold">Monetra</span>
     </div>
+    <p class="text-gray-500 text-sm">
+      ¿Ya tienes cuenta?
+      <button routerLink="/login" type="button"
+        class="text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-4 ms-2 py-1.5 cursor-pointer transition-colors">
+        Inicia sesión
+      </button>
+    </p>
   </div>
 </nav>
 
 @if (!successRegister()) {
-<div class="min-h-screen flex flex-col items-center justify-center bg-neutral-primary pt-10">
-  <div class="bg-neutral-primary-soft w-full max-w-sm p-8 border border-default rounded-base shadow-xs">
+<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+  <div class="w-full max-w-sm">
 
-    <h5 class="mb-5 text-2xl font-semibold tracking-tight text-heading leading-8">
-      Registro
-    </h5>
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <!-- Top accent -->
+      <div class="h-1.5" style="background: linear-gradient(90deg, #4f46e5, #7c3aed, #9333ea)"></div>
 
-    <form class="w-full">
-
-      <div class="mb-6">
-        <div class="relative">
-          <input type="text" id="nombre" [(ngModel)]="nombre" name="nombre" placeholder=" "
-            aria-describedby="outlined_error_help" (input)="filtrarNombre($event)" maxlength="100"
-            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
-            [ngClass]="{
-            'border-default-medium focus:border-brand text-heading': !erroresValidacion().nombre,
-            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().nombre
-          }" />
-          <label for="nombre" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
-          peer-placeholder-shown:scale-100
-          peer-placeholder-shown:-translate-y-1/2
-          peer-placeholder-shown:top-1/2
-          peer-focus:top-2
-          peer-focus:scale-75
-          peer-focus:-translate-y-4
-          start-1" [ngClass]="{
-            'text-body peer-focus:text-fg-brand': !erroresValidacion().nombre,
-            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().nombre
-          }">
-            Nombre completo
-          </label>
-        </div>
-        @if (erroresValidacion().nombre) {
-        <p id="outlined_error_help" class="mt-2 text-sm text-fg-danger-strong">
-          <span class="font-medium">¡Error!</span> El nombre no puede estar vacio
-        </p>
-        }
-      </div>
-
-      <div class="mb-6">
-        <div class="relative">
-          <input type="text" id="username" [(ngModel)]="username" name="username" placeholder=" " maxlength="50"
-            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
-            [ngClass]="{
-              'border-default-medium focus:border-brand text-heading': !erroresValidacion().username,
-              'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().username
-            }" />
-
-          <label for="username" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
-          peer-placeholder-shown:scale-100
-          peer-placeholder-shown:-translate-y-1/2
-          peer-placeholder-shown:top-1/2
-          peer-focus:top-2
-          peer-focus:scale-75
-          peer-focus:-translate-y-4
-          start-1" [ngClass]="{
-            'text-body peer-focus:text-fg-brand': !erroresValidacion().username,
-            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().username
-          }">
-            Username
-          </label>
+      <div class="p-8">
+        <!-- Logo -->
+        <div class="flex items-center gap-2.5 mb-7">
+          <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
+            </svg>
+          </div>
+          <span class="text-gray-900 text-xl font-bold">Monetra</span>
         </div>
 
-        @if (erroresValidacion().username) {
-        <p class="mt-2 text-sm text-fg-danger-strong">
-          <span class="font-medium">¡Error!</span> El nombre de usuario no puede estar vacio
-        </p>
-        }
-      </div>
+        <h5 class="text-2xl font-bold text-gray-900 mb-1">Crear cuenta</h5>
+        <p class="text-gray-400 text-sm mb-7">Completa el formulario para empezar</p>
 
-      <div class="mb-6">
-        <div class="relative">
-          <input type="email" id="email" [(ngModel)]="email" name="email" placeholder=" "
-            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
-            [ngClass]="{
-              'border-default-medium focus:border-brand text-heading': !erroresValidacion().email,
-              'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().email
-            }" />
+        <form class="w-full">
 
-          <label for="email"
-            class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
-            peer-placeholder-shown:scale-100
-            peer-placeholder-shown:-translate-y-1/2
-            peer-placeholder-shown:top-1/2
-            peer-focus:top-2
-            peer-focus:scale-75
-            peer-focus:-translate-y-4
-            start-1"
-            [ngClass]="{
-              'text-body peer-focus:text-fg-brand': !erroresValidacion().email,
-              'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().email
-            }">
-            Email
-          </label>
-        </div>
+          <div class="mb-5">
+            <div class="relative">
+              <input type="text" id="nombre" [(ngModel)]="nombre" name="nombre" placeholder=" "
+                aria-describedby="outlined_error_help" (input)="filtrarNombre($event)" maxlength="100"
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-xl appearance-none border bg-white focus:outline-none focus:ring-0"
+                [ngClass]="{
+                  'border-slate-200 focus:border-indigo-500 text-gray-900': !erroresValidacion().nombre,
+                  'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().nombre
+                }" />
+              <label for="nombre" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+                peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+                peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1"
+                [ngClass]="{
+                  'text-gray-400 peer-focus:text-indigo-600': !erroresValidacion().nombre,
+                  'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().nombre
+                }">
+                Nombre completo
+              </label>
+            </div>
+            @if (erroresValidacion().nombre) {
+            <p id="outlined_error_help" class="mt-1.5 text-xs text-fg-danger-strong">
+              <span class="font-medium">¡Error!</span> El nombre no puede estar vacío
+            </p>
+            }
+          </div>
 
-        @if (erroresValidacion().email) {
-          <p class="mt-2 text-sm text-fg-danger-strong">
-            <span class="font-medium">¡Error!</span> El email no puede estar vacio
+          <div class="mb-5">
+            <div class="relative">
+              <input type="text" id="username" [(ngModel)]="username" name="username" placeholder=" " maxlength="50"
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-xl appearance-none border bg-white focus:outline-none focus:ring-0"
+                [ngClass]="{
+                  'border-slate-200 focus:border-indigo-500 text-gray-900': !erroresValidacion().username,
+                  'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().username
+                }" />
+              <label for="username" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+                peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+                peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1"
+                [ngClass]="{
+                  'text-gray-400 peer-focus:text-indigo-600': !erroresValidacion().username,
+                  'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().username
+                }">
+                Username
+              </label>
+            </div>
+            @if (erroresValidacion().username) {
+            <p class="mt-1.5 text-xs text-fg-danger-strong">
+              <span class="font-medium">¡Error!</span> El nombre de usuario no puede estar vacío
+            </p>
+            }
+          </div>
+
+          <div class="mb-5">
+            <div class="relative">
+              <input type="email" id="email" [(ngModel)]="email" name="email" placeholder=" "
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-xl appearance-none border bg-white focus:outline-none focus:ring-0"
+                [ngClass]="{
+                  'border-slate-200 focus:border-indigo-500 text-gray-900': !erroresValidacion().email,
+                  'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().email
+                }" />
+              <label for="email" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+                peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+                peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1"
+                [ngClass]="{
+                  'text-gray-400 peer-focus:text-indigo-600': !erroresValidacion().email,
+                  'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().email
+                }">
+                Email
+              </label>
+            </div>
+            @if (erroresValidacion().email) {
+            <p class="mt-1.5 text-xs text-fg-danger-strong">
+              <span class="font-medium">¡Error!</span> El email no puede estar vacío
+            </p>
+            }
+          </div>
+
+          <div class="mb-6">
+            <div class="relative">
+              <input type="password" id="password" [(ngModel)]="password" name="password" placeholder=" "
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-xl appearance-none border bg-white focus:outline-none focus:ring-0"
+                [ngClass]="{
+                  'border-slate-200 focus:border-indigo-500 text-gray-900': !erroresValidacion().password,
+                  'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().password
+                }" />
+              <label for="password" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2
+                peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2
+                peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1"
+                [ngClass]="{
+                  'text-gray-400 peer-focus:text-indigo-600': !erroresValidacion().password,
+                  'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().password
+                }">
+                Contraseña
+              </label>
+            </div>
+            @if (erroresValidacion().password) {
+            <p class="mt-1.5 text-xs text-fg-danger-strong">
+              <span class="font-medium">¡Error!</span> La contraseña no puede estar vacía.
+            </p>
+            }
+          </div>
+
+          <button (click)="register()" type="button"
+            class="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-xl cursor-pointer transition-all duration-200
+            hover:opacity-90 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+            style="background: linear-gradient(135deg, #4f46e5, #7c3aed)">
+            {{ isloading() ? 'Creando cuenta...' : 'Crear cuenta' }}
+          </button>
+
+          @if (successMessage()) {
+          <p class="mt-4 p-3 bg-emerald-50 text-emerald-700 rounded-xl text-sm border border-emerald-200">
+            {{ successMessage() }}
           </p>
-        }
-      </div>
+          }
 
-      <div class="mb-6">
-        <div class="relative">
-          <input type="password" id="password" [(ngModel)]="password" name="password" placeholder=" "
-            class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
-            [ngClass]="{
-              'border-default-medium focus:border-brand text-heading': !erroresValidacion().password,
-              'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().password
-            }" />
-
-          <label for="password"
-            class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
-            peer-placeholder-shown:scale-100
-            peer-placeholder-shown:-translate-y-1/2
-            peer-placeholder-shown:top-1/2
-            peer-focus:top-2
-            peer-focus:scale-75
-            peer-focus:-translate-y-4
-            start-1"
-            [ngClass]="{
-              'text-body peer-focus:text-fg-brand': !erroresValidacion().password,
-              'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().password
-            }">
-            Contraseña
-          </label>
-        </div>
-
-        @if (erroresValidacion().password) {
-          <p class="mt-2 text-sm text-fg-danger-strong">
-            <span class="font-medium">¡Error!</span> La contraseña no puede estar vacia.
+          @if (errorMessage()) {
+          <p class="mt-4 p-3 bg-rose-50 text-rose-700 rounded-xl text-sm border border-rose-200">
+            {{ errorMessage() }}
           </p>
-        }
+          }
+
+        </form>
       </div>
+    </div>
 
-      <button (click)="register()" type="button"
-        class="text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2.5 w-full transition-colors cursor-pointer">
-        {{ isloading() ? 'Creando cuenta...' : 'Crear cuenta' }}
-      </button>
-
-      @if (successMessage()) {
-      <p class="mt-4 p-3 bg-green-100 text-green-700 rounded-base border border-green-300">
-        {{ successMessage() }}
-      </p>
-      }
-
-      @if (errorMessage()) {
-      <p class="mt-4 p-3 bg-red-100 text-red-700 rounded-base border border-red-300">
-        {{ errorMessage() }}
-      </p>
-      }
-
-    </form>
+    <p class="text-gray-400 text-sm text-center mt-5">
+      ¿Ya tienes cuenta?
+      <a routerLink="/login" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+        Inicia sesión
+      </a>
+    </p>
 
   </div>
-
-  <p class="text-gray-500 text-sm pt-3">
-    ¿Ya tienes cuenta?
-    <a routerLink="/login" class="font-medium text-blue-600 hover:text-blue-800">Inicia sesión</a>
-  </p>
 </div>
 }
 
 @if (successRegister()) {
-<div class="flex flex-col items-center justify-center bg-neutral-primary pt-20">
-  <div class="bg-neutral-primary-soft block max-w-lg w-full p-6 border border-default rounded-base shadow-xs">
-    <h5 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">Registro exitoso
-    </h5>
-    <p class="text-body mb-6">Revisa tu correo para verificar tu cuenta.
-    </p>
-    <a routerLink="/login"
-      class="inline-flex items-center text-white bg-brand box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm px-4 py-2.5 focus:outline-none">
-      Iniciar sesión
-      <svg class="w-4 h-4 ms-1.5 rtl:rotate-180 -me-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-        width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M19 12H5m14 0-4 4m4-4-4-4" />
-      </svg>
-    </a>
+<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full max-w-sm">
+    <div class="h-1.5" style="background: linear-gradient(90deg, #4f46e5, #7c3aed, #9333ea)"></div>
+    <div class="p-8">
+      <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-5">
+        <svg class="w-6 h-6 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h5 class="text-2xl font-bold text-gray-900 mb-2">¡Cuenta creada!</h5>
+      <p class="text-gray-400 text-sm mb-7">Revisa tu correo para verificar tu cuenta.</p>
+      <a routerLink="/login"
+        class="inline-flex items-center gap-2 text-white font-semibold text-sm px-5 py-2.5 rounded-xl cursor-pointer transition-all hover:opacity-90"
+        style="background: linear-gradient(135deg, #4f46e5, #7c3aed)">
+        Iniciar sesión
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 12H5m14 0-4 4m4-4-4-4" />
+        </svg>
+      </a>
+    </div>
   </div>
 </div>
 }

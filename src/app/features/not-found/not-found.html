@@ -1,11 +1,26 @@
-<div class="flex flex-col items-center justify-center h-screen bg-gray-100">
-  <h1 class="text-6xl font-bold text-gray-800">404</h1>
-  <p class="text-xl mt-4 text-gray-600">
-    Página no encontrada
-  </p>
+<div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+  <div class="text-center">
 
-  <a routerLink="/dashboard"
-     class="mt-6 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">
-    Volver al Dashboard
-  </a>
+    <!-- Número grande decorativo -->
+    <div class="relative inline-block mb-6">
+      <span class="text-[10rem] font-black leading-none select-none"
+        style="-webkit-text-stroke: 3px #4f46e5; color: transparent;">404</span>
+    </div>
+
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Página no encontrada</h1>
+    <p class="text-gray-400 text-sm mb-8 max-w-xs mx-auto">
+      La página que buscas no existe o fue movida a otro lugar.
+    </p>
+
+    <a routerLink="/dashboard"
+      class="inline-flex items-center gap-2 text-white font-semibold text-sm px-6 py-3 rounded-xl cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]"
+      style="background: linear-gradient(135deg, #4f46e5, #7c3aed)">
+      <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19 12H5m14 0-4 4m4-4-4-4" transform="rotate(180 12 12)" />
+      </svg>
+      Volver al Dashboard
+    </a>
+
+  </div>
 </div>

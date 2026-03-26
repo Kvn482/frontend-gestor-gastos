@@ -32,4 +32,8 @@ export class Layout {
     this.router.navigate(['/login']);
   }
 
+  closeSidebar() {
+    this.sidebarOpen = false;
+  }
+
 }

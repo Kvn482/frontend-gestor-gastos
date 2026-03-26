@@ -1,15 +1,22 @@
-<div class="group flex flex-col items-start justify-center
-  p-6 rounded-2xl
-  shadow-sm
-  w-full" 
-  style="background: #F5F6FB;"
->
+<div class="relative overflow-hidden rounded-2xl p-7 text-white"
+  style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 55%, #9333ea 100%)">
 
-    <span class="flex flex-col text-2xl font-bold text-blue-600 transition">
-        {{ balance | currency:'MXN':'symbol-narrow' }} MXN
-        <span class="text-sm font-semibold text-gray-700 transition">
-            * Balance General
-        </span>
-    </span>
+  <!-- Decorative circles -->
+  <div class="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10 pointer-events-none"></div>
+  <div class="absolute right-12 -bottom-8 w-28 h-28 rounded-full bg-white/5 pointer-events-none"></div>
 
+  <p class="text-indigo-200 text-xs font-semibold uppercase tracking-widest mb-3">Balance General</p>
+
+  <p class="text-4xl font-bold tracking-tight">
+    {{ balance | currency:'MXN':'symbol-narrow' }}
+    <span class="text-2xl font-medium text-indigo-300 ml-1">MXN</span>
+  </p>
+
+  <p class="text-indigo-300 text-sm mt-3 flex items-center gap-1.5">
+    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
+    </svg>
+    Total en todas tus cuentas
+  </p>
 </div>

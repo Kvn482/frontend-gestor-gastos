@@ -10,6 +10,19 @@
 @source "../node_modules/flowbite";
 @source "../node_modules/flowbite-datepicker";
 
+/* ── Brand override: indigo ───────────────────────────── */
+@theme {
+  --color-brand-softer:  #eef2ff;
+  --color-brand-soft:    #e0e7ff;
+  --color-brand:         #4f46e5;
+  --color-brand-medium:  #a5b4fc;
+  --color-brand-strong:  #4338ca;
+
+  --color-fg-brand-subtle: #c7d2fe;
+  --color-fg-brand:        #4f46e5;
+  --color-fg-brand-strong: #3730a3;
+}
+
 /* Bounce modal animation */
 @keyframes bounce-modal {
     0% {
@@ -79,5 +92,5 @@
 }
 
 body {
-  background-color: #fbfbfc;
+  background-color: #f1f5f9; /* slate-100 */
 }
