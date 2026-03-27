@@ -13,7 +13,7 @@
         </div>
         <input #datepicker [(ngModel)]="movimiento.fecha" name="fecha" id="datepicker-autohide" datepicker
           datepicker-autohide type="text"
-          class="block w-full ps-9 pe-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand px-3 py-2.5 shadow-xs placeholder:text-body"
+          class="block w-full ps-9 pe-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand px-3 py-2.5 shadow-xs placeholder:text-body dark:text-white dark:border-slate-600 dark:placeholder-slate-400"
           placeholder="Selecciona una fecha" [ngClass]="{
             'border-default-medium focus:border-brand text-heading': !erroresValidacion().fecha,
             'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().fecha
@@ -29,9 +29,9 @@
     <div class="mb-6">
       <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Movimiento</label> -->
       <select id="countries" [(ngModel)]="movimiento.tipoMovimiento" name="tipoMovimiento" (change)="validarErrores('tipoMovimiento')"
-        class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
         [ngClass]="{
-          'border-default-medium focus:border-brand text-heading': !erroresValidacion().tipoMovimiento,
+          'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().tipoMovimiento,
           'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().tipoMovimiento
         }">
 
@@ -50,10 +50,10 @@
     <div class="mb-6">
       <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Categoria</label> -->
       <select id="countries" [(ngModel)]="movimiento.categoria" name="categoria" (change)="validarErrores('categoria')"
-        class="block w-full px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
         [ngClass]="{
-          'border-default-medium focus:border-brand text-heading': !erroresValidacion().tipoMovimiento,
-          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().tipoMovimiento
+          'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().categoria,
+          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().categoria
         }">
 
         <option value="0" disabled>Seleccione una categoría</option>
@@ -61,6 +61,11 @@
         <option [value]="cat.id">{{ cat.categoria }}</option>
         }
       </select>
+      @if (erroresValidacion().categoria) {
+      <p class="mt-2 text-sm text-fg-danger-strong">
+        <span class="font-medium">¡Error!</span> Ingresa la categoría del movimiento
+      </p>
+      }
     </div>
 
     <div class="mb-6">
@@ -74,13 +79,13 @@
         <input type="text" id="monto" [(ngModel)]="movimiento.monto" name="monto" placeholder="0.00" maxlength="12"
           (input)="soloNumeros($event)"
           (blur)="validarErrores('monto')"
-          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
           [ngClass]="{
-            'border-default-medium focus:border-brand text-heading': !erroresValidacion().monto,
+            'border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white': !erroresValidacion().monto,
             'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().monto
           }" />
 
-        <label for="monto" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+        <label for="monto" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
           peer-placeholder-shown:scale-100
           peer-placeholder-shown:-translate-y-1/2
           peer-placeholder-shown:top-1/2
@@ -89,7 +94,7 @@
           peer-focus:-translate-y-4
           start-1" 
           [ngClass]="{
-            'text-body peer-focus:text-fg-brand': !erroresValidacion().monto,
+            'text-body dark:text-slate-400 peer-focus:text-fg-brand': !erroresValidacion().monto,
             'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().monto
           }">
           Monto
@@ -114,13 +119,13 @@
         <input type="text" id="descripcion" [(ngModel)]="movimiento.descripcion" name="descripcion" placeholder="" 
           (change)="validarErrores('descripcion')"
           maxlength="100"
-          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border focus:outline-none focus:ring-0"
+          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
           [ngClass]="{
-            'border-default-medium focus:border-brand text-heading': !erroresValidacion().descripcion,
+            'border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white': !erroresValidacion().descripcion,
             'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().descripcion
           }" />
 
-        <label for="descripcion" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-neutral-primary px-2
+        <label for="descripcion" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
           peer-placeholder-shown:scale-100
           peer-placeholder-shown:-translate-y-1/2
           peer-placeholder-shown:top-1/2
@@ -128,7 +133,7 @@
           peer-focus:scale-75
           peer-focus:-translate-y-4
           start-1" [ngClass]="{
-            'text-body peer-focus:text-fg-brand': !erroresValidacion().descripcion,
+            'text-body dark:text-slate-400 peer-focus:text-fg-brand': !erroresValidacion().descripcion,
             'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().descripcion
           }">
           Descripcion
