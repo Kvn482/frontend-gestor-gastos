@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-quick-action',
+  standalone: true,
   imports: [],
   templateUrl: './quick-action.html',
   styleUrl: './quick-action.css',

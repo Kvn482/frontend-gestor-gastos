@@ -2,6 +2,7 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
 
 @Component({
   selector: 'app-modal',
+  standalone: true,
   imports: [],
   templateUrl: './modal.html',
   styleUrl: './modal.css',

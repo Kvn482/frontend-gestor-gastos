@@ -164,7 +164,6 @@ export class NuevoMovimientoModal implements OnChanges {
     if (tieneErrores) this.isloading.set(false);
 
     if (!tieneErrores) {
-      console.log('Datos listos para enviar:', this.movimiento);
 
       this.movimientosService.crearMovimiento(this.movimiento)
       .pipe(

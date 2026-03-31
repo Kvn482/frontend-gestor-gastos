@@ -4,6 +4,7 @@ import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-balance-general',
+  standalone: true,
   imports: [CurrencyPipe],
   templateUrl: './balance-general.html',
   styleUrl: './balance-general.css',

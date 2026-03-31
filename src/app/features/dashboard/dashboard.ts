@@ -3,9 +3,11 @@ import { QuickAction } from '../../shared/quick-action/quick-action';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
 import { BalanceGeneral } from '../../shared/balance-general/balance-general';
 import { AuthService } from '../../core/services/auth.service';
+import { UltimosMovimientos } from '../../shared/ultimos-movimientos/ultimos-movimientos';
+
 @Component({
   selector: 'app-dashboard',
-  imports: [QuickAction, NuevoMovimientoModal, BalanceGeneral],
+  imports: [QuickAction, NuevoMovimientoModal, BalanceGeneral, UltimosMovimientos],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

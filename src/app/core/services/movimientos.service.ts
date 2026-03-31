@@ -44,4 +44,8 @@ export class MovimientosService {
   consultarTiposMovimiento() {
     return this.http.get(`${this.api}/movimientos/tipos-movimiento`);
   }
+
+  consultarUltimosMovimientos() {
+    return this.http.get(`${this.api}/movimientos/ultimos-movimientos`);
+  }
 }

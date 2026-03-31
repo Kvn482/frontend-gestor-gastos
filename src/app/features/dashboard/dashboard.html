@@ -11,7 +11,7 @@
 
 <!-- Acciones rápidas -->
 <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">Acciones rápidas</p>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
 
   <!-- Nuevo Movimiento -->
   <app-quick-action label="Nuevo Movimiento" (action)="abrirModalMovimiento()">
@@ -41,6 +41,12 @@
     </svg>
   </app-quick-action>
 
+</div>
+
+<!-- Movimientos -->
+<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">Movimientos</p>
+<div class="mb-6">
+  <app-ultimos-movimientos></app-ultimos-movimientos>
 </div>
 
 <app-nuevo-movimiento-modal [isOpen]="modalMovimientoAbierto" (closed)="cerrarModalMovimiento()">
