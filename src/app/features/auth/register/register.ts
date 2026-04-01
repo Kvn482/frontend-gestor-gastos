@@ -13,8 +13,8 @@ import { finalize } from 'rxjs';
   styleUrl: './register.css',
 })
 export class Register {
-  nombre = '';
-  username = '';
+  name = '';
+  last_name = '';
   email = '';
   password = '';
   darkMode = false;
@@ -24,11 +24,12 @@ export class Register {
   successRegister = signal(false);
 
   isloading = signal(false);
+  showPassword = signal(false);
   
   // Signals para validación
   erroresValidacion = signal({
-    nombre: false,
-    username: false,
+    name: false,
+    last_name: false,
     email: false,
     password: false
   });
@@ -53,7 +54,7 @@ export class Register {
     // Permite solo letras, espacios, guion y apóstrofe
     input.value = input.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]/g, '');
 
-    this.nombre = input.value;
+    this.name = input.value;
   }
 
   isValidEmail(email: string): boolean {
@@ -72,8 +73,8 @@ export class Register {
     
     // Validar que todos los campos estén llenos
     const errores = {
-      nombre: !this.nombre.trim(),
-      username: !this.username.trim(),
+      name: !this.name.trim(),
+      last_name: !this.last_name.trim(),
       email: !this.email || !this.isValidEmail(this.email),
       password: !this.password.trim()
     };
@@ -88,8 +89,8 @@ export class Register {
     }
 
     this.authService.register({
-      nombre: this.nombre,
-      username: this.username,
+      name: this.name,
+      last_name: this.last_name,
       email: this.email,
       password: this.password
     }).pipe(

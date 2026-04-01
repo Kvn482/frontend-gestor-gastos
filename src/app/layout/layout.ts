@@ -17,7 +17,7 @@ export class Layout {
 
   nombreCompleto = ''
   nombre = ''
-  username = ''
+  apellido = ''
   email = ''
   profileImageUrl = `https://ui-avatars.com/api/?name=`
   sidebarOpen = false
@@ -30,10 +30,10 @@ export class Layout {
 
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser()
-    this.nombreCompleto = currentUser.nombre
     this.nombre = currentUser.nombre.split(" ")[0]
     this.profileImageUrl = `https://ui-avatars.com/api/?name=${this.nombre}`
-    this.username = currentUser.username
+    this.apellido = currentUser.apellido
+    this.nombreCompleto = `${this.nombre} ${this.apellido}`
     this.email = currentUser.email || ''
     this.darkMode = localStorage.getItem('theme') === 'dark'
     this.applyTheme()

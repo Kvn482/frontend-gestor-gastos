@@ -27,6 +27,7 @@ export class Login {
   });
 
   isloading = signal(false);
+  showPassword = signal(false);
 
   constructor(
     private authService: AuthService,

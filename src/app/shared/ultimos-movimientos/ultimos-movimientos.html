@@ -3,6 +3,16 @@
   shadow-sm">
   <table class="w-full text-sm text-left text-body">
     <tbody>
+      @if (movimientos.length === 0) {
+      <tr
+        class="group bg-neutral-primary-soft border-b border-default hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-neutral-secondary-medium cursor-pointer transition-colors duration-200">
+        <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap flex gap-3 items-center justify-center">
+          <span class="rounded-full" style="display: inline-flex; align-items: center; justify-content: center;">
+            Aun no haces movimientos.
+          </span>
+        </th>
+      </tr>
+      }
       @for(mov of movimientos; track $index) {
       <tr (click)="abrirDetalle(mov)"
         class="group bg-neutral-primary-soft border-b border-default hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-neutral-secondary-medium cursor-pointer transition-colors duration-200">
