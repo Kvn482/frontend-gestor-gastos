@@ -54,7 +54,6 @@ export class UltimosMovimientos {
       }))
 
       this.cd.detectChanges()
-      console.log('Últimos movimientos:', this.movimientos)
 
     })
   }

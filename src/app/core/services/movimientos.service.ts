@@ -37,8 +37,8 @@ export class MovimientosService {
     return this.http.get<BalanceResponse>(`${this.api}/movimientos/balance-general`);
   }
 
-  consultarCategorias() {
-    return this.http.get<CategoriasResponse[]>(`${this.api}/movimientos/categorias`);
+  consultarEtiquetas() {
+    return this.http.get<CategoriasResponse[]>(`${this.api}/movimientos/etiquetas`);
   }
 
   consultarTiposMovimiento() {

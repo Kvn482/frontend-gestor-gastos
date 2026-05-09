@@ -47,24 +47,58 @@
       }
     </div>
 
-    <div class="mb-6">
-      <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Categoria</label> -->
-      <select id="countries" [(ngModel)]="movimiento.categoria" name="categoria" (change)="validarErrores('categoria')"
-        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
-        [ngClass]="{
-          'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().categoria,
-          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().categoria
-        }">
+    <!-- Etiquetas -->
+    <div class="mb-6 relative">
+      <!-- Barra: etiquetas seleccionadas + input -->
+      <div class="flex flex-wrap items-center gap-1.5 min-h-[42px] w-full px-2.5 py-1 rounded-base border bg-white dark:bg-slate-700 border-default-medium dark:border-slate-600 focus-within:border-brand cursor-text"
+        (click)="etiquetaInput.focus()">
+        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.583 8.445h.01M10.86 19.71l-6.573-6.63a.993.993 0 0 1 0-1.4l7.329-7.394A.98.98 0 0 1 12.31 4l5.734.007A1.968 1.968 0 0 1 20 5.983v5.5a.992.992 0 0 1-.316.727l-7.44 7.5a.974.974 0 0 1-1.384.001Z"/>
+        </svg>
 
-        <option value="0" disabled>Seleccione una categoría</option>
-        @for (cat of categorias; track cat.id) {
-        <option [value]="cat.id">{{ cat.categoria }}</option>
+        @for (etiqueta of etiquetasSeleccionadas; track etiqueta.id) {
+          <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border"
+            [style.backgroundColor]="etiqueta.color + '33'"
+            [style.color]="etiqueta.color"
+            [style.borderColor]="etiqueta.color">
+            {{ etiqueta.nombre }}
+            <button type="button" (click)="quitarEtiqueta(etiqueta); $event.stopPropagation()"
+              class="hover:opacity-70 cursor-pointer flex items-center">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+          </span>
         }
-      </select>
-      @if (erroresValidacion().categoria) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> Ingresa la categoría del movimiento
-      </p>
+        <input #etiquetaInput type="text" [(ngModel)]="busquedaEtiqueta" name="busquedaEtiqueta"
+          placeholder="Tags"
+          (focus)="mostrarDropdownEtiquetas = true"
+          (input)="mostrarDropdownEtiquetas = true"
+          (blur)="onBlurEtiqueta()"
+          class="flex-1 min-w-[120px] text-sm bg-transparent outline-none border-none ring-0 focus:ring-0 focus:outline-none text-heading dark:text-white placeholder:text-body" />
+      </div>
+
+      <!-- Dropdown -->
+      @if (mostrarDropdownEtiquetas) {
+        <div class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-default-medium dark:border-slate-600 rounded-base shadow-lg max-h-48 overflow-y-auto">
+          @for (etiqueta of etiquetasFiltradas; track etiqueta.id) {
+            <button type="button" (mousedown)="agregarEtiqueta(etiqueta)"
+              class="flex items-center justify-between w-full px-3 py-2 text-sm text-heading dark:text-white hover:bg-neutral-secondary-medium cursor-pointer">
+              <span class="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full border"
+                [style.backgroundColor]="etiqueta.color + '33'"
+                [style.color]="etiqueta.color"
+                [style.borderColor]="etiqueta.color">
+                {{ etiqueta.nombre }}
+              </span>
+              <!-- <svg class="w-4 h-4 text-body flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+              </svg> -->
+            </button>
+          }
+          <!-- @if (etiquetasFiltradas.length === 0) {
+            <p class="px-3 py-2 text-sm text-body">No se encontraron etiquetas</p>
+          } -->
+        </div>
       }
     </div>
 

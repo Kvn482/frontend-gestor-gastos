@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChange
 import { FormsModule } from '@angular/forms';
 import { Modal } from '../../../shared/modal/modal';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/services/auth.service';
 import { MovimientosService } from '../../../core/services/movimientos.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
@@ -23,24 +22,45 @@ export class NuevoMovimientoModal implements OnChanges {
     private toastService:ToastService
   ) { }
 
-  // Listas para los selects
-  tiposMovimiento = [
-    { id: 1, movimiento: 'Ingreso' },
-    { id: 2, movimiento: 'Egreso' },
-    { id: 3, movimiento: 'Transferencia' }
-  ];
+  // Etiquetas
+  etiquetasDisponibles: { id: number; nombre: string; color: string }[] = [];
 
-  categorias = [
-    { id: 1, categoria: 'Comida' },
-    { id: 2, categoria: 'Transporte' },
-    { id: 3, categoria: 'Servicios' },
-    { id: 4, categoria: 'Entretenimiento' }
-  ];
+  etiquetasSeleccionadas: { id: number; nombre: string; color: string }[] = [];
+  busquedaEtiqueta = '';
+  mostrarDropdownEtiquetas = false;
+
+  get etiquetasFiltradas() {
+    return this.etiquetasDisponibles.filter(e =>
+      !this.etiquetasSeleccionadas.find(s => s.id === e.id) &&
+      e.nombre.toLowerCase().includes(this.busquedaEtiqueta.toLowerCase())
+    );
+  }
+
+  agregarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
+    if (!this.etiquetasSeleccionadas.find(e => e.id === etiqueta.id)) {
+      this.etiquetasSeleccionadas = [...this.etiquetasSeleccionadas, etiqueta];
+    }
+    this.busquedaEtiqueta = '';
+  }
+
+  quitarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
+    this.etiquetasSeleccionadas = this.etiquetasSeleccionadas.filter(e => e.id !== etiqueta.id);
+  }
+
+  onBlurEtiqueta() {
+    setTimeout(() => {
+      this.mostrarDropdownEtiquetas = false;
+      this.busquedaEtiqueta = '';
+    }, 150);
+  }
+
+  // Listas para los selects
+  tiposMovimiento: { id: number; movimiento: string }[] = [];
 
   // Objeto único para ngModel
   movimiento = {
     tipoMovimiento: 0,
-    categoria: 1,
+    etiquetas: [],
     monto: 0,
     descripcion: '',
     fecha: ''
@@ -48,7 +68,6 @@ export class NuevoMovimientoModal implements OnChanges {
 
   erroresValidacion = signal({
     tipoMovimiento: false,
-    categoria: false,
     monto: false,
     descripcion: false,
     fecha: false
@@ -58,8 +77,8 @@ export class NuevoMovimientoModal implements OnChanges {
     if (changes['isOpen']?.currentValue === true) {
       this.resetFormulario();
 
-      this.movimientosService.consultarCategorias().subscribe((res: any) => {
-        this.categorias = res;
+      this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
+        this.etiquetasDisponibles = res;
       });
 
       this.movimientosService.consultarTiposMovimiento().subscribe((res: any) => {
@@ -84,12 +103,13 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   private resetFormulario() {
-    const hoy = new Date().toLocaleDateString('es-ES');
+    const now = new Date();
+    const hoy = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
     // Reiniciamos el objeto directamente
     this.movimiento = {
       tipoMovimiento: 0,
-      categoria: 0,
+      etiquetas: [],
       monto: 0,
       descripcion: '',
       fecha: hoy
@@ -98,7 +118,6 @@ export class NuevoMovimientoModal implements OnChanges {
     // Reiniciamos los errores visuales
     this.erroresValidacion.set({
       tipoMovimiento: false,
-      categoria: false,
       monto: false,
       descripcion: false,
       fecha: false
@@ -107,6 +126,10 @@ export class NuevoMovimientoModal implements OnChanges {
     if (this.datepickerInput) {
       this.datepickerInput.nativeElement.value = hoy;
     }
+
+    this.etiquetasSeleccionadas = [];
+    this.busquedaEtiqueta = '';
+    this.mostrarDropdownEtiquetas = false;
   }
 
   private initDatepicker() {
@@ -115,7 +138,7 @@ export class NuevoMovimientoModal implements OnChanges {
       if (Datepicker) {
         new Datepicker(this.datepickerInput.nativeElement, {
           autohide: true,
-          format: 'dd/mm/yyyy',
+          format: 'yyyy/mm/dd',
         });
 
         this.datepickerInput.nativeElement.addEventListener('changeDate', (e: any) => {
@@ -127,13 +150,12 @@ export class NuevoMovimientoModal implements OnChanges {
     }
   }
 
-  validarErrores(campo?: keyof typeof this.movimiento) {
+  validarErrores(campo?: 'tipoMovimiento' | 'monto' | 'descripcion' | 'fecha') {
     const erroresActuales = { ...this.erroresValidacion() }
 
     // Validaciones manuales usando el objeto movimiento
     const errores = {
       tipoMovimiento: this.movimiento.tipoMovimiento === 0,
-      categoria: !this.movimiento.categoria,
       monto: this.movimiento.monto <= 0,
       descripcion: this.movimiento.descripcion.trim() === '',
       fecha: !this.movimiento.fecha
@@ -164,6 +186,7 @@ export class NuevoMovimientoModal implements OnChanges {
     if (tieneErrores) this.isloading.set(false);
 
     if (!tieneErrores) {
+      this.movimiento.etiquetas = this.etiquetasSeleccionadas.map(e => e.id) as any;
 
       this.movimientosService.crearMovimiento(this.movimiento)
       .pipe(
