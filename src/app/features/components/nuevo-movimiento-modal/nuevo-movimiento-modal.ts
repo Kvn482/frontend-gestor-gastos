@@ -63,6 +63,7 @@ export class NuevoMovimientoModal implements OnChanges {
     etiquetas: [],
     monto: 0,
     descripcion: '',
+    notas: '',
     fecha: ''
   };
 
@@ -112,6 +113,7 @@ export class NuevoMovimientoModal implements OnChanges {
       etiquetas: [],
       monto: 0,
       descripcion: '',
+      notas: '',
       fecha: hoy
     };
 

@@ -57,7 +57,7 @@
         </svg>
 
         @for (etiqueta of etiquetasSeleccionadas; track etiqueta.id) {
-          <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border"
+          <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border"
             [style.backgroundColor]="etiqueta.color + '33'"
             [style.color]="etiqueta.color"
             [style.borderColor]="etiqueta.color">
@@ -84,7 +84,7 @@
           @for (etiqueta of etiquetasFiltradas; track etiqueta.id) {
             <button type="button" (mousedown)="agregarEtiqueta(etiqueta)"
               class="flex items-center justify-between w-full px-3 py-2 text-sm text-heading dark:text-white hover:bg-neutral-secondary-medium cursor-pointer">
-              <span class="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full border"
+              <span class="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded border"
                 [style.backgroundColor]="etiqueta.color + '33'"
                 [style.color]="etiqueta.color"
                 [style.borderColor]="etiqueta.color">
@@ -181,6 +181,28 @@
       }
     </div>
 
+    <div class="mb-6">
+      <div class="relative">
+        <div class="absolute top-3 start-0 flex items-start ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+            fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3-4v4m-6 8h6m-6 4h6"/>
+          </svg>
+        </div>
+        <textarea id="notas" [(ngModel)]="movimiento.notas" name="notas" placeholder=""
+          rows="3" maxlength="1000"
+          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0 border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white resize-none"></textarea>
+        <label for="notas" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
+          peer-placeholder-shown:scale-100
+          peer-placeholder-shown:top-6
+          peer-focus:top-2
+          peer-focus:scale-75
+          peer-focus:-translate-y-4
+          start-1 text-body dark:text-slate-400 peer-focus:text-fg-brand">
+          Notas
+        </label>
+      </div>
+    </div>
   </form>
 
   <div class="flex justify-end mt-6 space-x-4">
