@@ -19,6 +19,14 @@ export class AuthService {
     return this.http.post(`${this.api}/register`, data);
   }
 
+  forgotPassword(email: string) {
+    return this.http.post(`${this.api}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, password: string) {
+    return this.http.post(`${this.api}/reset-password`, { token, password });
+  }
+
   saveSession(accessToken: string, refreshToken: string) {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
