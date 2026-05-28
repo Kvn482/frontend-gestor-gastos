@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
@@ -20,11 +21,13 @@ interface Etiqueta {
   styleUrl: './settings.css',
 })
 export class Settings {
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private authService: AuthService,
     private movimientosService: MovimientosService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef,
+    private cd: ChangeDetectorRef,
   ) {}
 
   tabActivo: 'perfil' | 'etiquetas' = 'perfil';
@@ -83,16 +86,17 @@ export class Settings {
     this.cargandoPerfil = true;
     this.authService
       .actualizarPerfil({ nombre: this.perfil.nombre, apellido: this.perfil.apellido })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.authService.notificarActualizacionPerfil(this.perfil.nombre, this.perfil.apellido);
           this.cargandoPerfil = false;
-          this.cdr.detectChanges();
+          this.cd.detectChanges();
           this.toastService.show('Perfil actualizado correctamente', 'success');
         },
         error: (err) => {
           this.cargandoPerfil = false;
-          this.cdr.detectChanges();
+          this.cd.detectChanges();
           this.toastService.show(err?.error?.message || 'Error al actualizar el perfil', 'error');
         },
       });
@@ -118,16 +122,17 @@ export class Settings {
         contrasenaActual: this.contrasena.actual,
         nuevaContrasena: this.contrasena.nueva,
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.contrasena = { actual: '', nueva: '', confirmar: '' };
           this.cargandoContrasena = false;
-          this.cdr.detectChanges();
+          this.cd.detectChanges();
           this.toastService.show('Contraseña actualizada correctamente', 'success');
         },
         error: (err) => {
           this.cargandoContrasena = false;
-          this.cdr.detectChanges();
+          this.cd.detectChanges();
           this.toastService.show(err?.error?.message || 'Error al cambiar la contraseña', 'error');
         },
       });
@@ -135,8 +140,9 @@ export class Settings {
 
   // ----- Etiquetas -----
   cargarEtiquetas() {
-    this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
+    this.movimientosService.consultarEtiquetas().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
       this.etiquetas = res;
+      this.cd.detectChanges();
     });
   }
 
@@ -148,24 +154,25 @@ export class Settings {
     this.creandoEtiqueta = true;
     this.movimientosService
       .crearEtiqueta(this.nuevaEtiqueta)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: (etiqueta: any) => {
+          this.etiquetas = [...this.etiquetas, etiqueta];
           this.nuevaEtiqueta = { nombre: '', color: '#6366f1' };
           this.creandoEtiqueta = false;
-          this.cdr.detectChanges();
+          this.cd.detectChanges();
           this.toastService.show('Etiqueta creada correctamente', 'success');
-          this.cargarEtiquetas();
         },
         error: (err) => {
           this.creandoEtiqueta = false;
-          this.cdr.detectChanges();
+          this.cd.detectChanges();
           this.toastService.show(err?.error?.message || 'Error al crear la etiqueta', 'error');
         },
       });
   }
 
   eliminarEtiqueta(id: number) {
-    this.movimientosService.eliminarEtiqueta(id).subscribe({
+    this.movimientosService.eliminarEtiqueta(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toastService.show('Etiqueta eliminada', 'success');
         this.etiquetas = this.etiquetas.filter((e) => e.id !== id);
