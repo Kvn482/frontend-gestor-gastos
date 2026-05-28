@@ -1,18 +1,19 @@
-import { Component, HostListener } from '@angular/core'
-import { Router, RouterOutlet } from '@angular/router'
+import { ChangeDetectorRef, Component, HostListener } from '@angular/core'
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 import { AuthService } from '../core/services/auth.service'
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   templateUrl: './layout.html',
-  imports: [RouterOutlet]
+  imports: [RouterOutlet, RouterLink, RouterLinkActive]
 })
 export class Layout {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   nombreCompleto = ''
@@ -37,6 +38,14 @@ export class Layout {
     this.email = currentUser.email || ''
     this.darkMode = localStorage.getItem('theme') === 'dark'
     this.applyTheme()
+
+    this.authService.perfilActualizado$.subscribe(({ nombre, apellido }) => {
+      this.nombre = nombre.split(' ')[0]
+      this.apellido = apellido
+      this.nombreCompleto = `${nombre} ${apellido}`
+      this.profileImageUrl = `https://ui-avatars.com/api/?name=${nombre.split(' ')[0]}`
+      this.cdr.markForCheck()
+    })
   }
 
   @HostListener('document:click')

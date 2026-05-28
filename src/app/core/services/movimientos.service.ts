@@ -48,4 +48,12 @@ export class MovimientosService {
   consultarUltimosMovimientos() {
     return this.http.get(`${this.api}/movimientos/ultimos-movimientos`);
   }
+
+  crearEtiqueta(data: { nombre: string; color: string }) {
+    return this.http.post(`${this.api}/movimientos/etiquetas`, data);
+  }
+
+  eliminarEtiqueta(id: number) {
+    return this.http.delete(`${this.api}/movimientos/etiquetas/${id}`);
+  }
 }

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +9,14 @@ import { jwtDecode } from 'jwt-decode';
 export class AuthService {
 
   private api = 'http://localhost:3000/api/auth';
+
+  private _perfilActualizado$ = new Subject<{ nombre: string; apellido: string }>();
+  readonly perfilActualizado$ = this._perfilActualizado$.asObservable();
+
+  notificarActualizacionPerfil(nombre: string, apellido: string) {
+    localStorage.setItem('perfilOverride', JSON.stringify({ nombre, apellido }));
+    this._perfilActualizado$.next({ nombre, apellido });
+  }
 
   constructor(private http: HttpClient) { }
 
@@ -83,15 +92,30 @@ export class AuthService {
   }
 
   getCurrentUser() {
-    return this.getDecodedToken();
+    const decoded = this.getDecodedToken();
+    if (!decoded) return null;
+    const override = localStorage.getItem('perfilOverride');
+    if (override) {
+      return { ...decoded, ...JSON.parse(override) };
+    }
+    return decoded;
   }
 
   logout() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('perfilOverride');
   }
 
   isLoggedIn(): boolean {
     return this.isAuthenticated();
+  }
+
+  actualizarPerfil(data: { nombre: string; apellido: string }) {
+    return this.http.patch(`${this.api}/perfil`, data);
+  }
+
+  cambiarContrasena(data: { contrasenaActual: string; nuevaContrasena: string }) {
+    return this.http.patch(`${this.api}/cambiar-contrasena`, data);
   }
 }

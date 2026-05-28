@@ -1,0 +1,314 @@
+<!-- Header -->
+<div class="mb-8">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Configuración</h1>
+  <p class="text-gray-400 dark:text-slate-500 text-sm mt-1">Gestiona tu perfil y preferencias</p>
+</div>
+
+<!-- Tabs -->
+<div class="border-b border-slate-200 dark:border-slate-700 mb-8">
+  <div class="flex gap-8">
+    <button type="button" (click)="tabActivo = 'perfil'" [class]="getTabClass('perfil')">
+      Perfil
+    </button>
+    <button type="button" (click)="tabActivo = 'etiquetas'" [class]="getTabClass('etiquetas')">
+      Etiquetas
+    </button>
+  </div>
+</div>
+
+<!-- ==================== TAB: PERFIL ==================== -->
+@if (tabActivo === 'perfil') {
+
+  <!-- Información personal -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Información personal</h2>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Actualiza tu nombre visible en la app</p>
+    </div>
+
+    <form (ngSubmit)="guardarPerfil()">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+            Nombre
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="perfil.nombre"
+            name="nombre"
+            placeholder="Tu nombre"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-slate-400"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+            Apellido
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="perfil.apellido"
+            name="apellido"
+            placeholder="Tu apellido"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-slate-400"
+          />
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+          Correo electrónico
+        </label>
+        <input
+          type="email"
+          [value]="perfil.email"
+          disabled
+          class="w-full bg-slate-100 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500 rounded-xl px-3.5 py-2.5 text-sm cursor-not-allowed"
+        />
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+          El correo electrónico no puede cambiarse
+        </p>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          [disabled]="cargandoPerfil"
+          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+        >
+          @if (cargandoPerfil) { Guardando... } @else { Guardar cambios }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Cambiar contraseña -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Cambiar contraseña</h2>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Actualiza tu contraseña de acceso</p>
+    </div>
+
+    <form (ngSubmit)="cambiarContrasena()">
+      <!-- Contraseña actual -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+          Contraseña actual
+        </label>
+        <div class="relative">
+          <input
+            [type]="mostrarContrasenaActual ? 'text' : 'password'"
+            [(ngModel)]="contrasena.actual"
+            name="actual"
+            placeholder="••••••••"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          />
+          <button
+            type="button"
+            (click)="mostrarContrasenaActual = !mostrarContrasenaActual"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            @if (mostrarContrasenaActual) {
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+              </svg>
+            } @else {
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
+              </svg>
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Nueva contraseña -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+          Nueva contraseña
+        </label>
+        <div class="relative">
+          <input
+            [type]="mostrarContrasenaNueva ? 'text' : 'password'"
+            [(ngModel)]="contrasena.nueva"
+            name="nueva"
+            placeholder="••••••••"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          />
+          <button
+            type="button"
+            (click)="mostrarContrasenaNueva = !mostrarContrasenaNueva"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            @if (mostrarContrasenaNueva) {
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+              </svg>
+            } @else {
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
+              </svg>
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmar contraseña -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+          Confirmar nueva contraseña
+        </label>
+        <div class="relative">
+          <input
+            [type]="mostrarContrasenaConfirmar ? 'text' : 'password'"
+            [(ngModel)]="contrasena.confirmar"
+            name="confirmar"
+            placeholder="••••••••"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          />
+          <button
+            type="button"
+            (click)="mostrarContrasenaConfirmar = !mostrarContrasenaConfirmar"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            @if (mostrarContrasenaConfirmar) {
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+              </svg>
+            } @else {
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
+              </svg>
+            }
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          [disabled]="cargandoContrasena"
+          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+        >
+          @if (cargandoContrasena) { Cambiando... } @else { Cambiar contraseña }
+        </button>
+      </div>
+    </form>
+  </div>
+
+}
+
+<!-- ==================== TAB: ETIQUETAS ==================== -->
+@if (tabActivo === 'etiquetas') {
+
+  <!-- Nueva etiqueta -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Nueva etiqueta</h2>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Crea etiquetas personalizadas para clasificar tus movimientos</p>
+    </div>
+
+    <form (ngSubmit)="crearEtiqueta()">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
+          Nombre
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="nuevaEtiqueta.nombre"
+          name="nombre"
+          placeholder="ej. Supermercado, Entretenimiento..."
+          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-slate-400"
+        />
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+          Color
+        </label>
+        <div class="flex flex-wrap gap-2.5 mb-4">
+          @for (color of coloresPredefinidos; track color) {
+            <button
+              type="button"
+              (click)="nuevaEtiqueta.color = color"
+              class="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
+              [style.background-color]="color"
+              [style.box-shadow]="swatchShadow(color)"
+            ></button>
+          }
+        </div>
+        <!-- Vista previa -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400 dark:text-slate-500">Vista previa:</span>
+          <span
+            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white"
+            [style.background-color]="nuevaEtiqueta.color"
+          >
+            {{ nuevaEtiqueta.nombre || 'Etiqueta' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          [disabled]="creandoEtiqueta"
+          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+        >
+          @if (creandoEtiqueta) { Creando... } @else { Crear etiqueta }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Lista de etiquetas -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tus etiquetas</h2>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+        Las etiquetas predeterminadas no pueden eliminarse
+      </p>
+    </div>
+
+    @if (etiquetas.length === 0) {
+      <p class="text-sm text-slate-400 dark:text-slate-500 text-center py-8">
+        No hay etiquetas disponibles
+      </p>
+    } @else {
+      <ul class="divide-y divide-slate-100 dark:divide-slate-700">
+        @for (etiqueta of etiquetas; track etiqueta.id) {
+          <li class="flex items-center justify-between py-3">
+            <div class="flex items-center gap-3">
+              <span
+                class="w-3 h-3 rounded-full shrink-0"
+                [style.background-color]="etiqueta.color"
+              ></span>
+              <span class="text-sm font-medium text-gray-800 dark:text-slate-200">
+                {{ etiqueta.nombre }}
+              </span>
+              @if (!etiqueta.id_usuario) {
+                <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">
+                  Predeterminada
+                </span>
+              }
+            </div>
+            @if (etiqueta.id_usuario) {
+              <button
+                type="button"
+                (click)="eliminarEtiqueta(etiqueta.id)"
+                class="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                title="Eliminar etiqueta"
+              >
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+                </svg>
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+}
