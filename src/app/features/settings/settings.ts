@@ -36,6 +36,11 @@ export class Settings {
   perfil = { nombre: '', apellido: '', email: '' };
   cargandoPerfil = false;
 
+  // Avatar
+  avatarPreview: string | null = null;
+  archivoAvatar: File | null = null;
+  cargandoAvatar = false;
+
   // Contraseña
   contrasena = { actual: '', nueva: '', confirmar: '' };
   cargandoContrasena = false;
@@ -59,6 +64,7 @@ export class Settings {
     this.perfil.nombre = currentUser?.nombre || '';
     this.perfil.apellido = currentUser?.apellido || '';
     this.perfil.email = currentUser?.email || '';
+    this.avatarPreview = localStorage.getItem('avatarOverride') || currentUser?.avatar || null;
     this.cargarEtiquetas();
   }
 
@@ -75,6 +81,63 @@ export class Settings {
       return `0 0 0 2px white, 0 0 0 4px ${color}`;
     }
     return 'none';
+  }
+
+  // ----- Avatar -----
+  seleccionarAvatar(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    if (!archivo) return;
+
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!tiposPermitidos.includes(archivo.type)) {
+      this.toastService.show('Solo se permiten imágenes PNG, JPG o WEBP', 'error');
+      input.value = '';
+      return;
+    }
+
+    const maxSize = 2 * 1024 * 1024;
+    if (archivo.size > maxSize) {
+      this.toastService.show('La imagen no debe superar 2 MB', 'error');
+      input.value = '';
+      return;
+    }
+
+    this.archivoAvatar = archivo;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.avatarPreview = e.target?.result as string;
+      this.cd.detectChanges();
+    };
+    reader.readAsDataURL(archivo);
+  }
+
+  subirAvatar() {
+    if (!this.archivoAvatar) return;
+    const formData = new FormData();
+    formData.append('avatar', this.archivoAvatar);
+    this.cargandoAvatar = true;
+    this.authService
+      .actualizarAvatar(formData)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          const avatarUrl = res?.avatar || res?.avatarUrl || this.avatarPreview;
+          if (avatarUrl) {
+            this.authService.notificarActualizacionAvatar(avatarUrl);
+            this.avatarPreview = avatarUrl;
+          }
+          this.archivoAvatar = null;
+          this.cargandoAvatar = false;
+          this.cd.detectChanges();
+          this.toastService.show('Avatar actualizado correctamente', 'success');
+        },
+        error: (err) => {
+          this.cargandoAvatar = false;
+          this.cd.detectChanges();
+          this.toastService.show(err?.error?.message || 'Error al subir el avatar', 'error');
+        },
+      });
   }
 
   // ----- Perfil -----

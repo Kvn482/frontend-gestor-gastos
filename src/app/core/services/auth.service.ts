@@ -13,9 +13,17 @@ export class AuthService {
   private _perfilActualizado$ = new Subject<{ nombre: string; apellido: string }>();
   readonly perfilActualizado$ = this._perfilActualizado$.asObservable();
 
+  private _avatarActualizado$ = new Subject<string>();
+  readonly avatarActualizado$ = this._avatarActualizado$.asObservable();
+
   notificarActualizacionPerfil(nombre: string, apellido: string) {
     localStorage.setItem('perfilOverride', JSON.stringify({ nombre, apellido }));
     this._perfilActualizado$.next({ nombre, apellido });
+  }
+
+  notificarActualizacionAvatar(avatarUrl: string) {
+    localStorage.setItem('avatarOverride', avatarUrl);
+    this._avatarActualizado$.next(avatarUrl);
   }
 
   constructor(private http: HttpClient) { }
@@ -105,6 +113,7 @@ export class AuthService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('perfilOverride');
+    localStorage.removeItem('avatarOverride');
   }
 
   isLoggedIn(): boolean {
@@ -117,5 +126,9 @@ export class AuthService {
 
   cambiarContrasena(data: { contrasenaActual: string; nuevaContrasena: string }) {
     return this.http.patch(`${this.api}/cambiar-contrasena`, data);
+  }
+
+  actualizarAvatar(formData: FormData) {
+    return this.http.put(`${this.api}/avatar`, formData);
   }
 }

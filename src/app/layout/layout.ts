@@ -20,7 +20,8 @@ export class Layout {
   nombre = ''
   apellido = ''
   email = ''
-  profileImageUrl = `https://ui-avatars.com/api/?name=`
+  profileImageUrl = ''
+  tieneAvatarPersonalizado = false
   sidebarOpen = false
   darkMode = false
   profileDropdownOpen = false
@@ -32,18 +33,33 @@ export class Layout {
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser()
     this.nombre = currentUser.nombre.split(" ")[0]
-    this.profileImageUrl = `https://ui-avatars.com/api/?name=${this.nombre}`
     this.apellido = currentUser.apellido
     this.nombreCompleto = `${this.nombre} ${this.apellido}`
     this.email = currentUser.email || ''
     this.darkMode = localStorage.getItem('theme') === 'dark'
     this.applyTheme()
 
+    const avatarOverride = localStorage.getItem('avatarOverride')
+    if (avatarOverride) {
+      this.profileImageUrl = avatarOverride
+      this.tieneAvatarPersonalizado = true
+    }
+
     this.authService.perfilActualizado$.subscribe(({ nombre, apellido }) => {
       this.nombre = nombre.split(' ')[0]
       this.apellido = apellido
       this.nombreCompleto = `${nombre} ${apellido}`
-      this.profileImageUrl = `https://ui-avatars.com/api/?name=${nombre.split(' ')[0]}`
+      this.cdr.markForCheck()
+    })
+
+    this.authService.avatarActualizado$.subscribe((avatarUrl) => {
+      if (avatarUrl) {
+        this.profileImageUrl = avatarUrl
+        this.tieneAvatarPersonalizado = true
+      } else {
+        this.profileImageUrl = ''
+        this.tieneAvatarPersonalizado = false
+      }
       this.cdr.markForCheck()
     })
   }

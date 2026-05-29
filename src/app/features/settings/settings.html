@@ -26,6 +26,40 @@
       <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Actualiza tu nombre visible en la app</p>
     </div>
 
+    <!-- Avatar -->
+    <div class="flex items-center gap-5 mb-6">
+      @if (avatarPreview) {
+        <img [src]="avatarPreview" alt="Avatar" class="w-30 h-30 rounded-full object-cover ring-2 ring-indigo-500/50 shrink-0" />
+      } @else {
+        <div class="w-30 h-30 rounded-full bg-indigo-900/40 flex items-center justify-center text-indigo-400 text-2xl font-bold shrink-0">
+          {{ perfil.nombre.charAt(0).toUpperCase() }}{{ perfil.apellido.charAt(0).toUpperCase() }}
+        </div>
+      }
+      <div>
+        <input #fileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden" (change)="seleccionarAvatar($event)" />
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            (click)="fileInput.click()"
+            class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+          >
+            Cambiar foto
+          </button>
+          @if (archivoAvatar) {
+            <button
+              type="button"
+              (click)="subirAvatar()"
+              [disabled]="cargandoAvatar"
+              class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+            >
+              @if (cargandoAvatar) { Subiendo... } @else { Guardar }
+            </button>
+          }
+        </div>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">PNG, JPG o WEBP · Máx. 2 MB</p>
+      </div>
+    </div>
+
     <form (ngSubmit)="guardarPerfil()">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
