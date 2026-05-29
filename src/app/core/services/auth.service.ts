@@ -124,11 +124,15 @@ export class AuthService {
     return this.http.patch(`${this.api}/perfil`, data);
   }
 
+  actualizarAvatar(formData: FormData) {
+    return this.http.patch(`${this.api}/perfil/avatar`, formData);
+  }
+
   cambiarContrasena(data: { contrasenaActual: string; nuevaContrasena: string }) {
     return this.http.patch(`${this.api}/cambiar-contrasena`, data);
   }
 
-  actualizarAvatar(formData: FormData) {
-    return this.http.put(`${this.api}/avatar`, formData);
+  getPerfil() {
+    return this.http.get<any>(`${this.api}/perfil`);
   }
 }

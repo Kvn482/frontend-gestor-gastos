@@ -39,7 +39,6 @@ export class Settings {
   // Avatar
   avatarPreview: string | null = null;
   archivoAvatar: File | null = null;
-  cargandoAvatar = false;
 
   // Contraseña
   contrasena = { actual: '', nueva: '', confirmar: '' };
@@ -112,34 +111,6 @@ export class Settings {
     reader.readAsDataURL(archivo);
   }
 
-  subirAvatar() {
-    if (!this.archivoAvatar) return;
-    const formData = new FormData();
-    formData.append('avatar', this.archivoAvatar);
-    this.cargandoAvatar = true;
-    this.authService
-      .actualizarAvatar(formData)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res: any) => {
-          const avatarUrl = res?.avatar || res?.avatarUrl || this.avatarPreview;
-          if (avatarUrl) {
-            this.authService.notificarActualizacionAvatar(avatarUrl);
-            this.avatarPreview = avatarUrl;
-          }
-          this.archivoAvatar = null;
-          this.cargandoAvatar = false;
-          this.cd.detectChanges();
-          this.toastService.show('Avatar actualizado correctamente', 'success');
-        },
-        error: (err) => {
-          this.cargandoAvatar = false;
-          this.cd.detectChanges();
-          this.toastService.show(err?.error?.message || 'Error al subir el avatar', 'error');
-        },
-      });
-  }
-
   // ----- Perfil -----
   guardarPerfil() {
     if (!this.perfil.nombre.trim() || !this.perfil.apellido.trim()) {
@@ -153,9 +124,35 @@ export class Settings {
       .subscribe({
         next: () => {
           this.authService.notificarActualizacionPerfil(this.perfil.nombre, this.perfil.apellido);
-          this.cargandoPerfil = false;
-          this.cd.detectChanges();
-          this.toastService.show('Perfil actualizado correctamente', 'success');
+          if (this.archivoAvatar) {
+            const formData = new FormData();
+            formData.append('avatar', this.archivoAvatar);
+            this.authService
+              .actualizarAvatar(formData)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
+                next: (res: any) => {
+                  const avatarUrl = res?.avatar_url || res?.avatar || res?.avatarUrl;
+                  if (avatarUrl) {
+                    this.authService.notificarActualizacionAvatar(avatarUrl);
+                    this.avatarPreview = avatarUrl;
+                  }
+                  this.archivoAvatar = null;
+                  this.cargandoPerfil = false;
+                  this.cd.detectChanges();
+                  this.toastService.show('Perfil actualizado correctamente', 'success');
+                },
+                error: (err) => {
+                  this.cargandoPerfil = false;
+                  this.cd.detectChanges();
+                  this.toastService.show(err?.error?.message || 'Error al subir el avatar', 'error');
+                },
+              });
+          } else {
+            this.cargandoPerfil = false;
+            this.cd.detectChanges();
+            this.toastService.show('Perfil actualizado correctamente', 'success');
+          }
         },
         error: (err) => {
           this.cargandoPerfil = false;

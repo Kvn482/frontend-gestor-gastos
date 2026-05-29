@@ -45,6 +45,17 @@ export class Layout {
       this.tieneAvatarPersonalizado = true
     }
 
+    this.authService.getPerfil().subscribe({
+      next: (perfil) => {
+        if (perfil?.avatar_url) {
+          this.profileImageUrl = perfil.avatar_url
+          this.tieneAvatarPersonalizado = true
+          localStorage.setItem('avatarOverride', perfil.avatar_url)
+          this.cdr.markForCheck()
+        }
+      }
+    })
+
     this.authService.perfilActualizado$.subscribe(({ nombre, apellido }) => {
       this.nombre = nombre.split(' ')[0]
       this.apellido = apellido
