@@ -3,13 +3,14 @@ import { Injectable } from '@angular/core';
 import { BalanceResponse } from '../models/balance-response.interface';
 import { CategoriasResponse } from '../models/categorias.interface';
 import { Subject, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MovimientosService {
 
-  private api = 'http://localhost:3000/api';
+  private api = `${environment.apiUrl}/api`;
 
   constructor(private http: HttpClient) { }
 
