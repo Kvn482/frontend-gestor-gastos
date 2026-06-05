@@ -32,10 +32,11 @@ export class Layout {
 
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser()
-    this.nombre = currentUser.nombre.split(" ")[0]
-    this.apellido = currentUser.apellido
-    this.nombreCompleto = `${this.nombre} ${this.apellido}`
-    this.email = currentUser.email || ''
+
+    this.nombre = currentUser?.nombre?.split(' ')[0] ?? ''
+    this.apellido = currentUser?.apellido ?? ''
+    this.nombreCompleto = this.nombre ? `${this.nombre} ${this.apellido}` : ''
+    this.email = currentUser?.email ?? ''
     this.darkMode = localStorage.getItem('theme') === 'dark'
     this.applyTheme()
 
@@ -47,12 +48,21 @@ export class Layout {
 
     this.authService.getPerfil().subscribe({
       next: (perfil) => {
+        if (perfil?.nombre) {
+          const override = localStorage.getItem('perfilOverride')
+          if (!override) {
+            this.nombre = perfil.nombre.split(' ')[0]
+            this.apellido = perfil.apellido ?? ''
+            this.nombreCompleto = `${this.nombre} ${this.apellido}`
+            this.email = perfil.email ?? this.email
+          }
+        }
         if (perfil?.avatar_url) {
           this.profileImageUrl = perfil.avatar_url
           this.tieneAvatarPersonalizado = true
           localStorage.setItem('avatarOverride', perfil.avatar_url)
-          this.cdr.markForCheck()
         }
+        this.cdr.markForCheck()
       }
     })
 

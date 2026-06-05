@@ -1,0 +1,152 @@
+<!-- Minimal nav -->
+<nav
+  class="fixed w-full z-20 top-0 start-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800">
+  <div class="flex items-center justify-between px-6 py-3">
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z" />
+        </svg>
+      </div>
+      <span class="text-gray-900 dark:text-white text-lg font-bold">Monetra</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button id="theme-toggle-forgot" type="button" (click)="toggleDarkMode()"
+        class="p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+        @if (darkMode) {
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7Zm0-4v2m0 14v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+        } @else {
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </svg>
+        }
+      </button>
+      <p class="text-gray-500 dark:text-slate-400 text-sm">
+        ¿Ya tienes cuenta?
+        <button routerLink="/login" type="button"
+          class="text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-4 ms-2 py-1.5 cursor-pointer transition-colors">
+          Iniciar sesión
+        </button>
+      </p>
+    </div>
+  </div>
+</nav>
+
+<!-- Page -->
+<div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+  <div class="w-full max-w-sm">
+
+    <!-- Card -->
+    <div
+      class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+      <!-- Top accent -->
+      <div class="h-1.5" style="background: linear-gradient(90deg, #4f46e5, #7c3aed, #9333ea)"></div>
+
+      <div class="p-8">
+
+        @if (!emailSent()) {
+
+        <!-- Logo -->
+        <div class="flex items-center gap-2.5 mb-7">
+          <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
+            </svg>
+          </div>
+          <span class="text-gray-900 dark:text-white text-xl font-bold">Monetra</span>
+        </div>
+
+        <h5 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">¿No recibiste el correo?</h5>
+        <p class="text-gray-400 dark:text-slate-500 text-sm mb-7">
+          Ingresa tu email y te reenviaremos el enlace de activación.
+        </p>
+
+        <form class="w-full">
+
+          <div class="mb-6">
+            <div class="relative">
+              <input type="email" id="email" [(ngModel)]="email" name="email" placeholder=" "
+                class="peer block w-full px-2.5 pb-2.5 pt-4 text-sm text-gray-900 dark:text-white rounded-xl appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
+                [ngClass]="{
+                  'border-slate-200 dark:border-slate-600 focus:border-indigo-500': !emailError(),
+                  'border-danger focus:border-danger text-fg-danger-strong': emailError()
+                }" />
+              <label for="email" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
+                peer-placeholder-shown:scale-100
+                peer-placeholder-shown:-translate-y-1/2
+                peer-placeholder-shown:top-1/2
+                peer-focus:top-2
+                peer-focus:scale-75
+                peer-focus:-translate-y-4
+                start-1" [ngClass]="{
+                  'text-gray-400 dark:text-slate-400 peer-focus:text-indigo-600 dark:peer-focus:text-indigo-400': !emailError(),
+                  'text-fg-danger-strong peer-focus:text-danger': emailError()
+                }">
+                Email
+              </label>
+            </div>
+            @if (emailError()) {
+            <p class="mt-1.5 text-xs text-fg-danger-strong">
+              <span class="font-medium">¡Error!</span> Ingresa un email válido.
+            </p>
+            }
+          </div>
+
+          <button (click)="resendActivationMail()" type="button"
+            class="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-xl cursor-pointer transition-all duration-200
+            hover:opacity-90 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+            style="background: linear-gradient(135deg, #4f46e5, #7c3aed)">
+            {{ isloading() ? 'Enviando...' : 'Enviar enlace' }}
+          </button>
+
+          @if (errorMessage()) {
+          <p class="mt-4 p-3 bg-rose-50 text-rose-700 rounded-xl text-sm border border-rose-200">
+            {{ errorMessage() }}
+          </p>
+          }
+
+        </form>
+
+        } @else {
+
+        <!-- Success state -->
+        <div class="flex flex-col items-center text-center py-4">
+          <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-5">
+            <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2Z" />
+            </svg>
+          </div>
+          <h5 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Revisa tu correo</h5>
+          <p class="text-gray-400 dark:text-slate-500 text-sm mb-6">
+            Si el email <span class="font-medium text-gray-600 dark:text-slate-300">{{ email }}</span> está registrado,
+            recibirás un enlace para activar tu cuenta.
+          </p>
+          <button routerLink="/login" type="button"
+            class="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-xl cursor-pointer transition-all duration-200
+            hover:opacity-90 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+            style="background: linear-gradient(135deg, #4f46e5, #7c3aed)">
+            Volver al inicio de sesión
+          </button>
+        </div>
+
+        }
+
+      </div>
+    </div>
+
+    <p class="text-gray-400 dark:text-slate-500 text-sm text-center mt-5">
+      ¿No tienes cuenta?
+      <a routerLink="/register" class="text-indigo-600 font-semibold hover:text-indigo-800 transition-colors">
+        Regístrate gratis
+      </a>
+    </p>
+
+  </div>
+</div>

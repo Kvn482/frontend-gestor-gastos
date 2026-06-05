@@ -45,6 +45,10 @@ export class AuthService {
     return this.http.post(`${this.api}/reset-password`, { token, password });
   }
 
+  resendActivationMail(email: string) {
+    return this.http.post(`${this.api}/resend-activation`, { email });
+  }
+
   saveSession(accessToken: string, refreshToken: string) {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);

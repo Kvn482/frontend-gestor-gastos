@@ -9,6 +9,7 @@ import { Dashboard } from './features/dashboard/dashboard';
 import { Settings } from './features/settings/settings';
 import { guestGuard } from './core/guards/guest-guard';
 import { NotFound } from './features/not-found/not-found';
+import { ResendActivation } from './features/auth/resend-activation/resend-activation';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -30,6 +31,11 @@ export const routes: Routes = [
     { 
         path: 'reset-password', 
         component: ResetPassword, 
+        canActivate: [guestGuard] 
+    },
+    { 
+        path: 'resend-activation', 
+        component: ResendActivation, 
         canActivate: [guestGuard] 
     },
     {
