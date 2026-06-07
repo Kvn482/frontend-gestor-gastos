@@ -12,7 +12,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
     const token = this.authService.getAccessToken();
 
-    if (token) {
+    if (token && !req.url.includes('/refresh')) {
       req = req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -41,9 +41,9 @@ export class AuthInterceptor implements HttpInterceptor {
 
               return next.handle(newReq);
             }),
-            catchError(() => {
+            catchError((refreshError) => {
               this.authService.logout();
-              return throwError(() => error);
+              return throwError(() => refreshError);
             })
           );
         }
