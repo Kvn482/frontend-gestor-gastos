@@ -10,6 +10,7 @@ import { Settings } from './features/settings/settings';
 import { guestGuard } from './core/guards/guest-guard';
 import { NotFound } from './features/not-found/not-found';
 import { ResendActivation } from './features/auth/resend-activation/resend-activation';
+import { Cuentas } from './features/cuentas/cuentas';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -45,6 +46,7 @@ export const routes: Routes = [
         children: [
             { path: 'dashboard', component: Dashboard },
             { path: 'configuracion', component: Settings },
+            { path: 'cuentas', component: Cuentas },
         ]
     },
     
