@@ -1,25 +1,22 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../core/services/auth.service';
 import { QuickAction } from "../../shared/quick-action/quick-action";
+import { CrearCuentaModal } from '../components/crear-cuenta-modal/crear-cuenta-modal';
 
 @Component({
   selector: 'app-cuentas',
-  imports: [QuickAction],
+  imports: [QuickAction, CrearCuentaModal],
   templateUrl: './cuentas.html',
   styleUrl: './cuentas.css',
 })
 export class Cuentas {
-  constructor(
-    private authService: AuthService,
-  ) {}
 
-  modalMovimientoAbierto = false;
+  modalAbierto = false;
 
-  abrirModalMovimiento() {
-    this.modalMovimientoAbierto = true;
+  abrirModalCrearCuenta() {
+    this.modalAbierto = true;
   }
 
-  cerrarModalMovimiento() {
-    this.modalMovimientoAbierto = false;
+  cerrarModalCrearCuenta() {
+    this.modalAbierto = false;
   }
 }

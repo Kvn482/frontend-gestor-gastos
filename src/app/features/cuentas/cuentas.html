@@ -7,7 +7,7 @@
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
 
   <!-- Agregar Cuenta -->
-  <app-quick-action label="Agregar Cuenta" (action)="abrirModalMovimiento()">
+  <app-quick-action label="Agregar Cuenta" (action)="abrirModalCrearCuenta()">
     <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5" />
     </svg>
@@ -23,3 +23,6 @@
   </app-quick-action>
 
 </div>
+
+<app-crear-cuenta-modal [isOpen]="modalAbierto" (closed)="cerrarModalCrearCuenta()">
+</app-crear-cuenta-modal>
