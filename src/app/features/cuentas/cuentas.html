@@ -1,10 +1,10 @@
-<div class="mb-8">
+<div class="mb-8 max-w-5xl">
   <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Cuentas</h1>
   <p class="text-gray-400 dark:text-slate-500 text-sm mt-1">Administra y personaliza tus cuentas disponibles.</p>
 </div>
 
-<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">Acciones rápidas</p>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Acciones rápidas</p>
+<div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-5 mb-10 max-w-400">
 
   <!-- Agregar Cuenta -->
   <app-quick-action label="Agregar Cuenta" (action)="abrirModalCrearCuenta()">
@@ -21,6 +21,13 @@
         d="M3 15v4m6-6v6m6-4v4m6-6v6M3 11l6-5 6 5 5.5-5.5" />
     </svg>
   </app-quick-action>
+
+</div>
+
+<div class="grid gap-5 grid-cols-[repeat(auto-fit,minmax(350px,1fr))] max-w-400">
+  @for (item of cuentas; track $index) {
+    <app-account-card [id]="item.id" [nombre]="item.nombre" [tipo]="item.tipo" [cantidad]="item.saldo_actual" [color]="item.color"/>
+  }
 
 </div>
 

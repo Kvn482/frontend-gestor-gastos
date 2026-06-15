@@ -31,4 +31,8 @@ export class CuentasService {
       })
     );
   }
+
+  consultarCuentas() {
+    return this.http.get(`${this.api}/cuentas`);
+  }
 }

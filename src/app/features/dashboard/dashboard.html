@@ -1,17 +1,17 @@
 <!-- Welcome -->
-<div class="mb-8">
+<div class="mb-8 max-w-5xl">
   <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Hola, <span class="text-indigo-600 dark:text-indigo-400">{{ nombre }}</span> 👋</h1>
   <p class="text-gray-400 dark:text-slate-500 text-sm mt-1">Bienvenido de vuelta a Monetra</p>
 </div>
 
 <!-- Balance -->
-<div class="mb-6">
+<div class="mb-6 max-w-5xl">
   <app-balance-general />
 </div>
 
 <!-- Acciones rápidas -->
-<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">Acciones rápidas</p>
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Acciones rápidas</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 max-w-5xl">
 
   <!-- Nuevo Movimiento -->
   <app-quick-action label="Nuevo Movimiento" (action)="abrirModalMovimiento()">
@@ -44,8 +44,8 @@
 </div>
 
 <!-- Movimientos -->
-<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4">Movimientos</p>
-<div class="mb-6">
+<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Movimientos</p>
+<div class="mb-6 max-w-5xl">
   <app-ultimos-movimientos></app-ultimos-movimientos>
 </div>
 

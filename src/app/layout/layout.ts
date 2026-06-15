@@ -83,6 +83,8 @@ export class Layout {
       }
       this.cdr.markForCheck()
     })
+
+    console.log(this.profileImageUrl)
   }
 
   @HostListener('document:click')
