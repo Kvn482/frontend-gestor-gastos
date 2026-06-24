@@ -28,7 +28,7 @@
 
     <div class="mb-6">
       <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Movimiento</label> -->
-      <select id="countries" [(ngModel)]="movimiento.tipoMovimiento" name="tipoMovimiento" (change)="validarErrores('tipoMovimiento')"
+      <select [(ngModel)]="movimiento.tipoMovimiento" name="tipoMovimiento" (change)="validarErrores('tipoMovimiento')"
         class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
         [ngClass]="{
           'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().tipoMovimiento,
@@ -43,6 +43,27 @@
       @if (erroresValidacion().tipoMovimiento) {
       <p class="mt-2 text-sm text-fg-danger-strong">
         <span class="font-medium">¡Error!</span> Ingresa el tipo de movimiento
+      </p>
+      }
+    </div>
+
+    <div class="mb-6">
+      <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Movimiento</label> -->
+      <select [(ngModel)]="movimiento.cuenta" name="cuenta" (change)="validarErrores('cuenta')"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+        [ngClass]="{
+          'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().cuenta,
+          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().cuenta
+        }">
+
+        <option value="" disabled>Seleccionar cuenta</option>
+        @for (cuenta of cuentas; track cuenta.id) {
+          <option [value]="cuenta.id">{{ cuenta.nombre }}</option>
+        }
+      </select>
+      @if (erroresValidacion().cuenta) {
+      <p class="mt-2 text-sm text-fg-danger-strong">
+        <span class="font-medium">¡Error!</span> Ingresa la cuenta
       </p>
       }
     </div>

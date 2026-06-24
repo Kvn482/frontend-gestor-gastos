@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  position: relative;
+  z-index: 0;
+}
+
+:host(.dropdown-open) {
+  z-index: 100;
+}

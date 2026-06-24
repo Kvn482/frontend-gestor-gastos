@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Modal } from '../../../shared/modal/modal';
 import { CommonModule } from '@angular/common';
 import { MovimientosService } from '../../../core/services/movimientos.service';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
+import { CuentasService } from '../../../core/services/cuentas.service';
 
 @Component({
   selector: 'app-nuevo-movimiento-modal',
@@ -19,7 +20,9 @@ export class NuevoMovimientoModal implements OnChanges {
 
   constructor(
     private movimientosService: MovimientosService,
-    private toastService:ToastService
+    private toastService:ToastService,
+    private cuentasService: CuentasService,
+    private cd: ChangeDetectorRef
   ) { }
 
   // Etiquetas
@@ -56,10 +59,12 @@ export class NuevoMovimientoModal implements OnChanges {
 
   // Listas para los selects
   tiposMovimiento: { id: number; movimiento: string }[] = [];
+  cuentas: { id: string; nombre: string; }[] = [];
 
   // Objeto único para ngModel
   movimiento = {
     tipoMovimiento: 0,
+    cuenta: '0',
     etiquetas: [],
     monto: 0,
     descripcion: '',
@@ -69,6 +74,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
   erroresValidacion = signal({
     tipoMovimiento: false,
+    cuenta: false,
     monto: false,
     descripcion: false,
     fecha: false
@@ -84,6 +90,18 @@ export class NuevoMovimientoModal implements OnChanges {
 
       this.movimientosService.consultarTiposMovimiento().subscribe((res: any) => {
         this.tiposMovimiento = res;
+      });
+
+      this.cuentasService.consultarCuentas().subscribe((res: any) => {
+        this.cuentas = res;
+
+        const cuentaEfectivo = this.cuentas.find(c => c.nombre === 'Efectivo');
+
+        if (cuentaEfectivo) {
+          this.movimiento.cuenta = cuentaEfectivo.id;
+        }
+
+        this.cd.detectChanges();
       });
 
       setTimeout(() => this.initDatepicker(), 100);
@@ -110,6 +128,7 @@ export class NuevoMovimientoModal implements OnChanges {
     // Reiniciamos el objeto directamente
     this.movimiento = {
       tipoMovimiento: 0,
+      cuenta: '',
       etiquetas: [],
       monto: 0,
       descripcion: '',
@@ -120,6 +139,7 @@ export class NuevoMovimientoModal implements OnChanges {
     // Reiniciamos los errores visuales
     this.erroresValidacion.set({
       tipoMovimiento: false,
+      cuenta: false,
       monto: false,
       descripcion: false,
       fecha: false
@@ -152,7 +172,7 @@ export class NuevoMovimientoModal implements OnChanges {
     }
   }
 
-  validarErrores(campo?: 'tipoMovimiento' | 'monto' | 'descripcion' | 'fecha') {
+  validarErrores(campo?: 'tipoMovimiento' | 'monto' | 'descripcion' | 'fecha' | 'cuenta') {
     const erroresActuales = { ...this.erroresValidacion() }
 
     // Validaciones manuales usando el objeto movimiento
@@ -160,7 +180,8 @@ export class NuevoMovimientoModal implements OnChanges {
       tipoMovimiento: this.movimiento.tipoMovimiento === 0,
       monto: this.movimiento.monto <= 0,
       descripcion: this.movimiento.descripcion.trim() === '',
-      fecha: !this.movimiento.fecha
+      fecha: !this.movimiento.fecha,
+      cuenta: !this.movimiento.cuenta
     }
 
     if (campo) {
