@@ -3,6 +3,7 @@ import { QuickAction } from "../../shared/quick-action/quick-action";
 import { CrearCuentaModal } from '../components/crear-cuenta-modal/crear-cuenta-modal';
 import { AccountCard } from '../../shared/account-card/account-card';
 import { CuentasService } from '../../core/services/cuentas.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-cuentas',
@@ -15,7 +16,8 @@ export class Cuentas {
 
   constructor(
     private cuentasService: CuentasService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private toastService:ToastService
   ) { }
 
   cuentas: any[] = []
@@ -38,6 +40,28 @@ export class Cuentas {
         this.cargarCuentas()
       })
 
+  }
+
+  onAccountStatusChange(event: { id: string, status: number }) {
+    const cuentaEnLista = this.cuentas.find(c => c.id === event.id);
+    if (!cuentaEnLista) return;
+
+    const statusAnterior = cuentaEnLista.status; 
+    cuentaEnLista.status = event.status;
+
+    this.cuentasService.updateStatus(event.id, event.status).subscribe({
+      next: () => {
+        // console.log('Status actualizado en servidor');
+      },
+      error: (err) => {
+        // console.error('Error al actualizar', err);
+
+        cuentaEnLista.status = statusAnterior;
+
+        this.toastService.show('No se pudo actualizar el estado de la cuenta. Inténtalo de nuevo.', 'error');
+        this.cd.detectChanges()
+      }
+    });
   }
 
   cargarCuentas() {

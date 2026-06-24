@@ -43,7 +43,7 @@
           </div>
         </th>
         <td class="py-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-          {{ mov.id_tipo_movimiento === 2 ? '-' : '' }}{{ mov.monto | currency:'MXN':'symbol-narrow' }}
+          {{ mov.monto | currency:'MXN':'symbol-narrow' }}
         </td>
         <td>
           <svg
@@ -68,7 +68,7 @@
       {{ movimientoSeleccionado.descripcion }}
     </span>
     <span class="text-3xl font-bold text-gray-700 dark:text-slate-200">
-      {{ movimientoSeleccionado.id_tipo_movimiento === 2 ? '-' : '' }}{{ movimientoSeleccionado.monto | currency:'MXN':'symbol-narrow' }}
+      {{ movimientoSeleccionado.monto | currency:'MXN':'symbol-narrow' }}
     </span>
   </div>
 

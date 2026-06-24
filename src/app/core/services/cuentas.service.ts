@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 })
 export class CuentasService {
 
-  private api = `${environment.apiUrl}/api`;
+  private api = `${environment.apiUrl}/api/cuentas`;
 
   constructor(private http: HttpClient) { }
 
@@ -25,7 +25,7 @@ export class CuentasService {
 
 
   crearCuenta(data: any) {
-    return this.http.post(`${this.api}/cuentas`, data).pipe(
+    return this.http.post(`${this.api}`, data).pipe(
       tap(() => {
         this.notificarCambioBalance();
       })
@@ -33,6 +33,14 @@ export class CuentasService {
   }
 
   consultarCuentas() {
-    return this.http.get(`${this.api}/cuentas`);
+    return this.http.get(`${this.api}`);
+  }
+
+  consultarCuentasActivas() {
+    return this.http.get(`${this.api}/activas`);
+  }
+
+  updateStatus(id: string, status: number) {
+    return this.http.patch(`${this.api}/update-status`, { id_cuenta: id, status });
   }
 }

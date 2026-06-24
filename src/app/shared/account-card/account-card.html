@@ -1,6 +1,6 @@
 <!-- Contenedor principal para darle el tamaño de una tarjeta real -->
 <div class="96 h-56 text-white p-6 rounded-2xl shadow-2xl flex flex-col justify-between relative font-sans select-none"
-	[ngStyle]="{ 'background': 'linear-gradient(to bottom right, ' + color + ', #1f2937)' }">
+	[ngStyle]="{ 'background': 'linear-gradient(to bottom right, ' + (status === 0 ? '#6b7280' : color) + ', #1f2937)' }">
 
 	<!-- Efecto de brillo de fondo (opcional, para darle estilo premium) -->
 	<div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-5 -mt-5"></div>
@@ -37,49 +37,49 @@
 			<p class="text-sm font-medium tracking-wide text-white mt-0.5 uppercase">{{ nombre }}</p>
 		</div>
 
-		<div class="flex gap-6">
+		<!-- Logo de la Red de Pago (Visa / Mastercard simulado) -->
+		<div class="flex items-center">
+			<!-- Círculos entrelazados tipo Mastercard -->
+			<img class="w-12 h-12" src="/img/logo.png" alt="Logo de Monetra">
+			<div class="relative">
+			<button
+				#dropdownButton
+				[id]="'dropdown-button-' + id"
+				[attr.data-dropdown-toggle]="'dropdown-' + id"
+				data-dropdown-placement="bottom"
+				class="text-heading box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm p-1 focus:outline-none cursor-pointer"
+				type="button"
+				[attr.aria-controls]="'dropdown-' + id"
+				aria-label="Opciones de la cuenta">
+				<svg class="w-6 h-6 text-slate-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M12 6h.01M12 12h.01M12 18h.01"/></svg>
+			</button>
 
-			<!-- Logo de la Red de Pago (Visa / Mastercard simulado) -->
-			<div class="flex items-center">
-				<!-- Círculos entrelazados tipo Mastercard -->
-				<img class="w-12 h-12" src="/img/logo.png" alt="Logo de Monetra">
-				<div class="relative">
-				<button
-					#dropdownButton
-					[id]="'dropdown-button-' + id"
-					[attr.data-dropdown-toggle]="'dropdown-' + id"
-					data-dropdown-placement="bottom"
-					class="text-heading box-border border border-transparent hover:bg-neutral-secondary-medium focus:ring-4 focus:ring-neutral-tertiary font-medium leading-5 rounded-base text-sm p-1 focus:outline-none cursor-pointer"
-					type="button"
-					[attr.aria-controls]="'dropdown-' + id"
-					aria-label="Opciones de la cuenta">
-					<svg class="w-6 h-6 text-slate-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M12 6h.01M12 12h.01M12 18h.01"/></svg>
-				</button>
-
-				<div
-					#dropdownMenu
-					[id]="'dropdown-' + id"
-					class="z-[9999] hidden bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44">
-					<ul class="p-2 text-sm text-body font-medium">
-						<li>
-							<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Ver</button>
-						</li>
-						<li>
-							<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Transferir Saldo</button>
-						</li>
-						<li>
-							<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium rounded cursor-pointer"
-							[ngClass]="{
-								'text-red-400': status === 1,
-								'text-green-400': status !== 1
-							}">
-							{{ status === 1 ? 'Desactivar' : 'Activar'}}</button>
-						</li>
-					</ul>
-				</div>
-				</div>
-
+			<div
+				#dropdownMenu
+				[id]="'dropdown-' + id"
+				class="z-[9999] hidden bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44">
+				<ul class="p-2 text-sm text-body font-medium">
+					<li>
+						<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Ver</button>
+					</li>
+					<li>
+						<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Transferir Saldo</button>
+					</li>
+					@if (nombre !== 'Efectivo') {
+					<li>
+						<button type="button" (click)="actualizarStatus()"
+						class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium rounded cursor-pointer"
+						[ngClass]="{
+							'text-red-400': status === 1,
+							'text-green-400': status !== 1
+						}">
+						{{ status === 1 ? 'Desactivar' : 'Activar'}}</button>
+					</li>
+				}
+				</ul>
 			</div>
+			</div>
+
 		</div>
 	</div>
 </div>

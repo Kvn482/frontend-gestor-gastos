@@ -81,8 +81,14 @@ export class CrearCuentaModal implements OnChanges {
     if (tieneErrores) this.isloading.set(false);
 
     if (!tieneErrores) {
-      
-      this.cuentasService.crearCuenta(this.cuenta)
+      const saldoInicial = Number(this.cuenta.saldo_inicial);
+      const cuentaPayload = {
+        ...this.cuenta,
+        saldo_inicial: Math.abs(saldoInicial),
+        id_tipo_movimiento: saldoInicial < 0 ? 2 : 1
+      };
+
+      this.cuentasService.crearCuenta(cuentaPayload)
         .pipe(
           finalize(() => {
             this.isloading.set(false);
@@ -95,7 +101,7 @@ export class CrearCuentaModal implements OnChanges {
 
           },
           error: (err) => {
-            this.toastService.show(err.error.message, 'danger');
+            this.toastService.show(err.error.message, 'error');
           }
         });
 

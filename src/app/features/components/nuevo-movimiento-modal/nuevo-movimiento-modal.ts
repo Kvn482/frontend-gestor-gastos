@@ -92,7 +92,7 @@ export class NuevoMovimientoModal implements OnChanges {
         this.tiposMovimiento = res;
       });
 
-      this.cuentasService.consultarCuentas().subscribe((res: any) => {
+      this.cuentasService.consultarCuentasActivas().subscribe((res: any) => {
         this.cuentas = res;
 
         const cuentaEfectivo = this.cuentas.find(c => c.nombre === 'Efectivo');
@@ -210,6 +210,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
     if (!tieneErrores) {
       this.movimiento.etiquetas = this.etiquetasSeleccionadas.map(e => e.id) as any;
+      this.movimiento.monto = Number(this.movimiento.tipoMovimiento) === 2 ? Number(this.movimiento.monto) * -1 : Number(this.movimiento.monto);
 
       this.movimientosService.crearMovimiento(this.movimiento)
       .pipe(
@@ -224,7 +225,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
         },
         error: (err) => {
-          this.toastService.show(err.error.message, 'danger');
+          this.toastService.show(err.error.message, 'error');
         }
       });
 

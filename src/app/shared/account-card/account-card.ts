@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, Output, EventEmitter } from '@angular/core'; // <-- Agregamos Output y EventEmitter
 import { CurrencyPipe, CommonModule } from '@angular/common'
 import { Dropdown } from 'flowbite';
 
@@ -19,6 +19,9 @@ export class AccountCard implements AfterViewInit, OnDestroy {
   @Input() cantidad!: number
   @Input() color!: string
   @Input() status!: number
+
+  // Emitimos un objeto con el id y el nuevo status hacia el componente padre
+  @Output() statusChanged = new EventEmitter<{ id: string, status: number }>();
 
   private dropdown?: Dropdown
 
@@ -49,5 +52,16 @@ export class AccountCard implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.hostElement.nativeElement.classList.remove('dropdown-open')
     this.dropdown?.destroyAndRemoveInstance()
+  }
+
+  actualizarStatus() {
+    this.status = this.status === 1 ? 0 : 1;
+
+    this.statusChanged.emit({
+      id: this.id,
+      status: this.status
+    });
+
+    this.dropdown?.hide();
   }
 }
