@@ -22,6 +22,7 @@ export class AccountCard implements AfterViewInit, OnDestroy {
 
   // Emitimos un objeto con el id y el nuevo status hacia el componente padre
   @Output() statusChanged = new EventEmitter<{ id: string, status: number }>();
+  @Output() transferRequested = new EventEmitter<string>();
 
   private dropdown?: Dropdown
 
@@ -62,6 +63,11 @@ export class AccountCard implements AfterViewInit, OnDestroy {
       status: this.status
     });
 
+    this.dropdown?.hide();
+  }
+
+  solicitarTransferencia() {
+    this.transferRequested.emit(this.id);
     this.dropdown?.hide();
   }
 }

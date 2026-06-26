@@ -13,6 +13,14 @@
     </svg>
   </app-quick-action>
 
+  <!-- Transferir saldo -->
+  <app-quick-action label="Transferir saldo" (action)="abrirModalTransferencia()">
+    <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M7 7h11m0 0-3-3m3 3-3 3M17 17H6m0 0 3 3m-3-3 3-3" />
+    </svg>
+  </app-quick-action>
+
   <!-- Analisis -->
   <app-quick-action label="Analisis" route="/analisis">
     <svg icon class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -34,6 +42,7 @@
       [color]="item.color"
       [status]="item.status"
       (statusChanged)="onAccountStatusChange($event)"
+      (transferRequested)="abrirModalTransferencia($event)"
     />
   }
 
@@ -41,3 +50,9 @@
 
 <app-crear-cuenta-modal [isOpen]="modalAbierto" (closed)="cerrarModalCrearCuenta()">
 </app-crear-cuenta-modal>
+
+<app-transferir-saldo
+  [isOpen]="modalTransferenciaAbierto"
+  [cuentaOrigenId]="cuentaOrigenTransferencia"
+  (closed)="cerrarModalTransferencia()">
+</app-transferir-saldo>

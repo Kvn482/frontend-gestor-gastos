@@ -43,4 +43,17 @@ export class CuentasService {
   updateStatus(id: string, status: number) {
     return this.http.patch(`${this.api}/update-status`, { id_cuenta: id, status });
   }
+
+  transferirSaldo(data: {
+    id_cuenta_origen: string;
+    id_cuenta_destino: string;
+    monto: number;
+    descripcion: string;
+  }) {
+    return this.http.post(`${this.api}/transferir-saldo`, data).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
+  }
 }

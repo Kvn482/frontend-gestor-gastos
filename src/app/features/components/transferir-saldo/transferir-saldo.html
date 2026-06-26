@@ -1,0 +1,143 @@
+<app-modal #modal [isOpen]="isOpen" (closed)="closed.emit()" modalTitle="Transferir saldo">
+  <form class="w-full" (ngSubmit)="transferir()">
+    <div class="mb-6">
+      <label for="cuenta-origen" class="block mb-2 text-xs font-medium text-body dark:text-slate-400">
+        Cuenta de origen
+      </label>
+      <select
+        id="cuenta-origen"
+        name="cuentaOrigen"
+        [(ngModel)]="transferencia.cuentaOrigen"
+        (change)="seleccionarCuentaOrigen()"
+        [disabled]="cargandoCuentas()"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs disabled:opacity-60"
+        [ngClass]="{
+          'border-default-medium dark:border-slate-600': !erroresValidacion().cuentaOrigen,
+          'border-danger text-fg-danger-strong': erroresValidacion().cuentaOrigen
+        }"
+      >
+        <option value="" disabled>
+          {{ cargandoCuentas() ? 'Cargando cuentas...' : 'Selecciona la cuenta de origen' }}
+        </option>
+        @for (cuenta of cuentas; track cuenta.id) {
+          <option [value]="cuenta.id">
+            {{ cuenta.nombre }} · {{ cuenta.saldo_actual | currency: 'MXN' : 'symbol-narrow' }}
+          </option>
+        }
+      </select>
+      @if (erroresValidacion().cuentaOrigen) {
+        <p class="mt-2 text-sm text-fg-danger-strong">Selecciona la cuenta de origen.</p>
+      }
+    </div>
+
+    <div class="flex justify-center -my-3 mb-3">
+      <div class="flex items-center justify-center w-9 h-9 rounded-full bg-brand/10 text-brand">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 10 5 5 5-5" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <label for="cuenta-destino" class="block mb-2 text-xs font-medium text-body dark:text-slate-400">
+        Cuenta de destino
+      </label>
+      <select
+        id="cuenta-destino"
+        name="cuentaDestino"
+        [(ngModel)]="transferencia.cuentaDestino"
+        (change)="validarErrores('cuentaDestino')"
+        [disabled]="!transferencia.cuentaOrigen"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs disabled:opacity-60"
+        [ngClass]="{
+          'border-default-medium dark:border-slate-600': !erroresValidacion().cuentaDestino,
+          'border-danger text-fg-danger-strong': erroresValidacion().cuentaDestino
+        }"
+      >
+        <option value="" disabled>Selecciona la cuenta de destino</option>
+        @for (cuenta of cuentasDestino; track cuenta.id) {
+          <option [value]="cuenta.id">{{ cuenta.nombre }}</option>
+        }
+      </select>
+      @if (erroresValidacion().cuentaDestino || erroresValidacion().cuentasIguales) {
+        <p class="mt-2 text-sm text-fg-danger-strong">Selecciona una cuenta de destino diferente.</p>
+      }
+    </div>
+
+    <div class="mb-6">
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <span class="text-sm text-body">$</span>
+        </div>
+        <input
+          type="text"
+          inputmode="decimal"
+          id="monto-transferencia"
+          name="monto"
+          placeholder="0.00"
+          maxlength="12"
+          [(ngModel)]="transferencia.monto"
+          (input)="soloNumeros($event)"
+          (blur)="validarErrores('monto')"
+          class="block w-full ps-8 pe-3 py-2.5 bg-white dark:bg-slate-700 border text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand"
+          [ngClass]="{
+            'border-default-medium dark:border-slate-600': !erroresValidacion().monto && !erroresValidacion().saldoInsuficiente,
+            'border-danger text-fg-danger-strong': erroresValidacion().monto || erroresValidacion().saldoInsuficiente
+          }"
+        />
+      </div>
+      @if (cuentaOrigenSeleccionada) {
+        <p class="mt-1.5 text-xs text-body">
+          Disponible:
+          <span class="font-medium text-heading dark:text-white">
+            {{ saldoDisponible | currency: 'MXN' : 'symbol-narrow' }}
+          </span>
+        </p>
+      }
+      @if (erroresValidacion().monto) {
+        <p class="mt-2 text-sm text-fg-danger-strong">Ingresa un monto mayor a cero.</p>
+      } @else if (erroresValidacion().saldoInsuficiente) {
+        <p class="mt-2 text-sm text-fg-danger-strong">El monto supera el saldo disponible.</p>
+      }
+    </div>
+
+    <div class="mb-2">
+      <label for="descripcion-transferencia" class="block mb-2 text-xs font-medium text-body dark:text-slate-400">
+        Descripción <span class="font-normal">(opcional)</span>
+      </label>
+      <input
+        type="text"
+        id="descripcion-transferencia"
+        name="descripcion"
+        maxlength="100"
+        [(ngModel)]="transferencia.descripcion"
+        placeholder="Ej. Dinero para gastos semanales"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium dark:border-slate-600 text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand placeholder:text-body"
+      />
+    </div>
+
+    @if (!cargandoCuentas() && cuentas.length < 2) {
+      <div class="mt-5 p-3 text-sm rounded-base bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+        Necesitas al menos dos cuentas activas para realizar una transferencia.
+      </div>
+    }
+
+    <div class="flex justify-end mt-7 space-x-4">
+      <button
+        type="button"
+        (click)="modal.close()"
+        [disabled]="isLoading()"
+        class="text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading cursor-pointer rounded-base text-sm px-4 py-2.5 disabled:opacity-60"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="isLoading() || cargandoCuentas() || cuentas.length < 2"
+        class="text-white bg-brand hover:bg-brand-strong cursor-pointer rounded-base text-sm px-4 py-2.5 shadow-lg shadow-brand/20 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {{ isLoading() ? 'Transfiriendo...' : 'Transferir' }}
+      </button>
+    </div>
+  </form>
+</app-modal>

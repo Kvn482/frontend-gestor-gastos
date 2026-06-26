@@ -63,7 +63,13 @@
 						<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Ver</button>
 					</li>
 					<li>
-						<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Transferir Saldo</button>
+						<button
+							type="button"
+							(click)="solicitarTransferencia()"
+							[disabled]="status !== 1"
+							class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent">
+							Transferir Saldo
+						</button>
 					</li>
 					@if (nombre !== 'Efectivo') {
 					<li>
