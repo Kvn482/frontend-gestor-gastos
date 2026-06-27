@@ -49,6 +49,7 @@ export class CuentasService {
     id_cuenta_destino: string;
     monto: number;
     descripcion: string;
+    notas?: string;
   }) {
     return this.http.post(`${this.api}/transferir-saldo`, data).pipe(
       tap(() => {

@@ -116,6 +116,21 @@
       />
     </div>
 
+    <div class="mt-5 mb-2">
+      <label for="notas-transferencia" class="block mb-2 text-xs font-medium text-body dark:text-slate-400">
+        Notas <span class="font-normal">(opcional)</span>
+      </label>
+      <textarea
+        id="notas-transferencia"
+        name="notas"
+        rows="3"
+        maxlength="250"
+        [(ngModel)]="transferencia.notas"
+        placeholder="Agrega una nota sobre esta transferencia"
+        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium dark:border-slate-600 text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand placeholder:text-body resize-none"
+      ></textarea>
+    </div>
+
     @if (!cargandoCuentas() && cuentas.length < 2) {
       <div class="mt-5 p-3 text-sm rounded-base bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
         Necesitas al menos dos cuentas activas para realizar una transferencia.

@@ -42,6 +42,7 @@ export class TransferirSaldo implements OnChanges {
     cuentaDestino: '',
     monto: 0,
     descripcion: '',
+    notas: '',
   };
 
   erroresValidacion = signal({
@@ -170,9 +171,8 @@ export class TransferirSaldo implements OnChanges {
       id_cuenta_destino: this.transferencia.cuentaDestino,
       monto: Number(this.transferencia.monto),
       descripcion: this.transferencia.descripcion.trim() || 'Transferencia entre cuentas',
+      notas: this.transferencia.notas.trim(),
     };
-
-    console.log('Payload de transferencia:', payload);
 
     this.cuentasService
       .transferirSaldo(payload)
@@ -197,6 +197,7 @@ export class TransferirSaldo implements OnChanges {
       cuentaDestino: '',
       monto: 0,
       descripcion: '',
+      notas: '',
     };
 
     this.erroresValidacion.set({
