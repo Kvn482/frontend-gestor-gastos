@@ -19,10 +19,28 @@ export class AccountCard implements AfterViewInit, OnDestroy {
   @Input() cantidad!: number
   @Input() color!: string
   @Input() status!: number
+  @Input() limite_credito?: number | string | null
+
+  get montoMostrado(): number {
+    const saldoActual = Number(this.cantidad ?? 0);
+
+    if (this.tipo === 'CREDITO' && this.limite_credito !== null && this.limite_credito !== undefined) {
+      return Number(this.limite_credito) + saldoActual;
+    }
+
+    return saldoActual;
+  }
+
+  get saldoAPagar(): number {
+    if (this.tipo !== 'CREDITO') return 0;
+
+    return Math.max(Math.abs(Math.min(Number(this.cantidad ?? 0), 0)), 0);
+  }
 
   // Emitimos un objeto con el id y el nuevo status hacia el componente padre
   @Output() statusChanged = new EventEmitter<{ id: string, status: number }>();
   @Output() transferRequested = new EventEmitter<string>();
+  @Output() payRequested = new EventEmitter<string>();
 
   private dropdown?: Dropdown
 
@@ -68,6 +86,11 @@ export class AccountCard implements AfterViewInit, OnDestroy {
 
   solicitarTransferencia() {
     this.transferRequested.emit(this.id);
+    this.dropdown?.hide();
+  }
+
+  solicitarPago() {
+    this.payRequested.emit(this.id);
     this.dropdown?.hide();
   }
 }

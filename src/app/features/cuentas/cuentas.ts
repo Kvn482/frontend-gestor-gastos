@@ -5,10 +5,11 @@ import { AccountCard } from '../../shared/account-card/account-card';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { ToastService } from '../../core/services/toast.service';
 import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
+import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 
 @Component({
   selector: 'app-cuentas',
-  imports: [QuickAction, CrearCuentaModal, TransferirSaldo, AccountCard],
+  imports: [QuickAction, CrearCuentaModal, TransferirSaldo, PagarTarjetaModal, AccountCard],
   templateUrl: './cuentas.html',
   styleUrl: './cuentas.css',
 })
@@ -24,7 +25,9 @@ export class Cuentas {
   cuentas: any[] = []
   modalAbierto = false;
   modalTransferenciaAbierto = false;
+  modalPagoTarjetaAbierto = false;
   cuentaOrigenTransferencia = '';
+  cuentaDestinoPago = '';
 
   abrirModalCrearCuenta() {
     this.modalAbierto = true;
@@ -42,6 +45,16 @@ export class Cuentas {
   cerrarModalTransferencia() {
     this.modalTransferenciaAbierto = false;
     this.cuentaOrigenTransferencia = '';
+  }
+
+  abrirModalPagoTarjeta(idCuentaDestino = '') {
+    this.cuentaDestinoPago = idCuentaDestino;
+    this.modalPagoTarjetaAbierto = true;
+  }
+
+  cerrarModalPagoTarjeta() {
+    this.modalPagoTarjetaAbierto = false;
+    this.cuentaDestinoPago = '';
   }
 
   ngOnInit() {

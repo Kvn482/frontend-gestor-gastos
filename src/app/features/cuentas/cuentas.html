@@ -41,8 +41,10 @@
       [cantidad]="item.saldo_actual"
       [color]="item.color"
       [status]="item.status"
+      [limite_credito]="item.limite_credito"
       (statusChanged)="onAccountStatusChange($event)"
       (transferRequested)="abrirModalTransferencia($event)"
+      (payRequested)="abrirModalPagoTarjeta($event)"
     />
   }
 
@@ -56,3 +58,9 @@
   [cuentaOrigenId]="cuentaOrigenTransferencia"
   (closed)="cerrarModalTransferencia()">
 </app-transferir-saldo>
+
+<app-pagar-tarjeta-modal
+  [isOpen]="modalPagoTarjetaAbierto"
+  [cuentaDestinoId]="cuentaDestinoPago"
+  (closed)="cerrarModalPagoTarjeta()">
+</app-pagar-tarjeta-modal>
