@@ -25,6 +25,9 @@
 
 	<!-- Fila Media: Número de la Tarjeta -->
 	<div class="z-10 my-auto">
+		@if(tipo === 'CREDITO') {
+		<p class="text-xs uppercase tracking-wider text-slate-300 font-medium mb-1">Credito Disponible</p>
+		}
 		<span class="text-3xl font-medium tracking-[0.2em] font-mono text-slate-100 block drop-shadow-md">
 			{{ montoMostrado | currency:'MXN':'symbol-narrow' }}
 		</span>
