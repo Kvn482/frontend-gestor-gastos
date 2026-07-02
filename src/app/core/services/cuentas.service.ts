@@ -32,6 +32,14 @@ export class CuentasService {
     );
   }
 
+  actualizarCuenta(id: string, data: any) {
+    return this.http.patch(`${this.api}/edit/${id}`, data).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
+  }
+
   consultarCuentas() {
     return this.http.get(`${this.api}`);
   }

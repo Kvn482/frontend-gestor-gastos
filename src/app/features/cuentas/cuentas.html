@@ -44,6 +44,7 @@
       [status]="item.status"
       [limite_credito]="item.limite_credito"
       (statusChanged)="onAccountStatusChange($event)"
+      (editRequested)="abrirModalEditarCuenta($event)"
       (transferRequested)="abrirModalTransferencia($event)"
       (payRequested)="abrirModalPagoTarjeta($event)"
     />
@@ -51,7 +52,10 @@
 
 </div>
 
-<app-crear-cuenta-modal [isOpen]="modalAbierto" (closed)="cerrarModalCrearCuenta()">
+<app-crear-cuenta-modal
+  [isOpen]="modalAbierto"
+  [cuentaEditar]="cuentaSeleccionada"
+  (closed)="cerrarModalCrearCuenta()">
 </app-crear-cuenta-modal>
 
 <app-transferir-saldo

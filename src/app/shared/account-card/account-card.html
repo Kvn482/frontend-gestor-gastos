@@ -25,7 +25,7 @@
 
 	<!-- Fila Media: Número de la Tarjeta -->
 	<div class="z-10 my-auto">
-		@if(tipo === 'CREDITO') {
+		@if(tipo === 'CREDITO' && limite_credito !== '0.00') {
 		<p class="text-xs uppercase tracking-wider text-slate-300 font-medium mb-1">Credito Disponible</p>
 		}
 		<span class="text-3xl font-medium tracking-[0.2em] font-mono text-slate-100 block drop-shadow-md">
@@ -63,8 +63,22 @@
 				class="z-[9999] hidden bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-44">
 				<ul class="p-2 text-sm text-body font-medium">
 					<li>
-						<button type="button" class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">Ver</button>
+						<button
+							type="button"
+							class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">
+							Ver
+						</button>
 					</li>
+					@if (nombre !== 'Efectivo') {
+					<li>
+						<button
+							type="button"
+							(click)="solicitarEdicion()"
+							class="inline-flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded cursor-pointer">
+							Editar
+						</button>
+					</li>
+					}
 					@if (tipo === 'CREDITO') {
 					<li>
 						<button

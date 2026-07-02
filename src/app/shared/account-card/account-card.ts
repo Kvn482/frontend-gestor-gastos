@@ -24,8 +24,10 @@ export class AccountCard implements AfterViewInit, OnDestroy {
   get montoMostrado(): number {
     const saldoActual = Number(this.cantidad ?? 0);
 
+    console.log(this.limite_credito)
+
     if (this.tipo === 'CREDITO' && this.limite_credito !== null && this.limite_credito !== undefined) {
-      return Number(this.limite_credito) + saldoActual;
+      return Number(this.limite_credito) + Math.min(saldoActual, 0);
     }
 
     return saldoActual;
@@ -39,6 +41,7 @@ export class AccountCard implements AfterViewInit, OnDestroy {
 
   // Emitimos un objeto con el id y el nuevo status hacia el componente padre
   @Output() statusChanged = new EventEmitter<{ id: string, status: number }>();
+  @Output() editRequested = new EventEmitter<string>();
   @Output() transferRequested = new EventEmitter<string>();
   @Output() payRequested = new EventEmitter<string>();
 
@@ -81,6 +84,11 @@ export class AccountCard implements AfterViewInit, OnDestroy {
       status: this.status
     });
 
+    this.dropdown?.hide();
+  }
+
+  solicitarEdicion() {
+    this.editRequested.emit(this.id);
     this.dropdown?.hide();
   }
 

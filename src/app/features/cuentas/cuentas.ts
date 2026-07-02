@@ -26,15 +26,25 @@ export class Cuentas {
   modalAbierto = false;
   modalTransferenciaAbierto = false;
   modalPagoTarjetaAbierto = false;
+  cuentaSeleccionada: any | null = null;
   cuentaOrigenTransferencia = '';
   cuentaDestinoPago = '';
 
   abrirModalCrearCuenta() {
+    this.cuentaSeleccionada = null;
     this.modalAbierto = true;
   }
 
   cerrarModalCrearCuenta() {
     this.modalAbierto = false;
+    this.cuentaSeleccionada = null;
+  }
+
+  abrirModalEditarCuenta(idCuenta: string) {
+    this.cuentaSeleccionada = this.cuentas.find(cuenta => cuenta.id === idCuenta) ?? null;
+    if (!this.cuentaSeleccionada) return;
+
+    this.modalAbierto = true;
   }
 
   abrirModalTransferencia(idCuentaOrigen = '') {

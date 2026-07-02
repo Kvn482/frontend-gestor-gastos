@@ -32,6 +32,7 @@ Metodos:
 - `crearCuenta(data)`: `POST /api/cuentas`
 - `consultarCuentas()`: `GET /api/cuentas`
 - `consultarCuentasActivas()`: `GET /api/cuentas/activas`
+- `actualizarCuenta(id, data)`: `PATCH /api/cuentas/:id`
 - `updateStatus(id, status)`: `PATCH /api/cuentas/update-status`
 - `transferirSaldo(data)`: `POST /api/cuentas/transferir-saldo`
 
@@ -114,6 +115,42 @@ Al completarse correctamente:
 - Cierra el modal.
 - `CuentasService.crearCuenta()` emite refresh para que la pantalla recargue.
 
+## Editar cuenta
+
+La pantalla reutiliza `CrearCuentaModal` para crear y editar cuentas.
+
+Flujo:
+
+1. En el menu de `app-account-card`, la opcion `Editar` emite `editRequested` con el `id` de la cuenta.
+2. `Cuentas.abrirModalEditarCuenta(idCuenta)` busca la cuenta en la lista actual.
+3. La cuenta encontrada se pasa al modal con `[cuentaEditar]`.
+4. El modal precarga `nombre`, `tipo`, `color`, `limite_credito`, `dia_corte` y `dia_limite_pago`.
+5. Al guardar en modo edicion, llama `cuentasService.actualizarCuenta(id, payload)`.
+
+Endpoint usado:
+
+```http
+PATCH /api/cuentas/:id
+```
+
+Payload aproximado:
+
+```ts
+{
+  nombre,
+  tipo,
+  color,
+  limite_credito: tipo === 'CREDITO' ? limite_credito : null,
+  dia_corte: tipo === 'CREDITO' ? dia_corte : null,
+  dia_limite_pago: tipo === 'CREDITO' ? dia_limite_pago : null
+}
+```
+
+Notas:
+
+- En edicion no se muestra ni se envia `saldo_inicial`, porque ese campo genera un movimiento de apertura solo al crear una cuenta.
+- Al completarse correctamente, el servicio emite refresh para recargar la lista de cuentas.
+
 ## Tarjeta de cuenta
 
 Archivos:
@@ -126,13 +163,14 @@ Responsabilidades:
 - Muestra saldo, nombre, tipo, color y estado visual de la cuenta.
 - Si `status === 0`, la tarjeta usa un color gris en el gradiente.
 - Emite `statusChanged` cuando se activa/desactiva.
+- Emite `editRequested` cuando se pide editar esa cuenta.
 - Emite `transferRequested` cuando se pide transferir desde esa cuenta.
 
 Notas:
 
 - La opcion `Transferir Saldo` se deshabilita si `status !== 1`.
 - La cuenta llamada `Efectivo` no muestra la opcion de activar/desactivar.
-- La accion `Ver` aparece en el menu, pero no tiene comportamiento implementado.
+- La accion `Editar` abre el modal de cuenta precargado.
 
 ## Activar o desactivar cuenta
 

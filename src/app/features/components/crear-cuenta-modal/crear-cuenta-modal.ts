@@ -24,6 +24,7 @@ interface CuentaFormulario {
 })
 export class CrearCuentaModal implements OnChanges {
   @Input() isOpen: boolean = false;
+  @Input() cuentaEditar: any | null = null;
   @Output() closed = new EventEmitter<void>();
 
   constructor(
@@ -35,6 +36,14 @@ export class CrearCuentaModal implements OnChanges {
     if (changes['isOpen']?.currentValue === true) {
       this.resetFormulario();
     }
+  }
+
+  get editando(): boolean {
+    return !!this.cuentaEditar?.id;
+  }
+
+  get tipoBloqueadoPorSaldo(): boolean {
+    return this.editando && Number(this.cuentaEditar?.saldo_actual ?? 0) !== 0;
   }
 
   // Objeto principal vinculado al ngModel
@@ -62,16 +71,28 @@ export class CrearCuentaModal implements OnChanges {
   ];
 
   private resetFormulario() {
-    // Reiniciamos el objeto directamente
-    this.cuenta = {
-      nombre: '',
-      tipo: 'DEBITO',
-      saldo_inicial: 0,
-      color: '#a855f7', // Morado Monetra por defecto
-      limite_credito: null,
-      dia_corte: null,
-      dia_limite_pago: null
-    };
+    if (this.cuentaEditar) {
+      this.cuenta = {
+        nombre: this.cuentaEditar.nombre ?? '',
+        tipo: this.cuentaEditar.tipo ?? 'DEBITO',
+        saldo_inicial: 0,
+        color: this.cuentaEditar.color ?? '#a855f7',
+        limite_credito: this.cuentaEditar.limite_credito ?? null,
+        dia_corte: this.cuentaEditar.dia_corte ?? null,
+        dia_limite_pago: this.cuentaEditar.dia_limite_pago ?? null
+      };
+    } else {
+      // Reiniciamos el objeto directamente
+      this.cuenta = {
+        nombre: '',
+        tipo: 'DEBITO',
+        saldo_inicial: 0,
+        color: '#a855f7', // Morado Monetra por defecto
+        limite_credito: null,
+        dia_corte: null,
+        dia_limite_pago: null
+      };
+    }
 
     // Reiniciamos los errores visuales
     this.erroresValidacion.set({
@@ -134,7 +155,7 @@ export class CrearCuentaModal implements OnChanges {
 
   isloading = signal(false);
 
-  crearCuenta() {
+  guardarCuenta() {
 
     if (this.isloading()) return;
 
@@ -145,18 +166,30 @@ export class CrearCuentaModal implements OnChanges {
 
     if (!tieneErrores) {
       const saldoInicial = Number(this.cuenta.saldo_inicial);
-      const cuentaPayload = {
+      const datosBase = {
         nombre: this.cuenta.nombre,
         tipo: this.cuenta.tipo,
         color: this.cuenta.color,
-        saldo_inicial: Math.abs(saldoInicial),
-        id_tipo_movimiento: saldoInicial < 0 ? 2 : 1,
         limite_credito: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.limite_credito ?? 0) : null,
         dia_corte: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.dia_corte) : null,
         dia_limite_pago: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.dia_limite_pago) : null
       };
+      const cuentaPayload = this.editando
+        ? datosBase
+        : {
+            ...datosBase,
+            saldo_inicial: Math.abs(saldoInicial),
+            id_tipo_movimiento: saldoInicial < 0 ? 2 : 1
+          };
 
-      this.cuentasService.crearCuenta(cuentaPayload)
+      const request$ = this.editando
+        ? this.cuentasService.actualizarCuenta(this.cuentaEditar.id, cuentaPayload)
+        : this.cuentasService.crearCuenta(cuentaPayload);
+
+
+      console.log('Datos a enviar al backend:', cuentaPayload);
+      // return
+      request$
         .pipe(
           finalize(() => {
             this.isloading.set(false);
@@ -164,17 +197,21 @@ export class CrearCuentaModal implements OnChanges {
         ).subscribe({
           next: (res: any) => {
 
-            this.toastService.show(res.message, 'success');
+            this.toastService.show(res?.message || (this.editando ? 'Cuenta actualizada correctamente' : 'Cuenta creada correctamente'), 'success');
             this.closed.emit();
 
           },
           error: (err) => {
-            this.toastService.show(err.error.message, 'error');
+            this.toastService.show(err?.error?.message || 'No se pudo guardar la cuenta', 'error');
           }
         });
 
     } else {
       console.log('Faltan campos por llenar');
     }
+  }
+
+  crearCuenta() {
+    this.guardarCuenta();
   }
 }
