@@ -5,6 +5,7 @@ import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
+import { Modal } from '../../shared/modal/modal';
 
 type TipoCuenta = 'DEBITO' | 'EFECTIVO' | 'CREDITO';
 
@@ -32,20 +33,25 @@ interface MovimientoCuenta {
   monto: number;
   id_tipo_movimiento: number;
   etiquetas: EtiquetaMovimiento[];
+  notas?: string | null;
+  cuenta?: string | null;
+  tipo_cuenta?: string | null;
 }
 
 @Component({
   selector: 'app-cuenta-detalle',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, RouterLink, PagarTarjetaModal],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, RouterLink, PagarTarjetaModal, Modal],
   templateUrl: './cuenta-detalle.html',
   styleUrl: './cuenta-detalle.css',
 })
 export class CuentaDetalle implements OnInit {
   cuenta: CuentaDetalleModel | null = null;
   movimientos: MovimientoCuenta[] = [];
+  movimientoSeleccionado: MovimientoCuenta | null = null;
   cargando = true;
   modalPagoTarjetaAbierto = false;
+  modalMovimientoAbierto = false;
 
   private idCuentaActual = '';
 
@@ -109,6 +115,26 @@ export class CuentaDetalle implements OnInit {
     if (!this.cuenta) return 0;
 
     return this.esCredito ? this.creditoDisponible : Number(this.cuenta.saldo_actual ?? 0);
+  }
+
+  get fechaMovimientoSeleccionado(): string {
+    if (!this.movimientoSeleccionado?.fecha) return '';
+
+    return new Date(this.movimientoSeleccionado.fecha).toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  }
+
+  abrirDetalleMovimiento(movimiento: MovimientoCuenta): void {
+    this.movimientoSeleccionado = movimiento;
+    this.modalMovimientoAbierto = true;
+  }
+
+  cerrarDetalleMovimiento(): void {
+    this.modalMovimientoAbierto = false;
+    this.movimientoSeleccionado = null;
   }
 
   abrirModalPagoTarjeta(): void {
