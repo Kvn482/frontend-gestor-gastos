@@ -38,6 +38,23 @@ Metodos:
 
 Tambien expone `refreshBalanceObservable$`, un observable que notifica cambios cuando se crea una cuenta o se transfiere saldo.
 
+## Servicio de movimientos
+
+Archivo: `src/app/core/services/movimientos.service.ts`
+
+Base URL:
+
+```ts
+private api = `${environment.apiUrl}/api`;
+```
+
+Metodos relevantes para cuentas:
+
+- `consultarUltimosMovimientos()`: `GET /api/movimientos/ultimos-movimientos`
+- `consultarMovimientosPorCuenta(idCuenta)`: `GET /api/movimientos/cuenta/:idCuenta`
+
+`consultarMovimientosPorCuenta(idCuenta)` se usa en el detalle de cuenta para traer exclusivamente el historial de la cuenta seleccionada. El filtrado debe resolverse en backend, no en frontend.
+
 ## Pantalla de cuentas
 
 Archivos:
@@ -52,6 +69,7 @@ Flujo:
 3. La respuesta se guarda en `cuentas`.
 4. El template renderiza un `app-account-card` por cada cuenta.
 5. La pantalla escucha `refreshBalanceObservable$` para recargar cuentas despues de crear una cuenta o transferir saldo.
+6. Al hacer click en una tarjeta, `AccountCard.verDetalle()` navega a `/cuentas/:id`.
 
 Campos esperados por la tarjeta:
 
@@ -161,16 +179,62 @@ Archivos:
 Responsabilidades:
 
 - Muestra saldo, nombre, tipo, color y estado visual de la cuenta.
-- Si `status === 0`, la tarjeta usa un color gris en el gradiente.
+- Usa un diseno visual tipo tarjeta fisica con fondo dinamico basado en `color`.
+- Si `status === 0`, la tarjeta usa un color gris.
+- Navega a `/cuentas/:id` al hacer click sobre la tarjeta.
 - Emite `statusChanged` cuando se activa/desactiva.
 - Emite `editRequested` cuando se pide editar esa cuenta.
 - Emite `transferRequested` cuando se pide transferir desde esa cuenta.
+- Emite `payRequested` cuando se pide pagar una cuenta de credito.
 
 Notas:
 
 - La opcion `Transferir Saldo` se deshabilita si `status !== 1`.
 - La cuenta llamada `Efectivo` no muestra la opcion de activar/desactivar.
 - La accion `Editar` abre el modal de cuenta precargado.
+- La accion `Ver` navega al detalle de la cuenta.
+
+## Detalle de cuenta
+
+Archivos:
+
+- `src/app/features/cuenta-detalle/cuenta-detalle.ts`
+- `src/app/features/cuenta-detalle/cuenta-detalle.html`
+- `src/app/features/cuenta-detalle/cuenta-detalle.css`
+
+Ruta:
+
+```ts
+{ path: 'cuentas/:id', component: CuentaDetalle }
+```
+
+Flujo:
+
+1. Lee el `id` desde `ActivatedRoute.paramMap`.
+2. Consulta las cuentas con `cuentasService.consultarCuentas()`.
+3. Consulta movimientos exclusivos de esa cuenta con `movimientosService.consultarMovimientosPorCuenta(idCuenta)`.
+4. Busca la cuenta seleccionada en la respuesta de cuentas.
+5. Renderiza una estructura responsive `grid-cols-1 md:grid-cols-3`.
+
+La columna izquierda muestra una tarjeta fisica con:
+
+- `nombre`
+- `tipo`
+- saldo mostrado
+- color dinamico con `[style.backgroundColor]="cuenta.color"`
+
+Para cuentas de tipo `CREDITO`, el detalle muestra:
+
+- Limite de credito.
+- Credito disponible calculado como `limite_credito + saldo_actual`.
+- Credito utilizado calculado desde el saldo negativo.
+- Barra visual de porcentaje utilizado.
+- Dia de corte y fecha limite de pago.
+- Boton `Pagar Tarjeta`.
+
+El boton `Pagar Tarjeta` abre `app-pagar-tarjeta-modal` dentro del detalle, pasando `[cuentaDestinoId]="cuenta.id"`. Al cerrar el modal, el detalle recarga cuenta y movimientos para reflejar el nuevo saldo.
+
+La columna derecha muestra el historial devuelto por `GET /api/movimientos/cuenta/:idCuenta`, con fecha, descripcion, etiquetas y monto.
 
 ## Activar o desactivar cuenta
 
@@ -255,6 +319,12 @@ En la pantalla de cuentas:
 
 - `Cuentas.abrirModalPagoTarjeta(idCuentaDestino)` abre el modal.
 - `cuentaDestinoId` es la tarjeta que recibira el pago.
+
+En la pantalla de detalle de cuenta:
+
+- El boton `Pagar Tarjeta` aparece solo si `cuenta.tipo === 'CREDITO'`.
+- `CuentaDetalle.abrirModalPagoTarjeta()` abre el mismo `PagarTarjetaModal`.
+- Al cerrar el modal, `CuentaDetalle.cerrarModalPagoTarjeta()` recarga el detalle.
 
 En el modal:
 

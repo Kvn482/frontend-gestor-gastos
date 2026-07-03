@@ -158,6 +158,7 @@ export class PagarTarjetaModal implements OnChanges {
       monto: Number(this.pago.monto),
       descripcion: `Pago de cuenta ${this.cuentaDestino.nombre}`,
       notas: '',
+      etiquetas: [7], // Etiqueta por defecto para pagos realizados desde el modal
     };
 
     this.cuentasService

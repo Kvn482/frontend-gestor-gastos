@@ -50,6 +50,10 @@ export class MovimientosService {
     return this.http.get(`${this.api}/movimientos/ultimos-movimientos`);
   }
 
+  consultarMovimientosPorCuenta(idCuenta: string) {
+    return this.http.get(`${this.api}/movimientos/cuenta/${idCuenta}`);
+  }
+
   crearEtiqueta(data: { nombre: string; color: string }) {
     return this.http.post(`${this.api}/movimientos/etiquetas`, data);
   }

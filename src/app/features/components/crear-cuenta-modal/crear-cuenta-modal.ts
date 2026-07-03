@@ -186,9 +186,6 @@ export class CrearCuentaModal implements OnChanges {
         ? this.cuentasService.actualizarCuenta(this.cuentaEditar.id, cuentaPayload)
         : this.cuentasService.crearCuenta(cuentaPayload);
 
-
-      console.log('Datos a enviar al backend:', cuentaPayload);
-      // return
       request$
         .pipe(
           finalize(() => {

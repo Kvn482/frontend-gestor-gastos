@@ -172,6 +172,7 @@ export class TransferirSaldo implements OnChanges {
       monto: Number(this.transferencia.monto),
       descripcion: this.transferencia.descripcion.trim() || 'Transferencia entre cuentas',
       notas: this.transferencia.notas.trim(),
+      etiquetas: [6], // Etiqueta por defecto para transferencias realizadas desde el modal
     };
 
     this.cuentasService

@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, Output, EventEmitter } from '@angular/core'; // <-- Agregamos Output y EventEmitter
 import { CurrencyPipe, CommonModule } from '@angular/common'
 import { Dropdown } from 'flowbite';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-account-card',
@@ -24,8 +25,6 @@ export class AccountCard implements AfterViewInit, OnDestroy {
   get montoMostrado(): number {
     const saldoActual = Number(this.cantidad ?? 0);
 
-    console.log(this.limite_credito)
-
     if (this.tipo === 'CREDITO' && this.limite_credito !== null && this.limite_credito !== undefined) {
       return Number(this.limite_credito) + Math.min(saldoActual, 0);
     }
@@ -47,7 +46,14 @@ export class AccountCard implements AfterViewInit, OnDestroy {
 
   private dropdown?: Dropdown
 
-  constructor(private hostElement: ElementRef<HTMLElement>) {}
+  constructor(
+    private hostElement: ElementRef<HTMLElement>,
+    private router: Router
+  ) {}
+
+  verDetalle() {
+    this.router.navigate(['/cuentas', this.id]);
+  }
 
   ngAfterViewInit(): void {
     this.dropdown = new Dropdown(

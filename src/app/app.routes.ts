@@ -11,6 +11,7 @@ import { guestGuard } from './core/guards/guest-guard';
 import { NotFound } from './features/not-found/not-found';
 import { ResendActivation } from './features/auth/resend-activation/resend-activation';
 import { Cuentas } from './features/cuentas/cuentas';
+import { CuentaDetalle } from './features/cuenta-detalle/cuenta-detalle';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -47,6 +48,7 @@ export const routes: Routes = [
             { path: 'dashboard', component: Dashboard },
             { path: 'configuracion', component: Settings },
             { path: 'cuentas', component: Cuentas },
+            { path: 'cuentas/:id', component: CuentaDetalle },
         ]
     },
     
