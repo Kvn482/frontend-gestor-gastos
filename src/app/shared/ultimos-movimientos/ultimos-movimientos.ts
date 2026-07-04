@@ -43,6 +43,7 @@ export class UltimosMovimientos {
 
   cargarUltimosMovimientos() {
     this.movimientosService.consultarUltimosMovimientos().subscribe((res: any) => {
+      console.log('ultimos movimientos', res)
 
       this.movimientos = res.map((mov: any) => ({
         ...mov,
