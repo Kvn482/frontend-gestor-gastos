@@ -45,17 +45,30 @@ export class UltimosMovimientos {
     this.movimientosService.consultarUltimosMovimientos().subscribe((res: any) => {
       console.log('ultimos movimientos', res)
 
-      this.movimientos = res.map((mov: any) => ({
-        ...mov,
-        fecha_formateada: new Date(mov.fecha).toLocaleString('es-MX', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
+      this.movimientos = res.map((mov: any) => {
+        console.log({
+          original: mov.fecha,
+          parsed: new Date(mov.fecha).toString(),
+          iso: new Date(mov.fecha).toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         })
-      }))
+
+        return {
+          ...mov,
+          fecha_formateada: this.formatearFechaMovimiento(mov.fecha)
+        }
+      })
 
       this.cd.detectChanges()
 
     })
+  }
+
+  private formatearFechaMovimiento(fecha: string): string {
+    const [year, month, day] = fecha.split('T')[0].split('-')
+
+    if (!year || !month || !day) return fecha
+
+    return `${day}/${month}/${year}`
   }
 }
