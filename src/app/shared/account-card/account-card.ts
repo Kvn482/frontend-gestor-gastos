@@ -22,20 +22,42 @@ export class AccountCard implements AfterViewInit, OnDestroy {
   @Input() status!: number
   @Input() limite_credito?: number | string | null
 
-  get montoMostrado(): number {
-    const saldoActual = Number(this.cantidad ?? 0);
+  mostrandoCreditoDisponible = true
 
-    if (this.tipo === 'CREDITO' && this.limite_credito !== null && this.limite_credito !== undefined) {
-      return Number(this.limite_credito) + Math.min(saldoActual, 0);
+  get esCredito(): boolean {
+    return this.tipo === 'CREDITO';
+  }
+
+  get saldoActual(): number {
+    return Number(this.cantidad ?? 0);
+  }
+
+  get creditoDisponible(): number {
+    return Math.max(Number(this.limite_credito ?? 0) + Math.min(this.saldoActual, 0), 0);
+  }
+
+  get etiquetaMonto(): string {
+    if (!this.esCredito) return 'Saldo actual';
+
+    return this.mostrandoCreditoDisponible ? 'Credito disponible' : 'Saldo actual';
+  }
+
+  get montoMostrado(): number {
+    if (this.esCredito && this.mostrandoCreditoDisponible) {
+      return this.creditoDisponible;
     }
 
-    return saldoActual;
+    return this.saldoActual;
+  }
+
+  get textoBotonMonto(): string {
+    return this.mostrandoCreditoDisponible ? 'Ver saldo' : 'Ver disponible';
   }
 
   get saldoAPagar(): number {
-    if (this.tipo !== 'CREDITO') return 0;
+    if (!this.esCredito) return 0;
 
-    return Math.max(Math.abs(Math.min(Number(this.cantidad ?? 0), 0)), 0);
+    return Math.max(Math.abs(Math.min(this.saldoActual, 0)), 0);
   }
 
   // Emitimos un objeto con el id y el nuevo status hacia el componente padre
@@ -53,6 +75,14 @@ export class AccountCard implements AfterViewInit, OnDestroy {
 
   verDetalle() {
     this.router.navigate(['/cuentas', this.id]);
+  }
+
+  alternarMontoCredito(event: Event) {
+    event.stopPropagation();
+
+    if (!this.esCredito) return;
+
+    this.mostrandoCreditoDisponible = !this.mostrandoCreditoDisponible;
   }
 
   ngAfterViewInit(): void {

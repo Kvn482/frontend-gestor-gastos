@@ -32,13 +32,25 @@
     </div>
 
     <div>
-      <p class="text-xs font-semibold uppercase text-white/60">
-        @if (tipo === 'CREDITO' && limite_credito !== '0.00') {
-          Credito disponible
-        } @else {
-          Saldo actual
+      <div class="flex flex-wrap items-center gap-2">
+        <p class="text-xs font-semibold uppercase text-white/60">
+          {{ etiquetaMonto }}
+        </p>
+
+        @if (tipo === 'CREDITO') {
+          <button
+            type="button"
+            class="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase text-white/90 backdrop-blur transition-colors hover:bg-white/25 focus:outline-none focus:ring-4 focus:ring-white/20 cursor-pointer"
+            (click)="alternarMontoCredito($event)"
+            (keydown.enter)="$event.stopPropagation()"
+            (keydown.space)="$event.stopPropagation()"
+            [attr.aria-label]="textoBotonMonto"
+            [attr.aria-pressed]="!mostrandoCreditoDisponible"
+          >
+            {{ textoBotonMonto }}
+          </button>
         }
-      </p>
+      </div>
       <p class="mt-2 text-4xl font-black text-white drop-shadow-sm">
         {{ montoMostrado | currency:'MXN':'symbol-narrow' }}
       </p>

@@ -21,7 +21,8 @@
         </option>
         @for (cuenta of cuentas; track cuenta.id) {
           <option [value]="cuenta.id">
-            {{ cuenta.nombre }} · {{ cuenta.saldo_actual | currency: 'MXN' : 'symbol-narrow' }}
+            {{ cuenta.nombre }} · {{ etiquetaSaldoCuenta(cuenta) }}:
+            {{ saldoMostradoCuenta(cuenta) | currency: 'MXN' : 'symbol-narrow' }}
           </option>
         }
       </select>
@@ -88,7 +89,7 @@
       </div>
       @if (cuentaOrigenSeleccionada) {
         <p class="mt-1.5 text-xs text-body">
-          Disponible:
+          {{ etiquetaSaldoCuenta(cuentaOrigenSeleccionada) }}:
           <span class="font-medium text-heading dark:text-white">
             {{ saldoDisponible | currency: 'MXN' : 'symbol-narrow' }}
           </span>

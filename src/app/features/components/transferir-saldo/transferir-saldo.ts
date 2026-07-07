@@ -19,7 +19,9 @@ import { MovimientosService } from '../../../core/services/movimientos.service';
 interface CuentaTransferencia {
   id: string;
   nombre: string;
+  tipo: string;
   saldo_actual: number;
+  limite_credito?: number | string | null;
   color?: string;
 }
 
@@ -116,7 +118,25 @@ export class TransferirSaldo implements OnChanges {
   }
 
   get saldoDisponible(): number {
-    return Number(this.cuentaOrigenSeleccionada?.saldo_actual ?? 0);
+    if (!this.cuentaOrigenSeleccionada) return 0;
+
+    return this.saldoMostradoCuenta(this.cuentaOrigenSeleccionada);
+  }
+
+  saldoMostradoCuenta(cuenta: CuentaTransferencia): number {
+    const saldoActual = this.toNumber(cuenta.saldo_actual);
+
+    if (cuenta.tipo === 'CREDITO') {
+      const limiteCredito = this.toNumber(cuenta.limite_credito);
+
+      return Math.max(limiteCredito + Math.min(saldoActual, 0), 0);
+    }
+
+    return saldoActual;
+  }
+
+  etiquetaSaldoCuenta(cuenta: CuentaTransferencia): string {
+    return cuenta.tipo === 'CREDITO' ? 'Disponible' : 'Saldo';
   }
 
   cargarCuentas(): void {
@@ -258,5 +278,11 @@ export class TransferirSaldo implements OnChanges {
     this.etiquetasSeleccionadas = [];
     this.busquedaEtiqueta = '';
     this.mostrarDropdownEtiquetas = false;
+  }
+
+  private toNumber(valor: number | string | null | undefined): number {
+    const numero = Number(valor ?? 0);
+
+    return Number.isFinite(numero) ? numero : 0;
   }
 }
