@@ -14,6 +14,7 @@ import { finalize } from 'rxjs';
 import { CuentasService } from '../../../core/services/cuentas.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Modal } from '../../../shared/modal/modal';
+import { MovimientosService } from '../../../core/services/movimientos.service';
 
 interface CuentaTransferencia {
   id: string;
@@ -43,6 +44,7 @@ export class TransferirSaldo implements OnChanges {
     monto: 0,
     descripcion: '',
     notas: '',
+    etiquetas: [],
   };
 
   erroresValidacion = signal({
@@ -57,12 +59,47 @@ export class TransferirSaldo implements OnChanges {
     private cuentasService: CuentasService,
     private toastService: ToastService,
     private cd: ChangeDetectorRef,
+    private movimientosService: MovimientosService
   ) {}
+
+  etiquetasDisponibles: { id: number; nombre: string; color: string }[] = [];
+  etiquetasSeleccionadas: { id: number; nombre: string; color: string }[] = [];
+  busquedaEtiqueta = '';
+  mostrarDropdownEtiquetas = false;
+
+  get etiquetasFiltradas() {
+    return this.etiquetasDisponibles.filter(e =>
+      !this.etiquetasSeleccionadas.find(s => s.id === e.id) &&
+      e.nombre.toLowerCase().includes(this.busquedaEtiqueta.toLowerCase())
+    );
+  }
+
+  agregarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
+    if (!this.etiquetasSeleccionadas.find(e => e.id === etiqueta.id)) {
+      this.etiquetasSeleccionadas = [...this.etiquetasSeleccionadas, etiqueta];
+    }
+    this.busquedaEtiqueta = '';
+  }
+
+  quitarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
+    this.etiquetasSeleccionadas = this.etiquetasSeleccionadas.filter(e => e.id !== etiqueta.id);
+  }
+
+  onBlurEtiqueta() {
+    setTimeout(() => {
+      this.mostrarDropdownEtiquetas = false;
+      this.busquedaEtiqueta = '';
+    }, 150);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true) {
       this.resetFormulario();
       this.cargarCuentas();
+
+      this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
+        this.etiquetasDisponibles = res;
+      });
     }
   }
 
@@ -166,13 +203,21 @@ export class TransferirSaldo implements OnChanges {
 
     this.isLoading.set(true);
 
+    const etiquetaTransferenciaId = 6;
+    const etiquetas = [
+      ...new Set([
+        etiquetaTransferenciaId,
+        ...this.etiquetasSeleccionadas.map((etiqueta) => etiqueta.id),
+      ]),
+    ];
+
     const payload = {
       id_cuenta_origen: this.transferencia.cuentaOrigen,
       id_cuenta_destino: this.transferencia.cuentaDestino,
       monto: Number(this.transferencia.monto),
       descripcion: this.transferencia.descripcion.trim() || 'Transferencia entre cuentas',
       notas: this.transferencia.notas.trim(),
-      etiquetas: [6], // Etiqueta por defecto para transferencias realizadas desde el modal
+      etiquetas,
     };
 
     this.cuentasService
@@ -199,6 +244,7 @@ export class TransferirSaldo implements OnChanges {
       monto: 0,
       descripcion: '',
       notas: '',
+      etiquetas: [],
     };
 
     this.erroresValidacion.set({
@@ -208,5 +254,9 @@ export class TransferirSaldo implements OnChanges {
       monto: false,
       saldoInsuficiente: false,
     });
+
+    this.etiquetasSeleccionadas = [];
+    this.busquedaEtiqueta = '';
+    this.mostrarDropdownEtiquetas = false;
   }
 }

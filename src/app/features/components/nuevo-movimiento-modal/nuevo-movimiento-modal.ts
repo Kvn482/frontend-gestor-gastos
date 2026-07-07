@@ -59,7 +59,13 @@ export class NuevoMovimientoModal implements OnChanges {
 
   // Listas para los selects
   tiposMovimiento: { id: number; movimiento: string }[] = [];
-  cuentas: { id: string; nombre: string; }[] = [];
+  cuentas: {
+    id: string;
+    nombre: string;
+    tipo: string;
+    saldo_actual: number;
+    limite_credito?: number | string | null;
+  }[] = [];
 
   // Objeto único para ngModel
   movimiento = {
@@ -76,9 +82,42 @@ export class NuevoMovimientoModal implements OnChanges {
     tipoMovimiento: false,
     cuenta: false,
     monto: false,
+    saldoInsuficiente: false,
     descripcion: false,
     fecha: false
   });
+
+  get cuentaSeleccionada() {
+    return this.cuentas.find(cuenta => cuenta.id === this.movimiento.cuenta);
+  }
+
+  get esEgreso() {
+    return Number(this.movimiento.tipoMovimiento) === 2;
+  }
+
+  saldoMostradoCuenta(cuenta: {
+    tipo: string;
+    saldo_actual: number;
+    limite_credito?: number | string | null;
+  }): number {
+    const saldoActual = this.toNumber(cuenta.saldo_actual);
+
+    if (cuenta.tipo === 'CREDITO') {
+      const limiteCredito = this.toNumber(cuenta.limite_credito);
+
+      return Math.max(limiteCredito + Math.min(saldoActual, 0), 0);
+    }
+
+    return saldoActual;
+  }
+
+  etiquetaSaldoCuenta(cuenta: {
+    tipo: string;
+    saldo_actual: number;
+    limite_credito?: number | string | null;
+  }): string {
+    return cuenta.tipo === 'CREDITO' ? 'Disponible' : 'Saldo';
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true) {
@@ -93,7 +132,10 @@ export class NuevoMovimientoModal implements OnChanges {
       });
 
       this.cuentasService.consultarCuentasActivas().subscribe((res: any) => {
-        this.cuentas = res;
+        this.cuentas = (Array.isArray(res) ? res : []).map((cuenta) => ({
+          ...cuenta,
+          saldo_actual: Number(cuenta.saldo_actual),
+        }));
 
         const cuentaEfectivo = this.cuentas.find(c => c.nombre === 'Efectivo');
 
@@ -117,8 +159,9 @@ export class NuevoMovimientoModal implements OnChanges {
     const limpio = valor.replace(/[^0-9.]/g, '');
 
     // Actualizamos tanto el input visual como el modelo de Angular
-    this.movimiento.monto = limpio;
+    this.movimiento.monto = Number(limpio);
     event.target.value = limpio;
+    this.validarErrores('monto');
   }
 
   private resetFormulario() {
@@ -141,6 +184,7 @@ export class NuevoMovimientoModal implements OnChanges {
       tipoMovimiento: false,
       cuenta: false,
       monto: false,
+      saldoInsuficiente: false,
       descripcion: false,
       fecha: false
     });
@@ -174,11 +218,14 @@ export class NuevoMovimientoModal implements OnChanges {
 
   validarErrores(campo?: 'tipoMovimiento' | 'monto' | 'descripcion' | 'fecha' | 'cuenta') {
     const erroresActuales = { ...this.erroresValidacion() }
+    const monto = Number(this.movimiento.monto);
+    const saldoDisponible = this.cuentaSeleccionada ? this.saldoMostradoCuenta(this.cuentaSeleccionada) : 0;
 
     // Validaciones manuales usando el objeto movimiento
     const errores = {
-      tipoMovimiento: this.movimiento.tipoMovimiento === 0,
-      monto: this.movimiento.monto <= 0,
+      tipoMovimiento: Number(this.movimiento.tipoMovimiento) === 0,
+      monto: !Number.isFinite(monto) || monto <= 0,
+      saldoInsuficiente: !!this.movimiento.cuenta && this.esEgreso && Number.isFinite(monto) && monto > saldoDisponible,
       descripcion: this.movimiento.descripcion.trim() === '',
       fecha: !this.movimiento.fecha,
       cuenta: !this.movimiento.cuenta
@@ -187,6 +234,7 @@ export class NuevoMovimientoModal implements OnChanges {
     if (campo) {
       // Si mandamos un campo, solo actualizamos ese error específico
       erroresActuales[campo] = errores[campo]
+      erroresActuales.saldoInsuficiente = errores.saldoInsuficiente
     } else {
       // Si no mandamos nada, actualizamos todos los errores (para el botón Guardar)
       Object.assign(erroresActuales, errores)
@@ -195,6 +243,12 @@ export class NuevoMovimientoModal implements OnChanges {
     this.erroresValidacion.set(erroresActuales)
 
     return Object.values(erroresActuales).some(v => v)
+  }
+
+  private toNumber(valor: number | string | null | undefined): number {
+    const numero = Number(valor ?? 0);
+
+    return Number.isFinite(numero) ? numero : 0;
   }
 
   isloading = signal(false);

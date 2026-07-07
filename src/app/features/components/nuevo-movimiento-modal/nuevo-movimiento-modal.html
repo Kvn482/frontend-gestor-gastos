@@ -58,7 +58,10 @@
 
         <option value="" disabled>Seleccionar cuenta</option>
         @for (cuenta of cuentas; track cuenta.id) {
-          <option [value]="cuenta.id">{{ cuenta.nombre }}</option>
+          <option [value]="cuenta.id">
+            {{ cuenta.nombre }} · {{ etiquetaSaldoCuenta(cuenta) }}:
+            {{ saldoMostradoCuenta(cuenta) | currency: 'MXN' : 'symbol-narrow' }}
+          </option>
         }
       </select>
       @if (erroresValidacion().cuenta) {
@@ -136,8 +139,8 @@
           (blur)="validarErrores('monto')"
           class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
           [ngClass]="{
-            'border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white': !erroresValidacion().monto,
-            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().monto
+            'border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white': !erroresValidacion().monto && !erroresValidacion().saldoInsuficiente,
+            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().monto || erroresValidacion().saldoInsuficiente
           }" />
 
         <label for="monto" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
@@ -149,8 +152,8 @@
           peer-focus:-translate-y-4
           start-1" 
           [ngClass]="{
-            'text-body dark:text-slate-400 peer-focus:text-fg-brand': !erroresValidacion().monto,
-            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().monto
+            'text-body dark:text-slate-400 peer-focus:text-fg-brand': !erroresValidacion().monto && !erroresValidacion().saldoInsuficiente,
+            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().monto || erroresValidacion().saldoInsuficiente
           }">
           Monto
         </label>
@@ -159,6 +162,11 @@
       @if (erroresValidacion().monto) {
       <p class="mt-2 text-sm text-fg-danger-strong">
         <span class="font-medium">¡Error!</span> El monto no puede estar vacio o ser 0
+      </p>
+      }
+      @if (erroresValidacion().saldoInsuficiente) {
+      <p class="mt-2 text-sm text-fg-danger-strong">
+        <span class="font-medium">¡Error!</span> El egreso no puede ser mayor al saldo disponible de la cuenta
       </p>
       }
     </div>
