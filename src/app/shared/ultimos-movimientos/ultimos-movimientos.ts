@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component } from '@angular/core'
 import { MovimientosService } from '../../core/services/movimientos.service'
 import { Modal } from '../modal/modal'
 import { CurrencyPipe } from '@angular/common'
+import { formatearFechaLocal } from '../utils/fechas'
 
 @Component({
   selector: 'app-ultimos-movimientos',
@@ -46,11 +47,7 @@ export class UltimosMovimientos {
 
       this.movimientos = res.map((mov: any) => ({
         ...mov,
-        fecha_formateada: new Date(mov.fecha).toLocaleString('es-MX', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        })
+        fecha_formateada: formatearFechaLocal(mov.fecha)
       }))
 
       this.cd.detectChanges()

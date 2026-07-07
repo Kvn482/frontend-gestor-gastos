@@ -7,6 +7,7 @@ import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 import { Modal } from '../../shared/modal/modal';
+import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
 
 type TipoCuenta = 'DEBITO' | 'EFECTIVO' | 'CREDITO';
 
@@ -140,13 +141,10 @@ export class CuentaDetalle implements OnInit {
   }
 
   get fechaMovimientoSeleccionado(): string {
-    if (!this.movimientoSeleccionado?.fecha) return '';
+    const fecha = this.movimientoSeleccionado?.fecha;
+    if (!fecha) return '';
 
-    return new Date(this.movimientoSeleccionado.fecha).toLocaleDateString('es-MX', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    return formatearFechaLocal(fecha);
   }
 
   get movimientosFiltrados(): MovimientoCuenta[] {
@@ -154,7 +152,7 @@ export class CuentaDetalle implements OnInit {
     const rango = this.obtenerRangoFecha();
 
     return this.movimientos.filter((movimiento) => {
-      const fechaMovimiento = this.normalizarFecha(new Date(movimiento.fecha));
+      const fechaMovimiento = this.normalizarFecha(crearFechaLocal(movimiento.fecha));
 
       if (busqueda) {
         const textoMovimiento = this.normalizarTexto(
