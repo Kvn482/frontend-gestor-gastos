@@ -14,6 +14,7 @@ interface CuentaFormulario {
   limite_credito: number | null;
   dia_corte: number | null;
   dia_limite_pago: number | null;
+  monto_limite: number | null;
 }
 
 @Component({
@@ -54,7 +55,8 @@ export class CrearCuentaModal implements OnChanges {
     color: '#a855f7', // Morado Monetra por defecto
     limite_credito: null,
     dia_corte: null,
-    dia_limite_pago: null
+    dia_limite_pago: null,
+    monto_limite: 0
   };
 
   // Signal para los errores (ajusta según lo que uses en tu proyecto)
@@ -62,7 +64,8 @@ export class CrearCuentaModal implements OnChanges {
     nombre: false,
     limiteCredito: false,
     diaCorte: false,
-    diaLimitePago: false
+    diaLimitePago: false,
+    montoLimite: false
   });
 
   coloresDisponibles: string[] = [
@@ -79,7 +82,8 @@ export class CrearCuentaModal implements OnChanges {
         color: this.cuentaEditar.color ?? '#a855f7',
         limite_credito: this.cuentaEditar.limite_credito ?? null,
         dia_corte: this.cuentaEditar.dia_corte ?? null,
-        dia_limite_pago: this.cuentaEditar.dia_limite_pago ?? null
+        dia_limite_pago: this.cuentaEditar.dia_limite_pago ?? null,
+        monto_limite: this.cuentaEditar.monto_limite ?? 0
       };
     } else {
       // Reiniciamos el objeto directamente
@@ -90,7 +94,8 @@ export class CrearCuentaModal implements OnChanges {
         color: '#a855f7', // Morado Monetra por defecto
         limite_credito: null,
         dia_corte: null,
-        dia_limite_pago: null
+        dia_limite_pago: null,
+        monto_limite: 0
       };
     }
 
@@ -99,7 +104,8 @@ export class CrearCuentaModal implements OnChanges {
       nombre: false,
       limiteCredito: false,
       diaCorte: false,
-      diaLimitePago: false
+      diaLimitePago: false,
+      montoLimite: false
     });
   }
 
@@ -111,7 +117,8 @@ export class CrearCuentaModal implements OnChanges {
       ...(campo === 'nombre' ? { nombre: errores.nombre } : {}),
       ...(campo === 'limiteCredito' ? { limiteCredito: errores.limiteCredito } : {}),
       ...(campo === 'diaCorte' ? { diaCorte: errores.diaCorte } : {}),
-      ...(campo === 'diaLimitePago' ? { diaLimitePago: errores.diaLimitePago } : {})
+      ...(campo === 'diaLimitePago' ? { diaLimitePago: errores.diaLimitePago } : {}),
+      ...(campo === 'montoLimite' ? { montoLimite: errores.montoLimite } : {})
     }));
   }
 
@@ -137,12 +144,14 @@ export class CrearCuentaModal implements OnChanges {
     const limiteCredito = Number(this.cuenta.limite_credito ?? 0);
     const diaCorte = Number(this.cuenta.dia_corte);
     const diaLimitePago = Number(this.cuenta.dia_limite_pago);
+    const montoLimite = Number(this.cuenta.monto_limite ?? 0);
 
     return {
       nombre: this.cuenta.nombre.trim().length === 0,
       limiteCredito: esCredito && (!Number.isFinite(limiteCredito) || limiteCredito < 0),
       diaCorte: esCredito && (!Number.isInteger(diaCorte) || diaCorte < 1 || diaCorte > 31),
-      diaLimitePago: esCredito && (!Number.isInteger(diaLimitePago) || diaLimitePago < 1 || diaLimitePago > 31)
+      diaLimitePago: esCredito && (!Number.isInteger(diaLimitePago) || diaLimitePago < 1 || diaLimitePago > 31),
+      montoLimite: !Number.isFinite(montoLimite) || montoLimite < 0
     };
   }
 
@@ -172,7 +181,8 @@ export class CrearCuentaModal implements OnChanges {
         color: this.cuenta.color,
         limite_credito: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.limite_credito ?? 0) : null,
         dia_corte: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.dia_corte) : null,
-        dia_limite_pago: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.dia_limite_pago) : null
+        dia_limite_pago: this.cuenta.tipo === 'CREDITO' ? Number(this.cuenta.dia_limite_pago) : null,
+        monto_limite: Number(this.cuenta.monto_limite ?? 0)
       };
       const cuentaPayload = this.editando
         ? datosBase
