@@ -3,11 +3,12 @@ import { MovimientosService } from '../../core/services/movimientos.service'
 import { Modal } from '../modal/modal'
 import { CurrencyPipe } from '@angular/common'
 import { formatearFechaLocal } from '../utils/fechas'
+import { NuevoMovimientoModal } from '../../features/components/nuevo-movimiento-modal/nuevo-movimiento-modal'
 
 @Component({
   selector: 'app-ultimos-movimientos',
   standalone: true,
-  imports: [Modal, CurrencyPipe],
+  imports: [Modal, CurrencyPipe, NuevoMovimientoModal],
   templateUrl: './ultimos-movimientos.html',
   styleUrl: './ultimos-movimientos.css',
 })
@@ -19,6 +20,7 @@ export class UltimosMovimientos {
 
   movimientos: any[] = []
   modalAbierto = false
+  modalEditarAbierto = false
   movimientoSeleccionado: any = null
 
   abrirDetalle(mov: any) {
@@ -29,6 +31,24 @@ export class UltimosMovimientos {
   cerrarModal() {
     this.modalAbierto = false
     this.movimientoSeleccionado = null
+  }
+
+  abrirEditarMovimiento() {
+    if (!this.movimientoSeleccionado) return
+
+    this.modalAbierto = false
+    this.modalEditarAbierto = true
+  }
+
+  cerrarEditarMovimiento() {
+    this.modalEditarAbierto = false
+    this.movimientoSeleccionado = null
+  }
+
+  movimientoEditado() {
+    this.modalEditarAbierto = false
+    this.movimientoSeleccionado = null
+    this.cargarUltimosMovimientos()
   }
 
   ngOnInit() {

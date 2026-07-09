@@ -6,6 +6,7 @@ import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
+import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
 import { Modal } from '../../shared/modal/modal';
 import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
 
@@ -54,7 +55,7 @@ type GrupoFiltroActivo = 'fecha' | 'tipo' | 'etiquetas';
 @Component({
   selector: 'app-cuenta-detalle',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, Modal],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, NuevoMovimientoModal, Modal],
   templateUrl: './cuenta-detalle.html',
   styleUrl: './cuenta-detalle.css',
 })
@@ -65,6 +66,7 @@ export class CuentaDetalle implements OnInit {
   cargando = true;
   modalPagoTarjetaAbierto = false;
   modalMovimientoAbierto = false;
+  modalEditarMovimientoAbierto = false;
   filtrosAbiertos = false;
   grupoFiltroActivo: GrupoFiltroActivo = 'fecha';
   busquedaMovimiento = '';
@@ -275,6 +277,24 @@ export class CuentaDetalle implements OnInit {
   cerrarDetalleMovimiento(): void {
     this.modalMovimientoAbierto = false;
     this.movimientoSeleccionado = null;
+  }
+
+  abrirEditarMovimiento(): void {
+    if (!this.movimientoSeleccionado) return;
+
+    this.modalMovimientoAbierto = false;
+    this.modalEditarMovimientoAbierto = true;
+  }
+
+  cerrarEditarMovimiento(): void {
+    this.modalEditarMovimientoAbierto = false;
+    this.movimientoSeleccionado = null;
+  }
+
+  movimientoEditado(): void {
+    this.modalEditarMovimientoAbierto = false;
+    this.movimientoSeleccionado = null;
+    this.recargarDetalle();
   }
 
   abrirModalPagoTarjeta(): void {

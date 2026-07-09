@@ -181,5 +181,26 @@
     </div>
   </div>
 
+  <div class="mt-6 flex justify-end">
+    <button
+      type="button"
+      (click)="abrirEditarMovimiento()"
+      class="inline-flex items-center gap-2 rounded-base bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-900"
+    >
+      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.3 4.8 4.9 4.9M4 20h4.6L19.5 9.1a2.1 2.1 0 0 0-3-3L5.6 17H4v3Z" />
+      </svg>
+      Editar
+    </button>
+  </div>
+
 </app-modal>
+
+<app-nuevo-movimiento-modal
+  [isOpen]="modalEditarAbierto"
+  [movimientoEditar]="movimientoSeleccionado"
+  [cuentaInicialId]="movimientoSeleccionado.id_cuenta ?? movimientoSeleccionado.cuenta_id ?? ''"
+  (closed)="cerrarEditarMovimiento()"
+  (saved)="movimientoEditado()"
+/>
 }
