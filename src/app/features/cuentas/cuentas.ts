@@ -6,10 +6,11 @@ import { CuentasService } from '../../core/services/cuentas.service';
 import { ToastService } from '../../core/services/toast.service';
 import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-cuentas',
-  imports: [QuickAction, CrearCuentaModal, TransferirSaldo, PagarTarjetaModal, AccountCard],
+  imports: [QuickAction, CrearCuentaModal, TransferirSaldo, PagarTarjetaModal, AccountCard, RouterLink],
   templateUrl: './cuentas.html',
   styleUrl: './cuentas.css',
 })
