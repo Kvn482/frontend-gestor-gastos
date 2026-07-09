@@ -1,4 +1,4 @@
-<div class="max-w-7xl">
+<div class="max-w-7xl min-w-0">
   <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
     <div>
       <a
@@ -22,8 +22,8 @@
       Cargando detalle de cuenta...
     </div>
   } @else if (cuenta) {
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <aside class="space-y-5 md:col-span-1">
+    <div class="cuenta-detalle-layout">
+      <aside class="cuenta-detalle-resumen">
         <section
           class="relative min-h-64 overflow-hidden rounded-3xl p-6 text-white shadow-2xl shadow-slate-900/20"
           [style.backgroundColor]="cuenta.color"
@@ -121,8 +121,8 @@
         }
       </aside>
 
-      <section class="md:col-span-2">
-        <div class="relative rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#172033]">
+      <section class="cuenta-detalle-historial">
+        <div class="relative min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#172033]">
           <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Historial de movimientos</h2>
             <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Solo movimientos asociados a esta cuenta.</p>
@@ -280,6 +280,25 @@
               </div>
             </div>
 
+            <div class="border-b border-slate-100 p-4 dark:border-slate-700">
+              <div class="rounded-2xl bg-indigo-50 px-4 py-3 dark:bg-indigo-950/30">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="text-xs font-black uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+                    Total
+                  </p>
+                  <p
+                    class="text-lg font-black"
+                    [class.text-emerald-700]="totalNetoFiltrado >= 0"
+                    [class.dark:text-emerald-300]="totalNetoFiltrado >= 0"
+                    [class.text-rose-700]="totalNetoFiltrado < 0"
+                    [class.dark:text-rose-300]="totalNetoFiltrado < 0"
+                  >
+                    {{ totalNetoFiltrado | currency:'MXN':'symbol-narrow' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div class="max-h-[489px] overflow-y-auto md:hidden">
               @if (movimientos.length === 0) {
                 <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
@@ -339,7 +358,7 @@
             </div>
           </div>          
 
-          <div class="hidden max-h-[489px] overflow-auto md:block">
+          <div class="hidden max-h-[489px] min-w-0 overflow-auto md:block">
             <table class="w-full min-w-180 text-left text-sm">
               <thead class="bg-slate-50 text-xs font-bold uppercase text-slate-400 dark:bg-slate-900/60 dark:text-slate-500">
                 <tr>

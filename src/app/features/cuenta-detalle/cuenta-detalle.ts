@@ -185,6 +185,22 @@ export class CuentaDetalle implements OnInit {
     });
   }
 
+  get totalEntradasFiltradas(): number {
+    return this.movimientosFiltrados
+      .filter((movimiento) => movimiento.id_tipo_movimiento === 1)
+      .reduce((total, movimiento) => total + Math.abs(Number(movimiento.monto ?? 0)), 0);
+  }
+
+  get totalSalidasFiltradas(): number {
+    return this.movimientosFiltrados
+      .filter((movimiento) => movimiento.id_tipo_movimiento !== 1)
+      .reduce((total, movimiento) => total + Math.abs(Number(movimiento.monto ?? 0)), 0);
+  }
+
+  get totalNetoFiltrado(): number {
+    return this.totalEntradasFiltradas - this.totalSalidasFiltradas;
+  }
+
   get hayFiltrosActivos(): boolean {
     return this.totalFiltrosActivos > 0;
   }
