@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://monetra-app.up.railway.app',
+  apiUrl: 'https://backend-gestor-gastos-14j2.onrender.com',
 };
