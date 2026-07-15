@@ -7,6 +7,7 @@ import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
+import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
 import { Modal } from '../../shared/modal/modal';
 import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
 
@@ -39,6 +40,15 @@ interface MovimientoCuenta {
   notas?: string | null;
   cuenta?: string | null;
   tipo_cuenta?: string | null;
+  id_cuenta?: number | string | null;
+  cuenta_id?: number | string | null;
+  id_cuenta_origen?: number | string | null;
+  id_cuenta_destino?: number | string | null;
+  cuenta_origen_id?: number | string | null;
+  cuenta_destino_id?: number | string | null;
+  id_transferencia?: number | string | null;
+  id_transferencia_saldo?: number | string | null;
+  transferencia_id?: number | string | null;
 }
 
 type FiltroFecha =
@@ -55,7 +65,7 @@ type GrupoFiltroActivo = 'fecha' | 'tipo' | 'etiquetas';
 @Component({
   selector: 'app-cuenta-detalle',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, NuevoMovimientoModal, Modal],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, NuevoMovimientoModal, TransferirSaldo, Modal],
   templateUrl: './cuenta-detalle.html',
   styleUrl: './cuenta-detalle.css',
 })
@@ -67,6 +77,7 @@ export class CuentaDetalle implements OnInit {
   modalPagoTarjetaAbierto = false;
   modalMovimientoAbierto = false;
   modalEditarMovimientoAbierto = false;
+  modalEditarTransferenciaAbierto = false;
   filtrosAbiertos = false;
   grupoFiltroActivo: GrupoFiltroActivo = 'fecha';
   busquedaMovimiento = '';
@@ -283,16 +294,24 @@ export class CuentaDetalle implements OnInit {
     if (!this.movimientoSeleccionado) return;
 
     this.modalMovimientoAbierto = false;
+
+    if (this.esMovimientoTransferencia(this.movimientoSeleccionado)) {
+      this.modalEditarTransferenciaAbierto = true;
+      return;
+    }
+
     this.modalEditarMovimientoAbierto = true;
   }
 
   cerrarEditarMovimiento(): void {
     this.modalEditarMovimientoAbierto = false;
+    this.modalEditarTransferenciaAbierto = false;
     this.movimientoSeleccionado = null;
   }
 
   movimientoEditado(): void {
     this.modalEditarMovimientoAbierto = false;
+    this.modalEditarTransferenciaAbierto = false;
     this.movimientoSeleccionado = null;
     this.recargarDetalle();
   }
@@ -381,6 +400,28 @@ export class CuentaDetalle implements OnInit {
     });
 
     return Array.from(etiquetas.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  esMovimientoTransferencia(movimiento: MovimientoCuenta | null): boolean {
+    if (!movimiento) return false;
+
+    const tieneRelacionTransferencia = [
+      movimiento.id_transferencia,
+      movimiento.id_transferencia_saldo,
+      movimiento.transferencia_id,
+      movimiento.id_cuenta_origen,
+      movimiento.id_cuenta_destino,
+      movimiento.cuenta_origen_id,
+      movimiento.cuenta_destino_id,
+    ].some((valor) => valor !== null && valor !== undefined && valor !== '');
+
+    if (tieneRelacionTransferencia) return true;
+
+    return movimiento.etiquetas?.some((etiqueta) => {
+      const nombre = this.normalizarTexto(etiqueta.nombre ?? '');
+
+      return String(etiqueta.id) === '6' || nombre.includes('transfer');
+    }) ?? false;
   }
 
   private obtenerRangoFecha(): { desde: Date | null; hasta: Date | null } {

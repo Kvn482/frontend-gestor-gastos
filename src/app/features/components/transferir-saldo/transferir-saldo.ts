@@ -34,7 +34,9 @@ interface CuentaTransferencia {
 export class TransferirSaldo implements OnChanges {
   @Input() isOpen = false;
   @Input() cuentaOrigenId = '';
+  @Input() transferenciaEditar: any | null = null;
   @Output() closed = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
 
   cuentas: CuentaTransferencia[] = [];
   cargandoCuentas = signal(false);
@@ -63,6 +65,10 @@ export class TransferirSaldo implements OnChanges {
     private cd: ChangeDetectorRef,
     private movimientosService: MovimientosService
   ) {}
+
+  get editando(): boolean {
+    return !!this.transferenciaEditar;
+  }
 
   etiquetasDisponibles: { id: number; nombre: string; color: string }[] = [];
   etiquetasSeleccionadas: { id: number; nombre: string; color: string }[] = [];
@@ -101,6 +107,7 @@ export class TransferirSaldo implements OnChanges {
 
       this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
         this.etiquetasDisponibles = res;
+        this.precargarEtiquetasEdicion();
       });
     }
   }
@@ -199,6 +206,7 @@ export class TransferirSaldo implements OnChanges {
         this.transferencia.cuentaOrigen === this.transferencia.cuentaDestino,
       monto: !Number.isFinite(monto) || monto <= 0,
       saldoInsuficiente:
+        !this.editando &&
         !!this.transferencia.cuentaOrigen &&
         Number.isFinite(monto) &&
         monto > this.saldoDisponible,
@@ -240,17 +248,24 @@ export class TransferirSaldo implements OnChanges {
       etiquetas,
     };
 
-    this.cuentasService
-      .transferirSaldo(payload)
+    const request$ = this.editando
+      ? this.cuentasService.actualizarTransferenciaSaldo(this.obtenerIdTransferenciaEdicion(), payload)
+      : this.cuentasService.transferirSaldo(payload);
+
+    request$
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res: any) => {
-          this.toastService.show(res?.message ?? 'Transferencia realizada correctamente.', 'success');
+          this.toastService.show(
+            res?.message ?? (this.editando ? 'Transferencia actualizada correctamente.' : 'Transferencia realizada correctamente.'),
+            'success'
+          );
+          this.saved.emit();
           this.closed.emit();
         },
         error: (err) => {
           this.toastService.show(
-            err?.error?.message ?? 'No se pudo realizar la transferencia.',
+            err?.error?.message ?? (this.editando ? 'No se pudo actualizar la transferencia.' : 'No se pudo realizar la transferencia.'),
             'error',
           );
         },
@@ -278,6 +293,108 @@ export class TransferirSaldo implements OnChanges {
     this.etiquetasSeleccionadas = [];
     this.busquedaEtiqueta = '';
     this.mostrarDropdownEtiquetas = false;
+
+    if (this.editando) {
+      this.precargarTransferenciaEdicion();
+    }
+  }
+
+  private precargarTransferenciaEdicion(): void {
+    if (!this.transferenciaEditar) return;
+
+    const idCuentaMovimiento = String(
+      this.transferenciaEditar.id_cuenta ??
+      this.transferenciaEditar.cuenta_id ??
+      this.cuentaOrigenId ??
+      ''
+    );
+    const esEntrada = Number(this.transferenciaEditar.id_tipo_movimiento) === 1;
+    const idOrigenApi = this.obtenerPrimerValor(
+      this.transferenciaEditar.id_cuenta_origen,
+      this.transferenciaEditar.cuenta_origen_id,
+      this.transferenciaEditar.cuentaOrigen,
+    );
+    const idDestinoApi = this.obtenerPrimerValor(
+      this.transferenciaEditar.id_cuenta_destino,
+      this.transferenciaEditar.cuenta_destino_id,
+      this.transferenciaEditar.cuentaDestino,
+    );
+    const cuentasPrecargadas = this.resolverCuentasTransferenciaEdicion(
+      idCuentaMovimiento,
+      idOrigenApi,
+      idDestinoApi,
+      esEntrada,
+    );
+
+    this.transferencia = {
+      cuentaOrigen: cuentasPrecargadas.cuentaOrigen,
+      cuentaDestino: cuentasPrecargadas.cuentaDestino,
+      monto: Math.abs(Number(this.transferenciaEditar.monto ?? 0)),
+      descripcion: this.transferenciaEditar.descripcion ?? '',
+      notas: this.transferenciaEditar.notas ?? '',
+      etiquetas: [],
+    };
+
+    this.precargarEtiquetasEdicion();
+  }
+
+  private resolverCuentasTransferenciaEdicion(
+    idCuentaMovimiento: string,
+    idOrigenApi: string,
+    idDestinoApi: string,
+    esEntrada: boolean,
+  ): { cuentaOrigen: string; cuentaDestino: string } {
+    let cuentaOrigen = idOrigenApi;
+    let cuentaDestino = idDestinoApi;
+
+    if (esEntrada) {
+      if (idCuentaMovimiento) {
+        if (idOrigenApi === idCuentaMovimiento && idDestinoApi) {
+          cuentaOrigen = idDestinoApi;
+          cuentaDestino = idOrigenApi;
+        } else if (idDestinoApi !== idCuentaMovimiento) {
+          cuentaOrigen = idOrigenApi || idDestinoApi;
+          cuentaDestino = idCuentaMovimiento;
+        }
+      }
+    } else if (idCuentaMovimiento) {
+      if (idDestinoApi === idCuentaMovimiento && idOrigenApi) {
+        cuentaOrigen = idDestinoApi;
+        cuentaDestino = idOrigenApi;
+      } else if (idOrigenApi !== idCuentaMovimiento) {
+        cuentaOrigen = idCuentaMovimiento;
+        cuentaDestino = idDestinoApi || idOrigenApi;
+      }
+    }
+
+    return { cuentaOrigen, cuentaDestino };
+  }
+
+  private obtenerPrimerValor(...valores: unknown[]): string {
+    const valor = valores.find((item) => item !== null && item !== undefined && item !== '');
+
+    return valor === undefined ? '' : String(valor);
+  }
+
+  private precargarEtiquetasEdicion(): void {
+    if (!this.transferenciaEditar?.etiquetas?.length) return;
+
+    this.etiquetasSeleccionadas = this.transferenciaEditar.etiquetas.map((etiqueta: any) => {
+      const etiquetaDisponible = this.etiquetasDisponibles.find(
+        (item) => String(item.id) === String(etiqueta.id)
+      );
+
+      return etiquetaDisponible ?? etiqueta;
+    });
+  }
+
+  private obtenerIdTransferenciaEdicion(): string | number {
+    return (
+      this.transferenciaEditar?.id_transferencia ??
+      this.transferenciaEditar?.id_transferencia_saldo ??
+      this.transferenciaEditar?.transferencia_id ??
+      this.transferenciaEditar?.id
+    );
   }
 
   private toNumber(valor: number | string | null | undefined): number {

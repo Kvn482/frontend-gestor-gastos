@@ -58,8 +58,24 @@ export class CuentasService {
     monto: number;
     descripcion: string;
     notas?: string;
+    etiquetas?: number[];
   }) {
     return this.http.post(`${this.api}/transferir-saldo`, data).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
+  }
+
+  actualizarTransferenciaSaldo(id: number | string, data: {
+    id_cuenta_origen: string;
+    id_cuenta_destino: string;
+    monto: number;
+    descripcion: string;
+    notas?: string;
+    etiquetas?: number[];
+  }) {
+    return this.http.patch(`${this.api}/transferir-saldo/edit/${id}`, data).pipe(
       tap(() => {
         this.notificarCambioBalance();
       })

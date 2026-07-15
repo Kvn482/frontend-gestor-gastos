@@ -536,4 +536,12 @@
     (closed)="cerrarEditarMovimiento()"
     (saved)="movimientoEditado()"
   />
+
+  <app-transferir-saldo
+    [isOpen]="modalEditarTransferenciaAbierto"
+    [transferenciaEditar]="movimientoSeleccionado"
+    [cuentaOrigenId]="cuenta?.id ?? ''"
+    (closed)="cerrarEditarMovimiento()"
+    (saved)="movimientoEditado()"
+  />
 }

@@ -35,7 +35,7 @@ export class MovimientosService {
   }
 
   actualizarMovimiento(id: number | string, data: any) {
-    return this.http.put(`${this.api}/movimientos/${id}`, data).pipe(
+    return this.http.patch(`${this.api}/movimientos/edit/${id}`, data).pipe(
       tap(() => {
         this.notificarCambioBalance();
       })
