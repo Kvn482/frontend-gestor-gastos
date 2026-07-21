@@ -5,6 +5,10 @@ import { CurrencyPipe } from '@angular/common'
 import { formatearFechaLocal } from '../utils/fechas'
 import { NuevoMovimientoModal } from '../../features/components/nuevo-movimiento-modal/nuevo-movimiento-modal'
 import { TransferirSaldo } from '../../features/components/transferir-saldo/transferir-saldo'
+import { ToastService } from '../../core/services/toast.service'
+import { finalize } from 'rxjs'
+import Swal from 'sweetalert2'
+import { monetraSweetAlertClasses } from '../utils/sweet-alert'
 
 @Component({
   selector: 'app-ultimos-movimientos',
@@ -16,6 +20,7 @@ import { TransferirSaldo } from '../../features/components/transferir-saldo/tran
 export class UltimosMovimientos {
   constructor(
     private movimientosService: MovimientosService,
+    private toastService: ToastService,
     private cd: ChangeDetectorRef
   ) { }
 
@@ -24,6 +29,7 @@ export class UltimosMovimientos {
   modalEditarAbierto = false
   modalEditarTransferenciaAbierto = false
   movimientoSeleccionado: any = null
+  eliminandoMovimiento = false
 
   abrirDetalle(mov: any) {
     this.movimientoSeleccionado = mov
@@ -59,6 +65,44 @@ export class UltimosMovimientos {
     this.modalEditarTransferenciaAbierto = false
     this.movimientoSeleccionado = null
     this.cargarUltimosMovimientos()
+  }
+
+  async eliminarMovimiento() {
+    if (!this.movimientoSeleccionado || this.eliminandoMovimiento) return
+
+    const esTransferencia = this.esMovimientoTransferencia(this.movimientoSeleccionado)
+    const result = await Swal.fire({
+      title: esTransferencia ? 'Eliminar transferencia' : 'Eliminar movimiento',
+      text: esTransferencia
+        ? 'Esto eliminara la transferencia completa y ajustara ambas cuentas.'
+        : 'Este movimiento se eliminara y se ajustara el saldo de la cuenta.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
+      buttonsStyling: false,
+      customClass: monetraSweetAlertClasses,
+      reverseButtons: true,
+      focusCancel: true,
+    })
+
+    if (!result.isConfirmed) return
+
+    this.eliminandoMovimiento = true
+
+    this.movimientosService.eliminarMovimiento(this.movimientoSeleccionado.id)
+      .pipe(finalize(() => this.eliminandoMovimiento = false))
+      .subscribe({
+        next: (res: any) => {
+          this.toastService.show(res?.message ?? 'Movimiento eliminado correctamente.', 'success')
+          this.modalAbierto = false
+          this.movimientoSeleccionado = null
+          this.cargarUltimosMovimientos()
+        },
+        error: (err) => {
+          this.toastService.show(err?.error?.message ?? 'No se pudo eliminar el movimiento.', 'error')
+        },
+      })
   }
 
   esMovimientoTransferencia(movimiento: any): boolean {

@@ -181,11 +181,22 @@
     </div>
   </div>
 
-  <div class="mt-6 flex justify-end">
+  <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+    <button
+      type="button"
+      (click)="eliminarMovimiento()"
+      [disabled]="eliminandoMovimiento"
+      class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-base border border-rose-200 bg-white px-4 py-2.5 text-sm font-bold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/30 dark:focus:ring-rose-950"
+    >
+      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12m-10 0 1 13h6l1-13M9 7V4h6v3" />
+      </svg>
+      {{ eliminandoMovimiento ? 'Eliminando...' : 'Eliminar' }}
+    </button>
     <button
       type="button"
       (click)="abrirEditarMovimiento()"
-      class="inline-flex items-center gap-2 rounded-base bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-900"
+      class="inline-flex cursor-pointer items-center gap-2 rounded-base bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-900"
     >
       <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.3 4.8 4.9 4.9M4 20h4.6L19.5 9.1a2.1 2.1 0 0 0-3-3L5.6 17H4v3Z" />

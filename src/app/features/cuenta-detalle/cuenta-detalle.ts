@@ -2,14 +2,17 @@ import { CurrencyPipe, DatePipe, PercentPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of, switchMap } from 'rxjs';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
+import { ToastService } from '../../core/services/toast.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
 import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
 import { Modal } from '../../shared/modal/modal';
 import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
+import Swal from 'sweetalert2';
+import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
 
 type TipoCuenta = 'DEBITO' | 'EFECTIVO' | 'CREDITO';
 
@@ -78,6 +81,7 @@ export class CuentaDetalle implements OnInit {
   modalMovimientoAbierto = false;
   modalEditarMovimientoAbierto = false;
   modalEditarTransferenciaAbierto = false;
+  eliminandoMovimiento = false;
   filtrosAbiertos = false;
   grupoFiltroActivo: GrupoFiltroActivo = 'fecha';
   busquedaMovimiento = '';
@@ -94,6 +98,7 @@ export class CuentaDetalle implements OnInit {
     private route: ActivatedRoute,
     private cuentasService: CuentasService,
     private movimientosService: MovimientosService,
+    private toastService: ToastService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -314,6 +319,45 @@ export class CuentaDetalle implements OnInit {
     this.modalEditarTransferenciaAbierto = false;
     this.movimientoSeleccionado = null;
     this.recargarDetalle();
+  }
+
+  async eliminarMovimiento(): Promise<void> {
+    if (!this.movimientoSeleccionado || this.eliminandoMovimiento) return;
+
+    const esTransferencia = this.esMovimientoTransferencia(this.movimientoSeleccionado);
+    const result = await Swal.fire({
+      title: esTransferencia ? 'Eliminar transferencia' : 'Eliminar movimiento',
+      text: esTransferencia
+        ? 'Esto eliminara la transferencia completa y ajustara ambas cuentas.'
+        : 'Este movimiento se eliminara y se ajustara el saldo de la cuenta.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
+      buttonsStyling: false,
+      customClass: monetraSweetAlertClasses,
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.eliminandoMovimiento = true;
+
+    this.movimientosService
+      .eliminarMovimiento(this.movimientoSeleccionado.id)
+      .pipe(finalize(() => (this.eliminandoMovimiento = false)))
+      .subscribe({
+        next: (res: any) => {
+          this.toastService.show(res?.message ?? 'Movimiento eliminado correctamente.', 'success');
+          this.modalMovimientoAbierto = false;
+          this.movimientoSeleccionado = null;
+          this.recargarDetalle();
+        },
+        error: (err) => {
+          this.toastService.show(err?.error?.message ?? 'No se pudo eliminar el movimiento.', 'error');
+        },
+      });
   }
 
   abrirModalPagoTarjeta(): void {
