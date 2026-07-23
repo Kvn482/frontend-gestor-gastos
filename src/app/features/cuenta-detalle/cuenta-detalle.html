@@ -271,11 +271,43 @@
                   </span>
                 </div>
 
-                <div class="relative min-w-0 sm:w-72 md:w-80 lg:w-96">
+                <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                  <div class="flex min-w-0 items-center gap-2 md:hidden">
+                    <label for="ordenMovimientos" class="sr-only">Ordenar movimientos</label>
+                    <select
+                      id="ordenMovimientos"
+                      name="ordenMovimientos"
+                      [ngModel]="ordenCampo"
+                      (ngModelChange)="cambiarOrdenCampo($any($event))"
+                      class="h-10 min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-950"
+                    >
+                      <option value="fecha">Fecha</option>
+                      <option value="descripcion">Descripcion</option>
+                      <option value="etiquetas">Etiquetas</option>
+                      <option value="monto">Monto</option>
+                    </select>
+                    <button
+                      type="button"
+                      (click)="cambiarOrdenDireccion()"
+                      class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+                      [attr.aria-label]="'Cambiar orden: ' + etiquetaOrdenActual"
+                    >
+                      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        @if (ordenDireccion === 'asc') {
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 15 7-7 7 7" />
+                        } @else {
+                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7" />
+                        }
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="relative min-w-0 sm:w-72 md:w-80 lg:w-96">
                   <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
                   </svg>
                   <input type="search" name="busquedaMovimiento" [(ngModel)]="busquedaMovimiento" placeholder="Buscar movimiento" class="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-950" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -362,10 +394,78 @@
             <table class="w-full min-w-180 text-left text-sm">
               <thead class="bg-slate-50 text-xs font-bold uppercase text-slate-400 dark:bg-slate-900/60 dark:text-slate-500">
                 <tr>
-                  <th class="px-5 py-3">Fecha</th>
-                  <th class="px-5 py-3">Descripcion</th>
-                  <th class="px-5 py-3">Etiquetas</th>
-                  <th class="px-5 py-3 text-right">Monto</th>
+                  <th class="px-5 py-3">
+                    <button
+                      type="button"
+                      (click)="ordenarPor('fecha')"
+                      class="inline-flex items-center gap-1.5 font-bold uppercase transition hover:text-indigo-600 dark:hover:text-indigo-300"
+                    >
+                      Fecha
+                      @if (ordenCampo === 'fecha') {
+                        <svg class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          @if (ordenDireccion === 'asc') {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 15 7-7 7 7" />
+                          } @else {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m19 9-7 7-7-7" />
+                          }
+                        </svg>
+                      }
+                    </button>
+                  </th>
+                  <th class="px-5 py-3">
+                    <button
+                      type="button"
+                      (click)="ordenarPor('descripcion')"
+                      class="inline-flex items-center gap-1.5 font-bold uppercase transition hover:text-indigo-600 dark:hover:text-indigo-300"
+                    >
+                      Descripcion
+                      @if (ordenCampo === 'descripcion') {
+                        <svg class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          @if (ordenDireccion === 'asc') {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 15 7-7 7 7" />
+                          } @else {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m19 9-7 7-7-7" />
+                          }
+                        </svg>
+                      }
+                    </button>
+                  </th>
+                  <th class="px-5 py-3">
+                    <button
+                      type="button"
+                      (click)="ordenarPor('etiquetas')"
+                      class="inline-flex items-center gap-1.5 font-bold uppercase transition hover:text-indigo-600 dark:hover:text-indigo-300"
+                    >
+                      Etiquetas
+                      @if (ordenCampo === 'etiquetas') {
+                        <svg class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          @if (ordenDireccion === 'asc') {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 15 7-7 7 7" />
+                          } @else {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m19 9-7 7-7-7" />
+                          }
+                        </svg>
+                      }
+                    </button>
+                  </th>
+                  <th class="px-5 py-3 text-right">
+                    <button
+                      type="button"
+                      (click)="ordenarPor('monto')"
+                      class="inline-flex items-center gap-1.5 font-bold uppercase transition hover:text-indigo-600 dark:hover:text-indigo-300"
+                    >
+                      Monto
+                      @if (ordenCampo === 'monto') {
+                        <svg class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          @if (ordenDireccion === 'asc') {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m5 15 7-7 7 7" />
+                          } @else {
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m19 9-7 7-7-7" />
+                          }
+                        </svg>
+                      }
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-700">

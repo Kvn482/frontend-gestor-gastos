@@ -64,6 +64,8 @@ type FiltroFecha =
 
 type FiltroTipoMovimiento = 'todos' | 'ingresos' | 'gastos';
 type GrupoFiltroActivo = 'fecha' | 'tipo' | 'etiquetas';
+type OrdenMovimientoCampo = 'fecha' | 'descripcion' | 'etiquetas' | 'monto';
+type OrdenMovimientoDireccion = 'asc' | 'desc';
 
 @Component({
   selector: 'app-cuenta-detalle',
@@ -90,6 +92,8 @@ export class CuentaDetalle implements OnInit {
   filtroEtiqueta = 'todas';
   fechaDesde = '';
   fechaHasta = '';
+  ordenCampo: OrdenMovimientoCampo = 'fecha';
+  ordenDireccion: OrdenMovimientoDireccion = 'desc';
   etiquetasDisponibles: EtiquetaMovimiento[] = [];
 
   private idCuentaActual = '';
@@ -169,7 +173,7 @@ export class CuentaDetalle implements OnInit {
     const busqueda = this.normalizarTexto(this.busquedaMovimiento);
     const rango = this.obtenerRangoFecha();
 
-    return this.movimientos.filter((movimiento) => {
+    const movimientosFiltrados = this.movimientos.filter((movimiento) => {
       const fechaMovimiento = this.normalizarFecha(crearFechaLocal(movimiento.fecha));
 
       if (busqueda) {
@@ -201,6 +205,8 @@ export class CuentaDetalle implements OnInit {
 
       return true;
     });
+
+    return this.ordenarMovimientos(movimientosFiltrados);
   }
 
   get totalEntradasFiltradas(): number {
@@ -283,6 +289,18 @@ export class CuentaDetalle implements OnInit {
 
   get mostrarFechasPersonalizadas(): boolean {
     return this.filtroFecha === 'personalizado';
+  }
+
+  get etiquetaOrdenActual(): string {
+    const columnas: Record<OrdenMovimientoCampo, string> = {
+      fecha: 'Fecha',
+      descripcion: 'Descripcion',
+      etiquetas: 'Etiquetas',
+      monto: 'Monto',
+    };
+    const direccion = this.ordenDireccion === 'asc' ? 'ascendente' : 'descendente';
+
+    return `${columnas[this.ordenCampo]} ${direccion}`;
   }
 
   abrirDetalleMovimiento(movimiento: MovimientoCuenta): void {
@@ -392,6 +410,25 @@ export class CuentaDetalle implements OnInit {
     this.fechaHasta = '';
   }
 
+  ordenarPor(campo: OrdenMovimientoCampo): void {
+    if (this.ordenCampo === campo) {
+      this.ordenDireccion = this.ordenDireccion === 'asc' ? 'desc' : 'asc';
+      return;
+    }
+
+    this.ordenCampo = campo;
+    this.ordenDireccion = campo === 'fecha' || campo === 'monto' ? 'desc' : 'asc';
+  }
+
+  cambiarOrdenCampo(campo: OrdenMovimientoCampo): void {
+    this.ordenCampo = campo;
+    this.ordenDireccion = campo === 'fecha' || campo === 'monto' ? 'desc' : 'asc';
+  }
+
+  cambiarOrdenDireccion(): void {
+    this.ordenDireccion = this.ordenDireccion === 'asc' ? 'desc' : 'asc';
+  }
+
   private recargarDetalle(): void {
     if (!this.idCuentaActual) return;
 
@@ -444,6 +481,44 @@ export class CuentaDetalle implements OnInit {
     });
 
     return Array.from(etiquetas.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  private ordenarMovimientos(movimientos: MovimientoCuenta[]): MovimientoCuenta[] {
+    return [...movimientos].sort((a, b) => {
+      const comparacion = this.compararMovimientos(a, b, this.ordenCampo);
+      const comparacionOrdenada = this.ordenDireccion === 'asc' ? comparacion : comparacion * -1;
+
+      if (comparacionOrdenada !== 0) return comparacionOrdenada;
+
+      return this.compararMovimientos(a, b, 'fecha') * -1;
+    });
+  }
+
+  private compararMovimientos(
+    a: MovimientoCuenta,
+    b: MovimientoCuenta,
+    campo: OrdenMovimientoCampo
+  ): number {
+    if (campo === 'fecha') {
+      return crearFechaLocal(a.fecha).getTime() - crearFechaLocal(b.fecha).getTime();
+    }
+
+    if (campo === 'monto') {
+      return Math.abs(Number(a.monto ?? 0)) - Math.abs(Number(b.monto ?? 0));
+    }
+
+    if (campo === 'etiquetas') {
+      return this.obtenerTextoEtiquetas(a).localeCompare(this.obtenerTextoEtiquetas(b));
+    }
+
+    return (a.descripcion ?? '').localeCompare(b.descripcion ?? '');
+  }
+
+  private obtenerTextoEtiquetas(movimiento: MovimientoCuenta): string {
+    return (movimiento.etiquetas ?? [])
+      .map((etiqueta) => etiqueta.nombre)
+      .sort((a, b) => a.localeCompare(b))
+      .join(', ');
   }
 
   esMovimientoTransferencia(movimiento: MovimientoCuenta | null): boolean {
