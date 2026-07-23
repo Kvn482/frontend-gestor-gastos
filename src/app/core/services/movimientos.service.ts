@@ -34,6 +34,22 @@ export class MovimientosService {
     );
   }
 
+  actualizarMovimiento(id: number | string, data: any) {
+    return this.http.patch(`${this.api}/movimientos/edit/${id}`, data).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
+  }
+
+  eliminarMovimiento(id: number | string) {
+    return this.http.delete(`${this.api}/movimientos/${id}`).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
+  }
+
   consultarBalanceGeneral() {
     return this.http.get<BalanceResponse>(`${this.api}/movimientos/balance-general`);
   }

@@ -1,4 +1,4 @@
-<app-modal #modal [isOpen]="isOpen" (closed)="closed.emit()" modalTitle="Nuevo Movimiento">
+<app-modal #modal [isOpen]="isOpen" (closed)="closed.emit()" [modalTitle]="editando ? 'Editar Movimiento' : 'Nuevo Movimiento'">
 
   <form class="w-full">
 
@@ -243,7 +243,7 @@
 
     <button (click)="guardar()" class="text-white bg-brand hover:bg-brand-strong cursor-pointer
       rounded-base text-sm px-4 py-2.5">
-      Guardar
+      {{ editando ? 'Actualizar' : 'Guardar' }}
     </button>
   </div>
 

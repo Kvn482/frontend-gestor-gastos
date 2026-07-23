@@ -2,12 +2,17 @@ import { CurrencyPipe, DatePipe, PercentPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of, switchMap } from 'rxjs';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
+import { ToastService } from '../../core/services/toast.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
+import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
+import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
 import { Modal } from '../../shared/modal/modal';
 import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
+import Swal from 'sweetalert2';
+import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
 
 type TipoCuenta = 'DEBITO' | 'EFECTIVO' | 'CREDITO';
 
@@ -38,6 +43,15 @@ interface MovimientoCuenta {
   notas?: string | null;
   cuenta?: string | null;
   tipo_cuenta?: string | null;
+  id_cuenta?: number | string | null;
+  cuenta_id?: number | string | null;
+  id_cuenta_origen?: number | string | null;
+  id_cuenta_destino?: number | string | null;
+  cuenta_origen_id?: number | string | null;
+  cuenta_destino_id?: number | string | null;
+  id_transferencia?: number | string | null;
+  id_transferencia_saldo?: number | string | null;
+  transferencia_id?: number | string | null;
 }
 
 type FiltroFecha =
@@ -54,7 +68,7 @@ type GrupoFiltroActivo = 'fecha' | 'tipo' | 'etiquetas';
 @Component({
   selector: 'app-cuenta-detalle',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, Modal],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, NuevoMovimientoModal, TransferirSaldo, Modal],
   templateUrl: './cuenta-detalle.html',
   styleUrl: './cuenta-detalle.css',
 })
@@ -65,6 +79,9 @@ export class CuentaDetalle implements OnInit {
   cargando = true;
   modalPagoTarjetaAbierto = false;
   modalMovimientoAbierto = false;
+  modalEditarMovimientoAbierto = false;
+  modalEditarTransferenciaAbierto = false;
+  eliminandoMovimiento = false;
   filtrosAbiertos = false;
   grupoFiltroActivo: GrupoFiltroActivo = 'fecha';
   busquedaMovimiento = '';
@@ -81,6 +98,7 @@ export class CuentaDetalle implements OnInit {
     private route: ActivatedRoute,
     private cuentasService: CuentasService,
     private movimientosService: MovimientosService,
+    private toastService: ToastService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -277,6 +295,71 @@ export class CuentaDetalle implements OnInit {
     this.movimientoSeleccionado = null;
   }
 
+  abrirEditarMovimiento(): void {
+    if (!this.movimientoSeleccionado) return;
+
+    this.modalMovimientoAbierto = false;
+
+    if (this.esMovimientoTransferencia(this.movimientoSeleccionado)) {
+      this.modalEditarTransferenciaAbierto = true;
+      return;
+    }
+
+    this.modalEditarMovimientoAbierto = true;
+  }
+
+  cerrarEditarMovimiento(): void {
+    this.modalEditarMovimientoAbierto = false;
+    this.modalEditarTransferenciaAbierto = false;
+    this.movimientoSeleccionado = null;
+  }
+
+  movimientoEditado(): void {
+    this.modalEditarMovimientoAbierto = false;
+    this.modalEditarTransferenciaAbierto = false;
+    this.movimientoSeleccionado = null;
+    this.recargarDetalle();
+  }
+
+  async eliminarMovimiento(): Promise<void> {
+    if (!this.movimientoSeleccionado || this.eliminandoMovimiento) return;
+
+    const esTransferencia = this.esMovimientoTransferencia(this.movimientoSeleccionado);
+    const result = await Swal.fire({
+      title: esTransferencia ? 'Eliminar transferencia' : 'Eliminar movimiento',
+      text: esTransferencia
+        ? 'Esto eliminara la transferencia completa y ajustara ambas cuentas.'
+        : 'Este movimiento se eliminara y se ajustara el saldo de la cuenta.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
+      buttonsStyling: false,
+      customClass: monetraSweetAlertClasses,
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.eliminandoMovimiento = true;
+
+    this.movimientosService
+      .eliminarMovimiento(this.movimientoSeleccionado.id)
+      .pipe(finalize(() => (this.eliminandoMovimiento = false)))
+      .subscribe({
+        next: (res: any) => {
+          this.toastService.show(res?.message ?? 'Movimiento eliminado correctamente.', 'success');
+          this.modalMovimientoAbierto = false;
+          this.movimientoSeleccionado = null;
+          this.recargarDetalle();
+        },
+        error: (err) => {
+          this.toastService.show(err?.error?.message ?? 'No se pudo eliminar el movimiento.', 'error');
+        },
+      });
+  }
+
   abrirModalPagoTarjeta(): void {
     if (!this.cuenta) return;
 
@@ -361,6 +444,28 @@ export class CuentaDetalle implements OnInit {
     });
 
     return Array.from(etiquetas.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  esMovimientoTransferencia(movimiento: MovimientoCuenta | null): boolean {
+    if (!movimiento) return false;
+
+    const tieneRelacionTransferencia = [
+      movimiento.id_transferencia,
+      movimiento.id_transferencia_saldo,
+      movimiento.transferencia_id,
+      movimiento.id_cuenta_origen,
+      movimiento.id_cuenta_destino,
+      movimiento.cuenta_origen_id,
+      movimiento.cuenta_destino_id,
+    ].some((valor) => valor !== null && valor !== undefined && valor !== '');
+
+    if (tieneRelacionTransferencia) return true;
+
+    return movimiento.etiquetas?.some((etiqueta) => {
+      const nombre = this.normalizarTexto(etiqueta.nombre ?? '');
+
+      return String(etiqueta.id) === '6' || nombre.includes('transfer');
+    }) ?? false;
   }
 
   private obtenerRangoFecha(): { desde: Date | null; hasta: Date | null } {

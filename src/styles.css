@@ -97,3 +97,106 @@
 body {
   background-color: #f1f5f9; /* slate-100 */
 }
+
+.monetra-swal-popup {
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #334155;
+  box-shadow: 0 24px 60px rgb(15 23 42 / 0.18);
+}
+
+.monetra-swal-title {
+  color: #0f172a;
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.monetra-swal-text {
+  color: #64748b;
+  font-size: 0.925rem;
+  font-weight: 500;
+}
+
+.monetra-swal-icon {
+  margin-top: 1.5rem;
+}
+
+.monetra-swal-actions {
+  gap: 0.75rem;
+}
+
+.monetra-swal-confirm,
+.monetra-swal-cancel {
+  min-width: 6.75rem;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.monetra-swal-confirm:disabled,
+.monetra-swal-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.monetra-swal-confirm {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.monetra-swal-confirm:hover {
+  background: #be123c;
+}
+
+.monetra-swal-confirm:focus {
+  box-shadow: 0 0 0 4px rgb(244 63 94 / 0.22);
+}
+
+.monetra-swal-cancel {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+}
+
+.monetra-swal-cancel:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.monetra-swal-cancel:focus {
+  box-shadow: 0 0 0 4px rgb(99 102 241 / 0.16);
+}
+
+.dark .swal2-container {
+  background: rgb(2 6 23 / 0.72) !important;
+}
+
+.dark .monetra-swal-popup {
+  border-color: #334155;
+  background: #172033;
+  color: #cbd5e1;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 0.38);
+}
+
+.dark .monetra-swal-title {
+  color: #ffffff;
+}
+
+.dark .monetra-swal-text {
+  color: #94a3b8;
+}
+
+.dark .monetra-swal-cancel {
+  border-color: #475569;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+
+.dark .monetra-swal-cancel:hover {
+  background: #1e293b;
+  color: #ffffff;
+}

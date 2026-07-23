@@ -15,7 +15,10 @@ import { CuentasService } from '../../../core/services/cuentas.service';
 })
 export class NuevoMovimientoModal implements OnChanges {
   @Input() isOpen: boolean = false;
+  @Input() movimientoEditar: any | null = null;
+  @Input() cuentaInicialId = '';
   @Output() closed = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
   @ViewChild('datepicker') datepickerInput!: ElementRef;
 
   constructor(
@@ -95,6 +98,10 @@ export class NuevoMovimientoModal implements OnChanges {
     return Number(this.movimiento.tipoMovimiento) === 2;
   }
 
+  get editando() {
+    return !!this.movimientoEditar;
+  }
+
   saldoMostradoCuenta(cuenta: {
     tipo: string;
     saldo_actual: number;
@@ -125,6 +132,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
       this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
         this.etiquetasDisponibles = res;
+        this.precargarEtiquetasEdicion();
       });
 
       this.movimientosService.consultarTiposMovimiento().subscribe((res: any) => {
@@ -139,7 +147,16 @@ export class NuevoMovimientoModal implements OnChanges {
 
         const cuentaEfectivo = this.cuentas.find(c => c.nombre === 'Efectivo');
 
-        if (cuentaEfectivo) {
+        if (this.editando) {
+          this.movimiento.cuenta = String(
+            this.movimientoEditar.id_cuenta ??
+            this.movimientoEditar.cuenta_id ??
+            this.cuentaInicialId ??
+            ''
+          );
+        } else if (this.cuentaInicialId) {
+          this.movimiento.cuenta = this.cuentaInicialId;
+        } else if (cuentaEfectivo) {
           this.movimiento.cuenta = cuentaEfectivo.id;
         }
 
@@ -147,6 +164,10 @@ export class NuevoMovimientoModal implements OnChanges {
       });
 
       setTimeout(() => this.initDatepicker(), 100);
+
+      if (this.editando) {
+        this.precargarMovimientoEdicion();
+      }
     }
   }
 
@@ -198,6 +219,50 @@ export class NuevoMovimientoModal implements OnChanges {
     this.mostrarDropdownEtiquetas = false;
   }
 
+  private precargarMovimientoEdicion() {
+    if (!this.movimientoEditar) return;
+
+    this.movimiento = {
+      tipoMovimiento: Number(this.movimientoEditar.id_tipo_movimiento ?? 0),
+      cuenta: String(
+        this.movimientoEditar.id_cuenta ??
+        this.movimientoEditar.cuenta_id ??
+        this.cuentaInicialId ??
+        ''
+      ),
+      etiquetas: [],
+      monto: Math.abs(Number(this.movimientoEditar.monto ?? 0)),
+      descripcion: this.movimientoEditar.descripcion ?? '',
+      notas: this.movimientoEditar.notas ?? '',
+      fecha: this.formatearFechaFormulario(this.movimientoEditar.fecha)
+    };
+
+    this.precargarEtiquetasEdicion();
+  }
+
+  private precargarEtiquetasEdicion() {
+    if (!this.movimientoEditar?.etiquetas?.length) return;
+
+    this.etiquetasSeleccionadas = this.movimientoEditar.etiquetas.map((etiqueta: any) => {
+      const etiquetaDisponible = this.etiquetasDisponibles.find(
+        (item) => String(item.id) === String(etiqueta.id)
+      );
+
+      return etiquetaDisponible ?? etiqueta;
+    });
+  }
+
+  private formatearFechaFormulario(fecha: string | null | undefined): string {
+    if (!fecha) return this.movimiento.fecha;
+
+    const [fechaBase] = fecha.split('T');
+    const partes = fechaBase.includes('-') ? fechaBase.split('-') : fechaBase.split('/');
+
+    if (partes.length !== 3) return fecha;
+
+    return `${partes[0]}/${partes[1].padStart(2, '0')}/${partes[2].padStart(2, '0')}`;
+  }
+
   private initDatepicker() {
     if (typeof window !== 'undefined' && this.datepickerInput) {
       const Datepicker = (window as any).Datepicker;
@@ -225,7 +290,7 @@ export class NuevoMovimientoModal implements OnChanges {
     const errores = {
       tipoMovimiento: Number(this.movimiento.tipoMovimiento) === 0,
       monto: !Number.isFinite(monto) || monto <= 0,
-      saldoInsuficiente: !!this.movimiento.cuenta && this.esEgreso && Number.isFinite(monto) && monto > saldoDisponible,
+      saldoInsuficiente: !this.editando && !!this.movimiento.cuenta && this.esEgreso && Number.isFinite(monto) && monto > saldoDisponible,
       descripcion: this.movimiento.descripcion.trim() === '',
       fecha: !this.movimiento.fecha,
       cuenta: !this.movimiento.cuenta
@@ -263,10 +328,17 @@ export class NuevoMovimientoModal implements OnChanges {
     if (tieneErrores) this.isloading.set(false);
 
     if (!tieneErrores) {
-      this.movimiento.etiquetas = this.etiquetasSeleccionadas.map(e => e.id) as any;
-      this.movimiento.monto = Number(this.movimiento.tipoMovimiento) === 2 ? Number(this.movimiento.monto) * -1 : Number(this.movimiento.monto);
+      const payload = {
+        ...this.movimiento,
+        etiquetas: this.etiquetasSeleccionadas.map(e => e.id),
+        monto: Number(this.movimiento.tipoMovimiento) === 2 ? Math.abs(Number(this.movimiento.monto)) * -1 : Math.abs(Number(this.movimiento.monto))
+      };
 
-      this.movimientosService.crearMovimiento(this.movimiento)
+      const request$ = this.editando
+        ? this.movimientosService.actualizarMovimiento(this.movimientoEditar.id, payload)
+        : this.movimientosService.crearMovimiento(payload);
+
+      request$
       .pipe(
         finalize(() => {
           this.isloading.set(false);
@@ -275,6 +347,7 @@ export class NuevoMovimientoModal implements OnChanges {
         next: (res: any) => {
 
           this.toastService.show(res.message, 'success');
+          this.saved.emit();
           this.closed.emit();
 
         },

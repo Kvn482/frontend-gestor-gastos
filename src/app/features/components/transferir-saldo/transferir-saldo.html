@@ -1,4 +1,4 @@
-<app-modal #modal [isOpen]="isOpen" (closed)="closed.emit()" modalTitle="Transferir saldo">
+<app-modal #modal [isOpen]="isOpen" (closed)="closed.emit()" [modalTitle]="editando ? 'Editar transferencia' : 'Transferir saldo'">
   <form class="w-full" (ngSubmit)="transferir()">
     <div class="mb-6">
       <label for="cuenta-origen" class="block mb-2 text-xs font-medium text-body dark:text-slate-400">
@@ -207,7 +207,7 @@
         [disabled]="isLoading() || cargandoCuentas() || cuentas.length < 2"
         class="text-white bg-brand hover:bg-brand-strong cursor-pointer rounded-base text-sm px-4 py-2.5 shadow-lg shadow-brand/20 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {{ isLoading() ? 'Transfiriendo...' : 'Transferir' }}
+        {{ isLoading() ? (editando ? 'Guardando...' : 'Transfiriendo...') : (editando ? 'Guardar cambios' : 'Transferir') }}
       </button>
     </div>
   </form>
