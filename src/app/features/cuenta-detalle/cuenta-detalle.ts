@@ -64,6 +64,8 @@ type FiltroFecha =
 
 type FiltroTipoMovimiento = 'todos' | 'ingresos' | 'gastos';
 type GrupoFiltroActivo = 'fecha' | 'tipo' | 'etiquetas';
+type OrdenMovimientoCampo = 'fecha' | 'descripcion' | 'etiquetas' | 'monto';
+type OrdenMovimientoDireccion = 'asc' | 'desc';
 
 @Component({
   selector: 'app-cuenta-detalle',
@@ -87,9 +89,11 @@ export class CuentaDetalle implements OnInit {
   busquedaMovimiento = '';
   filtroFecha: FiltroFecha = 'ultimos_30_dias';
   filtroTipoMovimiento: FiltroTipoMovimiento = 'todos';
-  filtroEtiqueta = 'todas';
+  filtrosEtiquetas: string[] = [];
   fechaDesde = '';
   fechaHasta = '';
+  ordenCampo: OrdenMovimientoCampo = 'fecha';
+  ordenDireccion: OrdenMovimientoDireccion = 'desc';
   etiquetasDisponibles: EtiquetaMovimiento[] = [];
 
   private idCuentaActual = '';
@@ -169,7 +173,7 @@ export class CuentaDetalle implements OnInit {
     const busqueda = this.normalizarTexto(this.busquedaMovimiento);
     const rango = this.obtenerRangoFecha();
 
-    return this.movimientos.filter((movimiento) => {
+    const movimientosFiltrados = this.movimientos.filter((movimiento) => {
       const fechaMovimiento = this.normalizarFecha(crearFechaLocal(movimiento.fecha));
 
       if (busqueda) {
@@ -188,9 +192,9 @@ export class CuentaDetalle implements OnInit {
         return false;
       }
 
-      if (this.filtroEtiqueta !== 'todas') {
+      if (this.filtrosEtiquetas.length > 0) {
         const tieneEtiqueta = movimiento.etiquetas?.some(
-          (etiqueta) => String(etiqueta.id) === this.filtroEtiqueta
+          (etiqueta) => this.filtrosEtiquetas.includes(String(etiqueta.id))
         );
 
         if (!tieneEtiqueta) return false;
@@ -201,6 +205,8 @@ export class CuentaDetalle implements OnInit {
 
       return true;
     });
+
+    return this.ordenarMovimientos(movimientosFiltrados);
   }
 
   get totalEntradasFiltradas(): number {
@@ -229,7 +235,7 @@ export class CuentaDetalle implements OnInit {
     if (this.busquedaMovimiento.trim()) total++;
     if (this.filtroFecha !== 'todos') total++;
     if (this.filtroTipoMovimiento !== 'todos') total++;
-    if (this.filtroEtiqueta !== 'todas') total++;
+    if (this.filtrosEtiquetas.length > 0) total++;
 
     return total;
   }
@@ -241,12 +247,8 @@ export class CuentaDetalle implements OnInit {
       filtros.push(this.filtroTipoMovimiento === 'ingresos' ? 'Ingresos' : 'Gastos');
     }
 
-    if (this.filtroEtiqueta !== 'todas') {
-      const etiqueta = this.etiquetasDisponibles.find(
-        (item) => String(item.id) === this.filtroEtiqueta
-      );
-
-      if (etiqueta) filtros.push(etiqueta.nombre);
+    if (this.filtrosEtiquetas.length > 0) {
+      filtros.push(this.etiquetaFiltroEtiqueta);
     }
 
     return filtros.join(' / ');
@@ -260,12 +262,17 @@ export class CuentaDetalle implements OnInit {
   }
 
   get etiquetaFiltroEtiqueta(): string {
-    if (this.filtroEtiqueta === 'todas') return 'Todas';
+    if (this.filtrosEtiquetas.length === 0) return 'Todas';
 
-    return (
-      this.etiquetasDisponibles.find((etiqueta) => String(etiqueta.id) === this.filtroEtiqueta)
-        ?.nombre ?? 'Etiqueta'
+    const etiquetasSeleccionadas = this.etiquetasDisponibles.filter((etiqueta) =>
+      this.filtrosEtiquetas.includes(String(etiqueta.id))
     );
+
+    if (etiquetasSeleccionadas.length === 1) {
+      return etiquetasSeleccionadas[0].nombre;
+    }
+
+    return `${etiquetasSeleccionadas.length} etiquetas`;
   }
 
   get etiquetaFiltroFecha(): string {
@@ -283,6 +290,18 @@ export class CuentaDetalle implements OnInit {
 
   get mostrarFechasPersonalizadas(): boolean {
     return this.filtroFecha === 'personalizado';
+  }
+
+  get etiquetaOrdenActual(): string {
+    const columnas: Record<OrdenMovimientoCampo, string> = {
+      fecha: 'Fecha',
+      descripcion: 'Descripcion',
+      etiquetas: 'Etiquetas',
+      monto: 'Monto',
+    };
+    const direccion = this.ordenDireccion === 'asc' ? 'ascendente' : 'descendente';
+
+    return `${columnas[this.ordenCampo]} ${direccion}`;
   }
 
   abrirDetalleMovimiento(movimiento: MovimientoCuenta): void {
@@ -387,9 +406,47 @@ export class CuentaDetalle implements OnInit {
     this.busquedaMovimiento = '';
     this.filtroFecha = 'ultimos_30_dias';
     this.filtroTipoMovimiento = 'todos';
-    this.filtroEtiqueta = 'todas';
+    this.filtrosEtiquetas = [];
     this.fechaDesde = '';
     this.fechaHasta = '';
+  }
+
+  limpiarFiltroEtiquetas(): void {
+    this.filtrosEtiquetas = [];
+  }
+
+  toggleFiltroEtiqueta(idEtiqueta: number | string): void {
+    const id = String(idEtiqueta);
+
+    if (this.filtrosEtiquetas.includes(id)) {
+      this.filtrosEtiquetas = this.filtrosEtiquetas.filter((item) => item !== id);
+      return;
+    }
+
+    this.filtrosEtiquetas = [...this.filtrosEtiquetas, id];
+  }
+
+  etiquetaSeleccionada(idEtiqueta: number | string): boolean {
+    return this.filtrosEtiquetas.includes(String(idEtiqueta));
+  }
+
+  ordenarPor(campo: OrdenMovimientoCampo): void {
+    if (this.ordenCampo === campo) {
+      this.ordenDireccion = this.ordenDireccion === 'asc' ? 'desc' : 'asc';
+      return;
+    }
+
+    this.ordenCampo = campo;
+    this.ordenDireccion = campo === 'fecha' || campo === 'monto' ? 'desc' : 'asc';
+  }
+
+  cambiarOrdenCampo(campo: OrdenMovimientoCampo): void {
+    this.ordenCampo = campo;
+    this.ordenDireccion = campo === 'fecha' || campo === 'monto' ? 'desc' : 'asc';
+  }
+
+  cambiarOrdenDireccion(): void {
+    this.ordenDireccion = this.ordenDireccion === 'asc' ? 'desc' : 'asc';
   }
 
   private recargarDetalle(): void {
@@ -444,6 +501,44 @@ export class CuentaDetalle implements OnInit {
     });
 
     return Array.from(etiquetas.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }
+
+  private ordenarMovimientos(movimientos: MovimientoCuenta[]): MovimientoCuenta[] {
+    return [...movimientos].sort((a, b) => {
+      const comparacion = this.compararMovimientos(a, b, this.ordenCampo);
+      const comparacionOrdenada = this.ordenDireccion === 'asc' ? comparacion : comparacion * -1;
+
+      if (comparacionOrdenada !== 0) return comparacionOrdenada;
+
+      return this.compararMovimientos(a, b, 'fecha') * -1;
+    });
+  }
+
+  private compararMovimientos(
+    a: MovimientoCuenta,
+    b: MovimientoCuenta,
+    campo: OrdenMovimientoCampo
+  ): number {
+    if (campo === 'fecha') {
+      return crearFechaLocal(a.fecha).getTime() - crearFechaLocal(b.fecha).getTime();
+    }
+
+    if (campo === 'monto') {
+      return Math.abs(Number(a.monto ?? 0)) - Math.abs(Number(b.monto ?? 0));
+    }
+
+    if (campo === 'etiquetas') {
+      return this.obtenerTextoEtiquetas(a).localeCompare(this.obtenerTextoEtiquetas(b));
+    }
+
+    return (a.descripcion ?? '').localeCompare(b.descripcion ?? '');
+  }
+
+  private obtenerTextoEtiquetas(movimiento: MovimientoCuenta): string {
+    return (movimiento.etiquetas ?? [])
+      .map((etiqueta) => etiqueta.nombre)
+      .sort((a, b) => a.localeCompare(b))
+      .join(', ');
   }
 
   esMovimientoTransferencia(movimiento: MovimientoCuenta | null): boolean {
