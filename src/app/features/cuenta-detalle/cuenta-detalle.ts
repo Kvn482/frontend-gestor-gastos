@@ -89,7 +89,7 @@ export class CuentaDetalle implements OnInit {
   busquedaMovimiento = '';
   filtroFecha: FiltroFecha = 'ultimos_30_dias';
   filtroTipoMovimiento: FiltroTipoMovimiento = 'todos';
-  filtroEtiqueta = 'todas';
+  filtrosEtiquetas: string[] = [];
   fechaDesde = '';
   fechaHasta = '';
   ordenCampo: OrdenMovimientoCampo = 'fecha';
@@ -192,9 +192,9 @@ export class CuentaDetalle implements OnInit {
         return false;
       }
 
-      if (this.filtroEtiqueta !== 'todas') {
+      if (this.filtrosEtiquetas.length > 0) {
         const tieneEtiqueta = movimiento.etiquetas?.some(
-          (etiqueta) => String(etiqueta.id) === this.filtroEtiqueta
+          (etiqueta) => this.filtrosEtiquetas.includes(String(etiqueta.id))
         );
 
         if (!tieneEtiqueta) return false;
@@ -235,7 +235,7 @@ export class CuentaDetalle implements OnInit {
     if (this.busquedaMovimiento.trim()) total++;
     if (this.filtroFecha !== 'todos') total++;
     if (this.filtroTipoMovimiento !== 'todos') total++;
-    if (this.filtroEtiqueta !== 'todas') total++;
+    if (this.filtrosEtiquetas.length > 0) total++;
 
     return total;
   }
@@ -247,12 +247,8 @@ export class CuentaDetalle implements OnInit {
       filtros.push(this.filtroTipoMovimiento === 'ingresos' ? 'Ingresos' : 'Gastos');
     }
 
-    if (this.filtroEtiqueta !== 'todas') {
-      const etiqueta = this.etiquetasDisponibles.find(
-        (item) => String(item.id) === this.filtroEtiqueta
-      );
-
-      if (etiqueta) filtros.push(etiqueta.nombre);
+    if (this.filtrosEtiquetas.length > 0) {
+      filtros.push(this.etiquetaFiltroEtiqueta);
     }
 
     return filtros.join(' / ');
@@ -266,12 +262,17 @@ export class CuentaDetalle implements OnInit {
   }
 
   get etiquetaFiltroEtiqueta(): string {
-    if (this.filtroEtiqueta === 'todas') return 'Todas';
+    if (this.filtrosEtiquetas.length === 0) return 'Todas';
 
-    return (
-      this.etiquetasDisponibles.find((etiqueta) => String(etiqueta.id) === this.filtroEtiqueta)
-        ?.nombre ?? 'Etiqueta'
+    const etiquetasSeleccionadas = this.etiquetasDisponibles.filter((etiqueta) =>
+      this.filtrosEtiquetas.includes(String(etiqueta.id))
     );
+
+    if (etiquetasSeleccionadas.length === 1) {
+      return etiquetasSeleccionadas[0].nombre;
+    }
+
+    return `${etiquetasSeleccionadas.length} etiquetas`;
   }
 
   get etiquetaFiltroFecha(): string {
@@ -405,9 +406,28 @@ export class CuentaDetalle implements OnInit {
     this.busquedaMovimiento = '';
     this.filtroFecha = 'ultimos_30_dias';
     this.filtroTipoMovimiento = 'todos';
-    this.filtroEtiqueta = 'todas';
+    this.filtrosEtiquetas = [];
     this.fechaDesde = '';
     this.fechaHasta = '';
+  }
+
+  limpiarFiltroEtiquetas(): void {
+    this.filtrosEtiquetas = [];
+  }
+
+  toggleFiltroEtiqueta(idEtiqueta: number | string): void {
+    const id = String(idEtiqueta);
+
+    if (this.filtrosEtiquetas.includes(id)) {
+      this.filtrosEtiquetas = this.filtrosEtiquetas.filter((item) => item !== id);
+      return;
+    }
+
+    this.filtrosEtiquetas = [...this.filtrosEtiquetas, id];
+  }
+
+  etiquetaSeleccionada(idEtiqueta: number | string): boolean {
+    return this.filtrosEtiquetas.includes(String(idEtiqueta));
   }
 
   ordenarPor(campo: OrdenMovimientoCampo): void {
