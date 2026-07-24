@@ -1,0 +1,6 @@
+.chart-bar {
+  width: clamp(0.875rem, 3vw, 1.375rem);
+  min-height: 0.5rem;
+  border-radius: 999px 999px 0.25rem 0.25rem;
+  transition: height 180ms ease;
+}

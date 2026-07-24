@@ -11,7 +11,7 @@
 
 <!-- Acciones rápidas -->
 <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Acciones rápidas</p>
-<div class="grid grid-cols-3 gap-3 mb-6 max-w-5xl">
+<div class="grid grid-cols-2 gap-3 mb-6 max-w-5xl min-[900px]:grid-cols-4">
 
   <!-- Nuevo Movimiento -->
   <app-quick-action label="Nuevo Movimiento" (action)="abrirModalMovimiento()">
@@ -30,6 +30,15 @@
       <path fill-rule="evenodd"
         d="M12.293 3.293a1 1 0 0 1 1.414 0L16.414 6h-2.828l-1.293-1.293a1 1 0 0 1 0-1.414ZM12.414 6 9.707 3.293a1 1 0 0 0-1.414 0L5.586 6h6.828ZM4.586 7l-.056.055A2 2 0 0 0 3 9v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2h-4a5 5 0 0 1 0-10h4a2 2 0 0 0-1.53-1.945L17.414 7H4.586Z"
         clip-rule="evenodd" />
+    </svg>
+  </app-quick-action>
+
+  <!-- Analisis -->
+  <app-quick-action label="Analisis" route="/analisis">
+    <svg icon class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+      width="24" height="24" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M3 15v4m6-6v6m6-4v4m6-6v6M3 11l6-5 6 5 5.5-5.5" />
     </svg>
   </app-quick-action>
 
