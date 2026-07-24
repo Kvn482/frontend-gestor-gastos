@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://monetra-app.up.railway.app',
+  apiUrl: 'https://monetra-mlqi.onrender.com',
 };

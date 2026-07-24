@@ -1,0 +1,23 @@
+.global-loader-bar {
+  animation: global-loader-slide 1.1s ease-in-out infinite;
+}
+
+.global-loader-spinner {
+  animation: global-loader-spin 0.7s linear infinite;
+}
+
+@keyframes global-loader-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes global-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
