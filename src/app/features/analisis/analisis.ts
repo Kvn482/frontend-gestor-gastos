@@ -24,6 +24,7 @@ export class Analisis {
   cargando = true
   analisis: AnalisisResponse | null = null
   errorCarga = ''
+  tendenciaSeleccionadaIndex = 0
 
   periodos = [
     { valor: 'mes-actual', label: 'Mes actual' },
@@ -70,6 +71,7 @@ export class Analisis {
     this.analisisService.consultarAnalisis(this.periodoSeleccionado, this.cuentaSeleccionada).subscribe({
       next: (res) => {
         this.analisis = res
+        this.tendenciaSeleccionadaIndex = 0
         this.cargando = false
         this.cd.detectChanges()
       },
@@ -97,6 +99,10 @@ export class Analisis {
     return Math.max(8, Math.round((valor / this.maxTendencia()) * 100))
   }
 
+  seleccionarTendencia(index: number) {
+    this.tendenciaSeleccionadaIndex = index
+  }
+
   anchoCategoria(categoria: AnalisisCategoria): number {
     return Math.max(4, Math.min(100, categoria.porcentaje))
   }
@@ -121,14 +127,17 @@ export class Analisis {
     return item.ingresos - item.gastos
   }
 
-  tendenciaDetalle(item: AnalisisTendencia): string {
-    const moneda = new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-      maximumFractionDigits: 2,
-    })
+  balanceNetoClass(item: AnalisisTendencia): string {
+    const total = this.tendenciaTotal(item)
 
-    return `Ingresos: ${moneda.format(item.ingresos)} | Gastos: ${moneda.format(item.gastos)}`
+    if (total > 0) return 'net-badge-positive'
+    if (total < 0) return 'net-badge-negative'
+
+    return 'net-badge-neutral'
+  }
+
+  get tendenciaSeleccionada(): AnalisisTendencia | null {
+    return this.tendencia[this.tendenciaSeleccionadaIndex] ?? this.tendencia.at(-1) ?? null
   }
 
   variacionTexto(valor: number): string {
