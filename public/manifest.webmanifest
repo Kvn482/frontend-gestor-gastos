@@ -1,7 +1,7 @@
 {
-  "name": "Gestor Gastos",
-  "short_name": "Gastos",
-  "description": "Aplicacion para gestionar gastos, cuentas y movimientos.",
+  "name": "Monetra",
+  "short_name": "Monetra",
+  "description": "Aplicacion para gestionar gastos, cuentas y movimientos con Monetra.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
