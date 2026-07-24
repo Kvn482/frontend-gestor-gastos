@@ -130,24 +130,25 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 items-end gap-4 border-b border-slate-100 pb-4 dark:border-slate-700">
+        <div class="grid items-end gap-4 border-b border-slate-100 pb-4 dark:border-slate-700" [ngClass]="tendenciaGridClass()">
           @for (item of tendencia; track item.etiqueta) {
-            <div class="flex h-72 flex-col justify-end gap-3">
+            <div class="flex h-72 flex-col justify-end gap-3" [title]="tendenciaDetalle(item)">
               <div class="flex flex-1 items-end justify-center gap-2">
                 <div class="chart-bar bg-emerald-500" [style.height.%]="alturaBarra(item.ingresos)" [title]="item.ingresos | currency:'MXN':'symbol-narrow'"></div>
                 <div class="chart-bar bg-rose-500" [style.height.%]="alturaBarra(item.gastos)" [title]="item.gastos | currency:'MXN':'symbol-narrow'"></div>
               </div>
               <div class="text-center">
                 <p class="text-xs font-black text-slate-700 dark:text-slate-200">{{ item.etiqueta }}</p>
-                <p
-                  class="text-xs font-bold"
-                  [class.text-emerald-600]="tendenciaTotal(item) >= 0"
-                  [class.dark:text-emerald-400]="tendenciaTotal(item) >= 0"
-                  [class.text-rose-600]="tendenciaTotal(item) < 0"
-                  [class.dark:text-rose-400]="tendenciaTotal(item) < 0"
-                >
-                  {{ tendenciaTotal(item) | currency:'MXN':'symbol-narrow' }}
-                </p>
+                <div class="mt-1 grid gap-0.5 text-xs font-black leading-tight">
+                  <span
+                    [class.text-emerald-600]="tendenciaTotal(item) >= 0"
+                    [class.dark:text-emerald-400]="tendenciaTotal(item) >= 0"
+                    [class.text-rose-600]="tendenciaTotal(item) < 0"
+                    [class.dark:text-rose-400]="tendenciaTotal(item) < 0"
+                  >
+                    {{ tendenciaTotal(item) | currency:'MXN':'symbol-narrow' }}
+                  </span>
+                </div>
               </div>
             </div>
           }

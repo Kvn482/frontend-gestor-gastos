@@ -101,12 +101,34 @@ export class Analisis {
     return Math.max(4, Math.min(100, categoria.porcentaje))
   }
 
+  tendenciaGridClass(): string {
+    const total = this.tendencia.length
+
+    if (total <= 1) return 'grid-cols-1'
+    if (total === 2) return 'grid-cols-2'
+    if (total === 3) return 'grid-cols-2 min-[420px]:grid-cols-3 xl:grid-cols-3'
+    if (total === 4) return 'grid-cols-2 xl:grid-cols-4'
+    if (total === 5) return 'grid-cols-2 min-[420px]:grid-cols-3 xl:grid-cols-5'
+
+    return 'grid-cols-2 min-[420px]:grid-cols-3 xl:grid-cols-6'
+  }
+
   tasaAhorroClamped(): number {
     return Math.max(0, Math.min(100, this.resumen?.tasaAhorro ?? 0))
   }
 
   tendenciaTotal(item: AnalisisTendencia): number {
     return item.ingresos - item.gastos
+  }
+
+  tendenciaDetalle(item: AnalisisTendencia): string {
+    const moneda = new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      maximumFractionDigits: 2,
+    })
+
+    return `Ingresos: ${moneda.format(item.ingresos)} | Gastos: ${moneda.format(item.gastos)}`
   }
 
   variacionTexto(valor: number): string {
