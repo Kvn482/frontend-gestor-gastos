@@ -12,6 +12,7 @@ import { NotFound } from './features/not-found/not-found';
 import { ResendActivation } from './features/auth/resend-activation/resend-activation';
 import { Cuentas } from './features/cuentas/cuentas';
 import { CuentaDetalle } from './features/cuenta-detalle/cuenta-detalle';
+import { Analisis } from './features/analisis/analisis';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -46,6 +47,7 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             { path: 'dashboard', component: Dashboard },
+            { path: 'analisis', component: Analisis },
             { path: 'configuracion', component: Settings },
             { path: 'cuentas', component: Cuentas },
             { path: 'cuentas/:id', component: CuentaDetalle },
