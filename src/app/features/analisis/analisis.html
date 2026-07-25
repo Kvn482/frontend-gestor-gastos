@@ -1,4 +1,4 @@
-<div class="max-w-6xl">
+<div class="min-w-0 max-w-6xl">
   <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
     <div>
       <a
@@ -117,8 +117,8 @@
       </section>
     </div>
 
-    <div class="mb-6 grid items-start gap-6 xl:grid-cols-[1.35fr_1fr]">
-      <section class="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+    <div class="mb-6 grid min-w-0 items-start gap-6 xl:grid-cols-[1.35fr_1fr]">
+      <section class="min-w-0 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
         <div class="mb-4 flex items-center justify-between gap-4">
           <div>
             <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">Tendencia</p>
@@ -146,12 +146,12 @@
           </div>
         </div>
 
-        <div class="grid items-end gap-4 border-b border-slate-100 pb-4 dark:border-slate-700" [ngClass]="tendenciaGridClass()">
+        <div class="custom-scrollbar flex w-full max-w-full items-end gap-4 overflow-x-auto border-b border-slate-100 pb-4 dark:border-slate-700">
           @for (item of tendencia; track item.etiqueta; let i = $index) {
             <button
               type="button"
               (click)="seleccionarTendencia(i)"
-              class="chart-group flex h-72 flex-col justify-end gap-3 rounded-xl px-1 py-2 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/20"
+              class="chart-group flex h-72 w-20 shrink-0 grow flex-col justify-end gap-3 rounded-xl px-1 py-2 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 md:w-auto"
               [class.chart-group-active]="i === tendenciaSeleccionadaIndex"
               [class.chart-group-muted]="i !== tendenciaSeleccionadaIndex"
               [attr.aria-label]="'Ver detalle de ' + item.etiqueta"
