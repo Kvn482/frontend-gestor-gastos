@@ -1,0 +1,374 @@
+<div class="max-w-7xl min-w-0">
+  <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <a
+        routerLink="/cuentas"
+        class="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
+      >
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7" />
+        </svg>
+        Cuentas
+      </a>
+      <h1 class="text-2xl font-bold text-slate-950 dark:text-white">Movimientos</h1>
+      <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Explora registros por cuenta, fecha, tipo y etiqueta.</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="cargarDatos()"
+      class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+    >
+      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.7 7.7A8 8 0 1 0 20 13m0-6v6h-6" />
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  @if (cargando) {
+    <div class="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-400">
+      Cargando movimientos...
+    </div>
+  } @else if (errorCarga) {
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+      <p class="text-sm font-black text-slate-900 dark:text-white">Movimientos no disponibles</p>
+      <p class="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ errorCarga }}</p>
+      <button
+        type="button"
+        (click)="cargarDatos()"
+        class="mt-5 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 dark:focus:ring-indigo-950"
+      >
+        Reintentar
+      </button>
+    </section>
+  } @else {
+    <div class="mb-5 grid gap-3 md:grid-cols-3">
+      <section class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-900/60 dark:bg-emerald-950/25">
+        <p class="text-xs font-black uppercase tracking-wide text-emerald-600 dark:text-emerald-400">Ingresos</p>
+        <p class="mt-2 text-xl font-black text-emerald-700 dark:text-emerald-300">{{ totalEntradasFiltradas | currency:'MXN':'symbol-narrow' }}</p>
+      </section>
+      <section class="rounded-2xl border border-rose-100 bg-rose-50 p-4 dark:border-rose-900/60 dark:bg-rose-950/25">
+        <p class="text-xs font-black uppercase tracking-wide text-rose-600 dark:text-rose-400">Gastos</p>
+        <p class="mt-2 text-xl font-black text-rose-700 dark:text-rose-300">{{ totalSalidasFiltradas | currency:'MXN':'symbol-narrow' }}</p>
+      </section>
+      <section class="rounded-2xl border border-indigo-100 bg-indigo-50 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/25">
+        <p class="text-xs font-black uppercase tracking-wide text-indigo-600 dark:text-indigo-400">Balance</p>
+        <p class="mt-2 text-xl font-black" [class.text-emerald-700]="totalNetoFiltrado >= 0" [class.text-rose-700]="totalNetoFiltrado < 0" [class.dark:text-emerald-300]="totalNetoFiltrado >= 0" [class.dark:text-rose-300]="totalNetoFiltrado < 0">{{ totalNetoFiltrado | currency:'MXN':'symbol-narrow' }}</p>
+      </section>
+    </div>
+
+    <section class="overflow-visible rounded-t-2xl rounded-b-none border border-b-0 border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+      <div class="border-b border-slate-100 px-5 py-4 dark:border-slate-700">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Historial</h2>
+        <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">{{ movimientosFiltrados.length }} registros encontrados.</p>
+      </div>
+
+      <div class="border-b border-slate-100 p-4 dark:border-slate-700">
+        <div class="grid gap-3 md:flex md:items-center md:justify-between">
+          <div class="order-2 flex min-w-0 items-center gap-2 md:order-1 md:flex-wrap md:justify-end">
+            <div class="relative w-auto">
+              <button
+                type="button"
+                (click)="toggleFiltros()"
+                class="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200 dark:hover:border-indigo-500 dark:hover:text-indigo-300"
+              >
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.8 4H5.2a1 1 0 0 0-.8 1.6l5 6.7V19l5.2-2.4v-4.3l5-6.7A1 1 0 0 0 18.8 4Z" />
+                </svg>
+                Filtrar
+                @if (hayFiltrosActivos) {
+                  <span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1.5 text-xs font-black text-white">
+                    {{ totalFiltrosActivos }}
+                  </span>
+                }
+              </button>
+
+              @if (filtrosAbiertos) {
+                <div class="absolute left-0 top-11 z-30 w-[calc(100vw-2rem)] max-w-[22rem] overflow-hidden rounded-lg border border-slate-700 bg-[#242424] text-slate-100 shadow-2xl shadow-slate-950/30 md:w-[34rem] md:max-w-[34rem]">
+                  <div class="flex items-center justify-between gap-4 border-b border-white/10 px-3 py-2.5">
+                    <span class="text-xs font-black">Filtrar por</span>
+                    <button type="button" (click)="limpiarFiltros()" class="text-xs font-bold text-violet-300 transition hover:text-violet-200">
+                      Borrar todos
+                    </button>
+                  </div>
+
+                  <div class="grid md:grid-cols-[12rem_minmax(0,1fr)]">
+                    <div class="border-b border-white/10 p-2 md:border-b-0 md:border-r">
+                      <button type="button" (click)="seleccionarGrupoFiltro('fecha')" class="flex w-full items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="grupoFiltroActivo === 'fecha'" [class.border-slate-500]="grupoFiltroActivo === 'fecha'">
+                        <span class="flex min-w-0 items-center gap-2">
+                          <svg class="h-4 w-4 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+                          </svg>
+                          <span class="truncate">Fecha</span>
+                        </span>
+                        <span class="truncate text-xs text-slate-400">{{ etiquetaFiltroFecha }}</span>
+                      </button>
+
+                      <button type="button" (click)="seleccionarGrupoFiltro('tipo')" class="mt-1 flex w-full items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="grupoFiltroActivo === 'tipo'" [class.border-slate-500]="grupoFiltroActivo === 'tipo'">
+                        <span class="flex min-w-0 items-center gap-2">
+                          <svg class="h-4 w-4 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18m4-14.5H9.5a2.5 2.5 0 0 0 0 5H14a2.5 2.5 0 0 1 0 5H7" />
+                          </svg>
+                          <span class="truncate">Tipo</span>
+                        </span>
+                        <span class="truncate text-xs text-slate-400">{{ etiquetaFiltroTipo }}</span>
+                      </button>
+
+                      <button type="button" (click)="seleccionarGrupoFiltro('cuenta')" class="mt-1 flex w-full items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="grupoFiltroActivo === 'cuenta'" [class.border-slate-500]="grupoFiltroActivo === 'cuenta'">
+                        <span class="flex min-w-0 items-center gap-2">
+                          <svg class="h-4 w-4 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z" />
+                          </svg>
+                          <span class="truncate">Cuenta</span>
+                        </span>
+                        <span class="truncate text-xs text-slate-400">{{ etiquetaFiltroCuenta }}</span>
+                      </button>
+
+                      <button type="button" (click)="seleccionarGrupoFiltro('transferencias')" class="mt-1 flex w-full items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="grupoFiltroActivo === 'transferencias'" [class.border-slate-500]="grupoFiltroActivo === 'transferencias'">
+                        <span class="flex min-w-0 items-center gap-2">
+                          <svg class="h-4 w-4 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m17 2 4 4-4 4M3 11V8a2 2 0 0 1 2-2h16M7 22l-4-4 4-4m14-1v3a2 2 0 0 1-2 2H3" />
+                          </svg>
+                          <span class="truncate">Transferencias</span>
+                        </span>
+                        <span class="truncate text-xs text-slate-400">{{ etiquetaFiltroTransferencias }}</span>
+                      </button>
+
+                      <button type="button" (click)="seleccionarGrupoFiltro('etiquetas')" class="mt-1 flex w-full items-center justify-between gap-2 rounded-md border border-transparent px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="grupoFiltroActivo === 'etiquetas'" [class.border-slate-500]="grupoFiltroActivo === 'etiquetas'">
+                        <span class="flex min-w-0 items-center gap-2">
+                          <svg class="h-4 w-4 text-violet-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.59 13.41 12 22l-9-9V4h9l8.59 8.59a2 2 0 0 1 0 2.82ZM7.5 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+                          </svg>
+                          <span class="truncate">Etiquetas</span>
+                        </span>
+                        <span class="truncate text-xs text-slate-400">{{ etiquetaFiltroEtiqueta }}</span>
+                      </button>
+                    </div>
+
+                    <div class="max-h-56 overflow-y-auto p-2">
+                      @if (grupoFiltroActivo === 'fecha') {
+                        <div class="grid gap-1">
+                          <button type="button" (click)="filtroFecha = 'todos'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroFecha === 'todos'">
+                            Todos
+                            @if (filtroFecha === 'todos') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroFecha = 'ultimos_7_dias'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroFecha === 'ultimos_7_dias'">
+                            Ultimos 7 dias
+                            @if (filtroFecha === 'ultimos_7_dias') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroFecha = 'ultimos_30_dias'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroFecha === 'ultimos_30_dias'">
+                            Ultimos 30 dias
+                            @if (filtroFecha === 'ultimos_30_dias') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroFecha = 'este_mes'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroFecha === 'este_mes'">
+                            Este mes
+                            @if (filtroFecha === 'este_mes') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroFecha = 'mes_anterior'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroFecha === 'mes_anterior'">
+                            Mes anterior
+                            @if (filtroFecha === 'mes_anterior') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroFecha = 'personalizado'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroFecha === 'personalizado'">
+                            Personalizado
+                            @if (filtroFecha === 'personalizado') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+
+                          @if (mostrarFechasPersonalizadas) {
+                            <div class="mt-1.5 grid grid-cols-2 gap-2 px-1">
+                              <input type="date" name="fechaDesde" [(ngModel)]="fechaDesde" class="h-8 min-w-0 rounded-md border border-white/10 bg-black/20 px-2 text-xs font-semibold text-slate-100 outline-none focus:border-violet-300" />
+                              <input type="date" name="fechaHasta" [(ngModel)]="fechaHasta" class="h-8 min-w-0 rounded-md border border-white/10 bg-black/20 px-2 text-xs font-semibold text-slate-100 outline-none focus:border-violet-300" />
+                            </div>
+                          }
+                        </div>
+                      } @else if (grupoFiltroActivo === 'tipo') {
+                        <div class="grid gap-1">
+                          <button type="button" (click)="filtroTipoMovimiento = 'todos'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroTipoMovimiento === 'todos'">
+                            Todos
+                            @if (filtroTipoMovimiento === 'todos') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroTipoMovimiento = 'ingresos'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroTipoMovimiento === 'ingresos'">
+                            Ingresos
+                            @if (filtroTipoMovimiento === 'ingresos') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          <button type="button" (click)="filtroTipoMovimiento = 'gastos'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtroTipoMovimiento === 'gastos'">
+                            Gastos
+                            @if (filtroTipoMovimiento === 'gastos') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                        </div>
+                      } @else if (grupoFiltroActivo === 'cuenta') {
+                        <div class="grid gap-1">
+                          <button type="button" (click)="cuentaSeleccionada = 'todas'" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="cuentaSeleccionada === 'todas'">
+                            Todas las cuentas
+                            @if (cuentaSeleccionada === 'todas') { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          @for (cuenta of cuentas; track cuenta.id) {
+                            <button type="button" (click)="cuentaSeleccionada = '' + cuenta.id" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="cuentaSeleccionada === '' + cuenta.id">
+                              <span class="truncate">{{ cuenta.nombre }}</span>
+                              @if (cuentaSeleccionada === '' + cuenta.id) { <span class="text-violet-300">&#10003;</span> }
+                            </button>
+                          } @empty {
+                            <span class="px-3 py-6 text-center text-sm font-semibold text-slate-400">Sin cuentas disponibles</span>
+                          }
+                        </div>
+                      } @else if (grupoFiltroActivo === 'transferencias') {
+                        <div class="grid gap-3 p-1">
+                          <button type="button" (click)="toggleMovimientosEntreCuentas()" class="flex items-center justify-between gap-4 rounded-md px-2 py-2 text-left transition hover:bg-white/10">
+                            <span class="min-w-0">
+                              <span class="block text-xs font-black text-slate-100">Entre mis cuentas</span>
+                              <span class="mt-0.5 block text-xs font-semibold text-slate-400">
+                                {{ mostrarMovimientosEntreCuentas ? 'Mostrando transferencias internas' : 'Ocultando transferencias internas' }}
+                              </span>
+                            </span>
+                            <span
+                              class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition"
+                              [class.bg-indigo-600]="mostrarMovimientosEntreCuentas"
+                              [class.bg-slate-700]="!mostrarMovimientosEntreCuentas"
+                            >
+                              <span
+                                class="h-5 w-5 rounded-full bg-white shadow-sm transition"
+                                [class.translate-x-5]="mostrarMovimientosEntreCuentas"
+                              ></span>
+                            </span>
+                          </button>
+                        </div>
+                      } @else {
+                        <div class="grid gap-1">
+                          <button type="button" (click)="limpiarFiltroEtiquetas()" class="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="filtrosEtiquetas.length === 0 && !categoriaSeleccionada">
+                            Todas las etiquetas
+                            @if (filtrosEtiquetas.length === 0 && !categoriaSeleccionada) { <span class="text-violet-300">&#10003;</span> }
+                          </button>
+                          @for (etiqueta of etiquetasDisponibles; track etiqueta.id) {
+                            <button type="button" (click)="toggleFiltroEtiqueta(etiqueta.id)" class="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="etiquetaSeleccionada(etiqueta.id)">
+                              <span class="flex min-w-0 items-center gap-2">
+                                <span class="h-2.5 w-2.5 rounded-full" [style.backgroundColor]="etiqueta.color"></span>
+                                <span class="truncate">{{ etiqueta.nombre }}</span>
+                              </span>
+                              <span class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white/20 text-[10px] text-violet-300" [class.bg-violet-500]="etiquetaSeleccionada(etiqueta.id)" [class.border-violet-400]="etiquetaSeleccionada(etiqueta.id)" [class.text-white]="etiquetaSeleccionada(etiqueta.id)">
+                                @if (etiquetaSeleccionada(etiqueta.id)) { &#10003; }
+                              </span>
+                            </button>
+                          } @empty {
+                            <span class="px-3 py-6 text-center text-sm font-semibold text-slate-400">Sin etiquetas disponibles</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="-mr-4 min-w-0 flex-1 overflow-x-auto pr-4 md:hidden">
+              <div class="inline-flex min-w-max items-center gap-1.5 rounded-xl bg-slate-100 p-1 dark:bg-slate-900/70">
+                <button type="button" (click)="ordenarPor('fecha')" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-black text-slate-500 transition dark:text-slate-400" [class.bg-white]="ordenCampo === 'fecha'" [class.text-indigo-600]="ordenCampo === 'fecha'" [class.shadow-sm]="ordenCampo === 'fecha'" [class.dark:bg-slate-800]="ordenCampo === 'fecha'" [class.dark:text-indigo-300]="ordenCampo === 'fecha'">
+                  Fecha
+                </button>
+                <button type="button" (click)="ordenarPor('monto')" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-black text-slate-500 transition dark:text-slate-400" [class.bg-white]="ordenCampo === 'monto'" [class.text-indigo-600]="ordenCampo === 'monto'" [class.shadow-sm]="ordenCampo === 'monto'" [class.dark:bg-slate-800]="ordenCampo === 'monto'" [class.dark:text-indigo-300]="ordenCampo === 'monto'">
+                  Monto
+                </button>
+                <button type="button" (click)="ordenarPor('cuenta')" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-black text-slate-500 transition dark:text-slate-400" [class.bg-white]="ordenCampo === 'cuenta'" [class.text-indigo-600]="ordenCampo === 'cuenta'" [class.shadow-sm]="ordenCampo === 'cuenta'" [class.dark:bg-slate-800]="ordenCampo === 'cuenta'" [class.dark:text-indigo-300]="ordenCampo === 'cuenta'">
+                  Cuenta
+                </button>
+                <button type="button" (click)="ordenarPor('descripcion')" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-black text-slate-500 transition dark:text-slate-400" [class.bg-white]="ordenCampo === 'descripcion'" [class.text-indigo-600]="ordenCampo === 'descripcion'" [class.shadow-sm]="ordenCampo === 'descripcion'" [class.dark:bg-slate-800]="ordenCampo === 'descripcion'" [class.dark:text-indigo-300]="ordenCampo === 'descripcion'">
+                  Descripcion
+                </button>
+                <button type="button" (click)="ordenarPor('etiquetas')" class="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-black text-slate-500 transition dark:text-slate-400" [class.bg-white]="ordenCampo === 'etiquetas'" [class.text-indigo-600]="ordenCampo === 'etiquetas'" [class.shadow-sm]="ordenCampo === 'etiquetas'" [class.dark:bg-slate-800]="ordenCampo === 'etiquetas'" [class.dark:text-indigo-300]="ordenCampo === 'etiquetas'">
+                  Tags
+                </button>
+              </div>
+            </div>
+
+            <span class="hidden min-w-0 truncate text-xs font-bold text-slate-400 dark:text-slate-500 md:inline">
+              {{ resumenFiltros }}
+            </span>
+          </div>
+
+          <div class="order-1 relative min-w-0 md:order-2 md:w-80 lg:w-96">
+            <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+            </svg>
+            <input type="search" name="busquedaMovimiento" [(ngModel)]="busquedaMovimiento" placeholder="Buscar movimiento" class="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-950" />
+          </div>
+          <span class="order-3 min-w-0 truncate text-xs font-bold text-slate-400 dark:text-slate-500 md:hidden">
+            {{ resumenFiltros }}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="overflow-hidden rounded-b-2xl rounded-t-none border border-t-0 border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800/70">
+      <div class="max-h-[34rem] overflow-y-auto md:hidden">
+        @if (movimientos.length === 0) {
+          <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">Aun no hay movimientos.</div>
+        } @else if (movimientosFiltrados.length === 0) {
+          <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">No encontramos movimientos con esos filtros.</div>
+        }
+
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+          @for (movimiento of movimientosFiltrados; track movimiento.id) {
+            <article class="px-5 py-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-black text-slate-900 dark:text-white">{{ movimiento.descripcion }}</p>
+                  <p class="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">{{ movimiento.fecha | date:'dd/MM/yyyy' }} · {{ movimiento.cuenta || 'Sin cuenta' }}</p>
+                </div>
+                <p class="shrink-0 text-sm font-black" [class.text-emerald-600]="movimiento.id_tipo_movimiento === 1" [class.dark:text-emerald-400]="movimiento.id_tipo_movimiento === 1" [class.text-rose-600]="movimiento.id_tipo_movimiento !== 1" [class.dark:text-rose-400]="movimiento.id_tipo_movimiento !== 1">
+                  {{ movimiento.id_tipo_movimiento === 1 ? '+' : '' }}{{ movimiento.monto | currency:'MXN':'symbol-narrow' }}
+                </p>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                @for (etiqueta of movimiento.etiquetas; track etiqueta.id) {
+                  <span class="inline-flex rounded-full border px-2 py-0.5 text-xs font-bold" [style.backgroundColor]="etiqueta.color + '1A'" [style.borderColor]="etiqueta.color + '66'" [style.color]="etiqueta.color">{{ etiqueta.nombre }}</span>
+                } @empty {
+                  <span class="text-xs font-medium text-slate-400 dark:text-slate-500">Sin etiquetas</span>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="hidden max-h-[34rem] overflow-auto md:block">
+        <table class="w-full min-w-220 text-left text-sm">
+          <thead class="bg-slate-50 text-xs font-bold uppercase text-slate-400 dark:bg-slate-900/60 dark:text-slate-500">
+            <tr>
+              <th class="px-5 py-3"><button type="button" (click)="ordenarPor('fecha')" class="font-bold uppercase hover:text-indigo-600">Fecha</button></th>
+              <th class="px-5 py-3"><button type="button" (click)="ordenarPor('cuenta')" class="font-bold uppercase hover:text-indigo-600">Cuenta</button></th>
+              <th class="px-5 py-3"><button type="button" (click)="ordenarPor('descripcion')" class="font-bold uppercase hover:text-indigo-600">Descripcion</button></th>
+              <th class="px-5 py-3"><button type="button" (click)="ordenarPor('etiquetas')" class="font-bold uppercase hover:text-indigo-600">Etiquetas</button></th>
+              <th class="px-5 py-3 text-right"><button type="button" (click)="ordenarPor('monto')" class="font-bold uppercase hover:text-indigo-600">Monto</button></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            @if (movimientos.length === 0) {
+              <tr><td colspan="5" class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">Aun no hay movimientos.</td></tr>
+            } @else if (movimientosFiltrados.length === 0) {
+              <tr><td colspan="5" class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">No encontramos movimientos con esos filtros.</td></tr>
+            }
+
+            @for (movimiento of movimientosFiltrados; track movimiento.id) {
+              <tr class="transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                <td class="whitespace-nowrap px-5 py-4 font-medium text-slate-500 dark:text-slate-400">{{ movimiento.fecha | date:'dd/MM/yyyy' }}</td>
+                <td class="whitespace-nowrap px-5 py-4 font-semibold text-slate-700 dark:text-slate-200">{{ movimiento.cuenta || 'Sin cuenta' }}</td>
+                <td class="px-5 py-4 font-semibold text-slate-900 dark:text-white">{{ movimiento.descripcion }}</td>
+                <td class="px-5 py-4">
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (etiqueta of movimiento.etiquetas; track etiqueta.id) {
+                      <span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-bold" [style.backgroundColor]="etiqueta.color + '1A'" [style.borderColor]="etiqueta.color + '66'" [style.color]="etiqueta.color">{{ etiqueta.nombre }}</span>
+                    } @empty {
+                      <span class="text-xs font-medium text-slate-400 dark:text-slate-500">Sin etiquetas</span>
+                    }
+                  </div>
+                </td>
+                <td class="whitespace-nowrap px-5 py-4 text-right font-black" [class.text-emerald-600]="movimiento.id_tipo_movimiento === 1" [class.dark:text-emerald-400]="movimiento.id_tipo_movimiento === 1" [class.text-rose-600]="movimiento.id_tipo_movimiento !== 1" [class.dark:text-rose-400]="movimiento.id_tipo_movimiento !== 1">
+                  {{ movimiento.id_tipo_movimiento === 1 ? '+' : '' }}{{ movimiento.monto | currency:'MXN':'symbol-narrow' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>
