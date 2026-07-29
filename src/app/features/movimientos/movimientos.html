@@ -340,7 +340,7 @@
               <th class="px-5 py-3 text-right"><button type="button" (click)="ordenarPor('monto')" class="font-bold uppercase hover:text-indigo-600">Monto</button></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700 cursor-pointer">
             @if (movimientos.length === 0) {
               <tr><td colspan="5" class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">Aun no hay movimientos.</td></tr>
             } @else if (movimientosFiltrados.length === 0) {
