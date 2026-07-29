@@ -2,10 +2,16 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
+import { ToastService } from '../../core/services/toast.service';
 import { crearFechaLocal } from '../../shared/utils/fechas';
+import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
+import { MovimientoDetalleModal } from '../components/movimiento-detalle-modal/movimiento-detalle-modal';
+import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
+import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
+import Swal from 'sweetalert2';
 
 type FiltroFecha =
   | 'todos'
@@ -42,14 +48,20 @@ interface MovimientoGlobal {
   cuenta?: string | null;
   tipo_cuenta?: string | null;
   id_cuenta?: number | string | null;
+  id_cuenta_origen?: number | string | null;
   id_cuenta_destino?: number | string | null;
+  cuenta_origen_id?: number | string | null;
+  cuenta_destino_id?: number | string | null;
   cuenta_id?: number | string | null;
+  id_transferencia?: number | string | null;
+  id_transferencia_saldo?: number | string | null;
+  transferencia_id?: number | string | null;
 }
 
 @Component({
   selector: 'app-movimientos',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink],
+  imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink, MovimientoDetalleModal, NuevoMovimientoModal, TransferirSaldo],
   templateUrl: './movimientos.html',
   styleUrl: './movimientos.css',
 })
@@ -75,11 +87,17 @@ export class Movimientos implements OnInit {
   ordenDireccion: OrdenMovimientoDireccion = 'desc';
   rutaRegreso = '/cuentas';
   textoRegreso = 'Cuentas';
+  modalMovimientoAbierto = false;
+  modalEditarMovimientoAbierto = false;
+  modalEditarTransferenciaAbierto = false;
+  movimientoSeleccionado: MovimientoGlobal | null = null;
+  eliminandoMovimiento = false;
 
   constructor(
     private route: ActivatedRoute,
     private cuentasService: CuentasService,
     private movimientosService: MovimientosService,
+    private toastService: ToastService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -252,6 +270,12 @@ export class Movimientos implements OnInit {
     return this.filtroFecha === 'personalizado';
   }
 
+  get idCuentaMovimientoSeleccionado(): string {
+    if (!this.movimientoSeleccionado) return '';
+
+    return String(this.obtenerIdCuenta(this.movimientoSeleccionado) ?? '');
+  }
+
   cargarDatos(): void {
     this.cargando = true;
     this.errorCarga = '';
@@ -327,6 +351,81 @@ export class Movimientos implements OnInit {
 
     this.ordenCampo = campo;
     this.ordenDireccion = campo === 'fecha' || campo === 'monto' ? 'desc' : 'asc';
+  }
+
+  abrirDetalleMovimiento(movimiento: MovimientoGlobal): void {
+    this.movimientoSeleccionado = movimiento;
+    this.modalMovimientoAbierto = true;
+  }
+
+  cerrarDetalleMovimiento(): void {
+    this.modalMovimientoAbierto = false;
+    this.movimientoSeleccionado = null;
+  }
+
+  abrirEditarMovimiento(): void {
+    if (!this.movimientoSeleccionado) return;
+
+    this.modalMovimientoAbierto = false;
+
+    if (this.esMovimientoEntreCuentas(this.movimientoSeleccionado)) {
+      this.modalEditarTransferenciaAbierto = true;
+      return;
+    }
+
+    this.modalEditarMovimientoAbierto = true;
+  }
+
+  cerrarEditarMovimiento(): void {
+    this.modalEditarMovimientoAbierto = false;
+    this.modalEditarTransferenciaAbierto = false;
+    this.movimientoSeleccionado = null;
+  }
+
+  movimientoEditado(): void {
+    this.modalEditarMovimientoAbierto = false;
+    this.modalEditarTransferenciaAbierto = false;
+    this.movimientoSeleccionado = null;
+    this.cargarDatos();
+  }
+
+  async eliminarMovimiento(): Promise<void> {
+    if (!this.movimientoSeleccionado || this.eliminandoMovimiento) return;
+
+    const esTransferencia = this.esMovimientoEntreCuentas(this.movimientoSeleccionado);
+    const result = await Swal.fire({
+      title: esTransferencia ? 'Eliminar transferencia' : 'Eliminar movimiento',
+      text: esTransferencia
+        ? 'Esto eliminara la transferencia completa y ajustara ambas cuentas.'
+        : 'Este movimiento se eliminara y se ajustara el saldo de la cuenta.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
+      buttonsStyling: false,
+      customClass: monetraSweetAlertClasses,
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.eliminandoMovimiento = true;
+
+    this.movimientosService
+      .eliminarMovimiento(this.movimientoSeleccionado.id)
+      .pipe(finalize(() => (this.eliminandoMovimiento = false)))
+      .subscribe({
+        next: (res: any) => {
+          this.toastService.show(res?.message ?? 'Movimiento eliminado correctamente.', 'success');
+          this.modalMovimientoAbierto = false;
+          this.movimientoSeleccionado = null;
+          this.cargarDatos();
+        },
+        error: (err) => {
+          this.toastService.show(err?.error?.message ?? 'No se pudo eliminar el movimiento.', 'error');
+        },
+      });
   }
 
   private aplicarQueryParams(): void {
@@ -482,7 +581,23 @@ export class Movimientos implements OnInit {
   }
 
   private esMovimientoEntreCuentas(movimiento: MovimientoGlobal): boolean {
-    return movimiento.id_cuenta_destino !== null && movimiento.id_cuenta_destino !== undefined;
+    const tieneRelacionTransferencia = [
+      movimiento.id_transferencia,
+      movimiento.id_transferencia_saldo,
+      movimiento.transferencia_id,
+      movimiento.id_cuenta_origen,
+      movimiento.id_cuenta_destino,
+      movimiento.cuenta_origen_id,
+      movimiento.cuenta_destino_id,
+    ].some((valor) => valor !== null && valor !== undefined && valor !== '');
+
+    if (tieneRelacionTransferencia) return true;
+
+    return movimiento.etiquetas?.some((etiqueta) => {
+      const nombre = this.normalizarTexto(etiqueta.nombre ?? '');
+
+      return String(etiqueta.id) === '6' || nombre.includes('transfer');
+    }) ?? false;
   }
 
   private normalizarFecha(fecha: Date): Date {

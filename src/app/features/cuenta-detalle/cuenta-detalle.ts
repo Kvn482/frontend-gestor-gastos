@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
 import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
-import { Modal } from '../../shared/modal/modal';
+import { MovimientoDetalleModal } from '../components/movimiento-detalle-modal/movimiento-detalle-modal';
 import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
 import Swal from 'sweetalert2';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
@@ -77,7 +77,7 @@ interface ResultadoConsulta<T> {
 @Component({
   selector: 'app-cuenta-detalle',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, NuevoMovimientoModal, TransferirSaldo, Modal],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, MovimientoDetalleModal, NuevoMovimientoModal, TransferirSaldo],
   templateUrl: './cuenta-detalle.html',
   styleUrl: './cuenta-detalle.css',
 })

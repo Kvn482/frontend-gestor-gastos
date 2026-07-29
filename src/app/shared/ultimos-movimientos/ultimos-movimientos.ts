@@ -1,10 +1,10 @@
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { MovimientosService } from '../../core/services/movimientos.service'
-import { Modal } from '../modal/modal'
 import { CurrencyPipe } from '@angular/common'
 import { formatearFechaLocal } from '../utils/fechas'
 import { NuevoMovimientoModal } from '../../features/components/nuevo-movimiento-modal/nuevo-movimiento-modal'
 import { TransferirSaldo } from '../../features/components/transferir-saldo/transferir-saldo'
+import { MovimientoDetalleModal } from '../../features/components/movimiento-detalle-modal/movimiento-detalle-modal'
 import { ToastService } from '../../core/services/toast.service'
 import { finalize } from 'rxjs'
 import Swal from 'sweetalert2'
@@ -13,7 +13,7 @@ import { monetraSweetAlertClasses } from '../utils/sweet-alert'
 @Component({
   selector: 'app-ultimos-movimientos',
   standalone: true,
-  imports: [Modal, CurrencyPipe, NuevoMovimientoModal, TransferirSaldo],
+  imports: [CurrencyPipe, MovimientoDetalleModal, NuevoMovimientoModal, TransferirSaldo],
   templateUrl: './ultimos-movimientos.html',
   styleUrl: './ultimos-movimientos.css',
 })
