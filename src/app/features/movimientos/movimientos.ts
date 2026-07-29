@@ -446,8 +446,12 @@ export class Movimientos implements OnInit {
       this.textoRegreso = 'Analisis';
     }
 
-    if (tipo === 'ingresos' || tipo === 'gastos') {
-      this.filtroTipoMovimiento = tipo;
+    if (tipo === 'ingresos' || tipo === '1') {
+      this.filtroTipoMovimiento = 'ingresos';
+    }
+
+    if (tipo === 'gastos' || tipo === 'egresos' || tipo === '2') {
+      this.filtroTipoMovimiento = 'gastos';
     }
 
     if (cuentaId) {
@@ -486,6 +490,7 @@ export class Movimientos implements OnInit {
       this.fechaDesde = desde ?? '';
       this.fechaHasta = hasta ?? '';
     }
+
   }
 
   private normalizarMovimientos(res: unknown): MovimientoGlobal[] {
@@ -581,23 +586,7 @@ export class Movimientos implements OnInit {
   }
 
   private esMovimientoEntreCuentas(movimiento: MovimientoGlobal): boolean {
-    const tieneRelacionTransferencia = [
-      movimiento.id_transferencia,
-      movimiento.id_transferencia_saldo,
-      movimiento.transferencia_id,
-      movimiento.id_cuenta_origen,
-      movimiento.id_cuenta_destino,
-      movimiento.cuenta_origen_id,
-      movimiento.cuenta_destino_id,
-    ].some((valor) => valor !== null && valor !== undefined && valor !== '');
-
-    if (tieneRelacionTransferencia) return true;
-
-    return movimiento.etiquetas?.some((etiqueta) => {
-      const nombre = this.normalizarTexto(etiqueta.nombre ?? '');
-
-      return String(etiqueta.id) === '6' || nombre.includes('transfer');
-    }) ?? false;
+    return movimiento.id_cuenta_destino !== null && movimiento.id_cuenta_destino !== undefined;
   }
 
   private normalizarFecha(fecha: Date): Date {

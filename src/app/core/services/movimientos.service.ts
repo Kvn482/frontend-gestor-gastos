@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BalanceResponse } from '../models/balance-response.interface';
 import { CategoriasResponse } from '../models/categorias.interface';
@@ -62,8 +62,16 @@ export class MovimientosService {
     return this.http.get(`${this.api}/movimientos/tipos-movimiento`);
   }
 
-  consultarMovimientos() {
-    return this.http.get(`${this.api}/movimientos`);
+  consultarMovimientos(filtros?: Record<string, string | number | boolean | null | undefined>) {
+    let params = new HttpParams();
+
+    Object.entries(filtros ?? {}).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+
+    return this.http.get(`${this.api}/movimientos`, { params });
   }
 
   consultarUltimosMovimientos() {

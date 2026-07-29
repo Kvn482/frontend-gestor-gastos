@@ -159,7 +159,7 @@ export class Analisis {
     return 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/25 dark:text-indigo-300'
   }
 
-  abrirMovimientos(tipo: 'ingresos' | 'gastos' | 'todos' = 'todos', extra: Record<string, string> = {}) {
+  abrirMovimientos(tipo: 'ingresos' | 'gastos' | 'egresos' | 'todos' = 'todos', extra: Record<string, string> = {}) {
     const queryParams: Record<string, string> = {
       ...this.obtenerQueryPeriodo(),
       ...extra,
@@ -168,7 +168,7 @@ export class Analisis {
     }
 
     if (tipo !== 'todos') {
-      queryParams['tipo'] = tipo
+      queryParams['tipo'] = tipo === 'ingresos' ? '1' : '2'
     }
 
     if (this.cuentaSeleccionada !== 'todas') {
@@ -182,7 +182,7 @@ export class Analisis {
     this.abrirMovimientos('gastos', { categoria: categoria.nombre })
   }
 
-  abrirMovimientosMes(mes: AnalisisMensual, tipo: 'ingresos' | 'gastos' | 'todos' = 'todos') {
+  abrirMovimientosMes(mes: AnalisisMensual, tipo: 'ingresos' | 'gastos' | 'egresos' | 'todos' = 'todos') {
     const mesQuery = this.obtenerMesQuery(mes.mes)
     this.abrirMovimientos(tipo, mesQuery ? { mes: mesQuery } : {})
   }
