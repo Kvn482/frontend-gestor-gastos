@@ -73,6 +73,8 @@ export class Movimientos implements OnInit {
   fechaHasta = '';
   ordenCampo: OrdenMovimientoCampo = 'fecha';
   ordenDireccion: OrdenMovimientoDireccion = 'desc';
+  rutaRegreso = '/cuentas';
+  textoRegreso = 'Cuentas';
 
   constructor(
     private route: ActivatedRoute,
@@ -338,6 +340,12 @@ export class Movimientos implements OnInit {
     const mes = params.get('mes');
     const busqueda = params.get('q');
     const transferencias = params.get('transferencias');
+    const origen = params.get('origen');
+
+    if (origen === 'analisis') {
+      this.rutaRegreso = '/analisis';
+      this.textoRegreso = 'Analisis';
+    }
 
     if (tipo === 'ingresos' || tipo === 'gastos') {
       this.filtroTipoMovimiento = tipo;

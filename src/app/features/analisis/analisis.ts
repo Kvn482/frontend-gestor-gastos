@@ -163,6 +163,7 @@ export class Analisis {
     const queryParams: Record<string, string> = {
       ...this.obtenerQueryPeriodo(),
       ...extra,
+      origen: 'analisis',
       transferencias: 'false',
     }
 
