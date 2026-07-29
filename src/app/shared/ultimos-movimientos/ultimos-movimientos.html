@@ -119,93 +119,14 @@
 </div>
 
 @if (movimientoSeleccionado) {
-<app-modal [isOpen]="modalAbierto" [modalTitle]="movimientoSeleccionado.fecha_formateada" (closed)="cerrarModal()">
-
-  <div class="flex flex-col justify-center items-center py-3 mt-10 mb-10">
-    <!-- <span class="font-medium text-heading dark:text-white">{{ movimientoSeleccionado.descripcion }}</span> -->
-    <span class="font-semibold text-gray-700 dark:text-slate-200">
-      {{ movimientoSeleccionado.descripcion }}
-    </span>
-    <span
-      class="text-3xl font-bold"
-      [class.text-emerald-600]="movimientoSeleccionado.id_tipo_movimiento === 1"
-      [class.dark:text-emerald-400]="movimientoSeleccionado.id_tipo_movimiento === 1"
-      [class.text-rose-600]="movimientoSeleccionado.id_tipo_movimiento !== 1"
-      [class.dark:text-rose-400]="movimientoSeleccionado.id_tipo_movimiento !== 1"
-    >
-      {{ movimientoSeleccionado.id_tipo_movimiento === 1 ? '+' : '' }}{{ movimientoSeleccionado.monto | currency:'MXN':'symbol-narrow' }}
-    </span>
-  </div>
-
-  <!-- Detalles -->
-  <div class="flex flex-col divide-y divide-default dark:divide-slate-700 text-sm">
-    <div class="flex flex-col justify-between items-start py-3">
-      <span class="flex items-center gap-2 text-body dark:text-slate-400 mb-2">
-        <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.583 8.445h.01M10.86 19.71l-6.573-6.63a.993.993 0 0 1 0-1.4l7.329-7.394A.98.98 0 0 1 12.31 4l5.734.007A1.968 1.968 0 0 1 20 5.983v5.5a.992.992 0 0 1-.316.727l-7.44 7.5a.974.974 0 0 1-1.384.001Z"/>
-        </svg>
-        Tags
-      </span>
-      @if (movimientoSeleccionado.etiquetas?.length) {
-        <div class="flex flex-wrap gap-1.5">
-          @for (etiqueta of movimientoSeleccionado.etiquetas; track etiqueta.id) {
-            <span class="inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full border"
-              [style.backgroundColor]="etiqueta.color + '33'"
-              [style.color]="etiqueta.color"
-              [style.borderColor]="etiqueta.color">
-              {{ etiqueta.nombre }}
-            </span>
-          }
-        </div>
-      } @else {
-        <span class="font-medium text-body dark:text-slate-400">Sin etiquetas</span>
-      }
-    </div>
-    <div class="flex flex-col justify-between items-start py-3">
-      <span class="flex items-center gap-2 text-body dark:text-slate-400 mb-2">
-        <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.583 8.445h.01M10.86 19.71l-6.573-6.63a.993.993 0 0 1 0-1.4l7.329-7.394A.98.98 0 0 1 12.31 4l5.734.007A1.968 1.968 0 0 1 20 5.983v5.5a.992.992 0 0 1-.316.727l-7.44 7.5a.974.974 0 0 1-1.384.001Z"/>
-        </svg>
-        Cuenta
-      </span>
-      <span class="font-medium text-body dark:text-slate-400">{{ movimientoSeleccionado.cuenta }} - {{ movimientoSeleccionado.tipo_cuenta }}</span>
-    </div>
-    <div class="flex flex-col justify-between items-start py-3">
-      <span class="flex items-center gap-2 text-body dark:text-slate-400">
-        <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3-4v4m-6 8h6m-6 4h6"/>
-        </svg>
-        Notas
-      </span>
-      <span class="font-medium text-body dark:text-slate-200 whitespace-pre-wrap">{{ movimientoSeleccionado.notas }}</span>
-    </div>
-  </div>
-
-  <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-    <button
-      type="button"
-      (click)="eliminarMovimiento()"
-      [disabled]="eliminandoMovimiento"
-      class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-base border border-rose-200 bg-white px-4 py-2.5 text-sm font-bold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/30 dark:focus:ring-rose-950"
-    >
-      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12m-10 0 1 13h6l1-13M9 7V4h6v3" />
-      </svg>
-      {{ eliminandoMovimiento ? 'Eliminando...' : 'Eliminar' }}
-    </button>
-    <button
-      type="button"
-      (click)="abrirEditarMovimiento()"
-      class="inline-flex cursor-pointer items-center gap-2 rounded-base bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-900"
-    >
-      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.3 4.8 4.9 4.9M4 20h4.6L19.5 9.1a2.1 2.1 0 0 0-3-3L5.6 17H4v3Z" />
-      </svg>
-      Editar
-    </button>
-  </div>
-
-</app-modal>
+<app-movimiento-detalle-modal
+  [isOpen]="modalAbierto"
+  [movimiento]="movimientoSeleccionado"
+  [eliminandoMovimiento]="eliminandoMovimiento"
+  (closed)="cerrarModal()"
+  (editRequested)="abrirEditarMovimiento()"
+  (deleteRequested)="eliminarMovimiento()"
+/>
 
 <app-nuevo-movimiento-modal
   [isOpen]="modalEditarAbierto"

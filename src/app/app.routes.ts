@@ -13,6 +13,7 @@ import { ResendActivation } from './features/auth/resend-activation/resend-activ
 import { Cuentas } from './features/cuentas/cuentas';
 import { CuentaDetalle } from './features/cuenta-detalle/cuenta-detalle';
 import { Analisis } from './features/analisis/analisis';
+import { Movimientos } from './features/movimientos/movimientos';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -48,6 +49,7 @@ export const routes: Routes = [
         children: [
             { path: 'dashboard', component: Dashboard },
             { path: 'analisis', component: Analisis },
+            { path: 'movimientos', component: Movimientos },
             { path: 'configuracion', component: Settings },
             { path: 'cuentas', component: Cuentas },
             { path: 'cuentas/:id', component: CuentaDetalle },

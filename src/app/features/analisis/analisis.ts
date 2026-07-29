@@ -1,7 +1,7 @@
 import { CurrencyPipe, NgClass } from '@angular/common'
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { RouterLink } from '@angular/router'
+import { Router, RouterLink } from '@angular/router'
 import {
   AnalisisCategoria,
   AnalisisInsight,
@@ -41,6 +41,7 @@ export class Analisis {
   constructor(
     private analisisService: AnalisisService,
     private cuentasService: CuentasService,
+    private router: Router,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -156,6 +157,88 @@ export class Analisis {
     if (insight.tipo === 'success') return 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/25 dark:text-emerald-300'
     if (insight.tipo === 'warning') return 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-300'
     return 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/25 dark:text-indigo-300'
+  }
+
+  abrirMovimientos(tipo: 'ingresos' | 'gastos' | 'todos' = 'todos', extra: Record<string, string> = {}) {
+    const queryParams: Record<string, string> = {
+      ...this.obtenerQueryPeriodo(),
+      ...extra,
+      origen: 'analisis',
+      transferencias: 'false',
+    }
+
+    if (tipo !== 'todos') {
+      queryParams['tipo'] = tipo
+    }
+
+    if (this.cuentaSeleccionada !== 'todas') {
+      queryParams['cuentaId'] = this.cuentaSeleccionada
+    }
+
+    this.router.navigate(['/movimientos'], { queryParams })
+  }
+
+  abrirMovimientosCategoria(categoria: AnalisisCategoria) {
+    this.abrirMovimientos('gastos', { categoria: categoria.nombre })
+  }
+
+  abrirMovimientosMes(mes: AnalisisMensual, tipo: 'ingresos' | 'gastos' | 'todos' = 'todos') {
+    const mesQuery = this.obtenerMesQuery(mes.mes)
+    this.abrirMovimientos(tipo, mesQuery ? { mes: mesQuery } : {})
+  }
+
+  private obtenerQueryPeriodo(): Record<string, string> {
+    const hoy = new Date()
+    const desdeHasta = (desde: Date, hasta: Date) => ({
+      desde: this.formatearInputDate(desde),
+      hasta: this.formatearInputDate(hasta),
+    })
+
+    if (this.periodoSeleccionado === 'mes-anterior') {
+      return desdeHasta(
+        new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1),
+        new Date(hoy.getFullYear(), hoy.getMonth(), 0)
+      )
+    }
+
+    if (this.periodoSeleccionado === 'ultimos-3-meses') {
+      return desdeHasta(
+        new Date(hoy.getFullYear(), hoy.getMonth() - 2, 1),
+        new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+      )
+    }
+
+    return desdeHasta(new Date(hoy.getFullYear(), hoy.getMonth(), 1), hoy)
+  }
+
+  private obtenerMesQuery(mes: string): string {
+    const meses: Record<string, number> = {
+      enero: 1,
+      febrero: 2,
+      marzo: 3,
+      abril: 4,
+      mayo: 5,
+      junio: 6,
+      julio: 7,
+      agosto: 8,
+      septiembre: 9,
+      octubre: 10,
+      noviembre: 11,
+      diciembre: 12,
+    }
+    const numeroMes = meses[mes.toLowerCase()]
+
+    if (!numeroMes) return ''
+
+    return `${new Date().getFullYear()}-${String(numeroMes).padStart(2, '0')}`
+  }
+
+  private formatearInputDate(fecha: Date): string {
+    const year = fecha.getFullYear()
+    const month = String(fecha.getMonth() + 1).padStart(2, '0')
+    const day = String(fecha.getDate()).padStart(2, '0')
+
+    return `${year}-${month}-${day}`
   }
 
   get resumen() {

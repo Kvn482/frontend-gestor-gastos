@@ -21,6 +21,26 @@
     <div class="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-[#172033] dark:text-slate-400">
       Cargando detalle de cuenta...
     </div>
+  } @else if (errorCarga) {
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-[#172033]">
+      <div class="flex max-w-2xl items-start gap-4">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.3 4.3 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" />
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-black text-slate-900 dark:text-white">Cuenta no disponible</p>
+          <p class="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ errorCarga }}</p>
+        </div>
+      </div>
+      <a
+        routerLink="/cuentas"
+        class="mt-5 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 dark:focus:ring-indigo-950"
+      >
+        Volver a cuentas
+      </a>
+    </section>
   } @else if (cuenta) {
     <div class="cuenta-detalle-layout">
       <aside class="cuenta-detalle-resumen">
@@ -114,7 +134,7 @@
               </div>
               <div class="rounded-xl bg-slate-50 p-3 dark:bg-slate-900/60">
                 <p class="text-xs font-semibold text-slate-400 dark:text-slate-500">Fecha Limite de Pago</p>
-                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ cuenta.fecha_limite_pago || '28' }}</p>
+                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ diaLimitePago }}</p>
               </div>
             </div>
           </section>
@@ -127,6 +147,12 @@
             <h2 class="text-lg font-bold text-slate-900 dark:text-white">Historial de movimientos</h2>
             <p class="mt-1 text-sm text-slate-400 dark:text-slate-500">Solo movimientos asociados a esta cuenta.</p>
           </div>
+
+          @if (errorMovimientos) {
+            <div class="border-b border-amber-100 bg-amber-50 px-5 py-3 text-sm font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/25 dark:text-amber-300">
+              {{ errorMovimientos }}
+            </div>
+          }
 
           <div>
             <div class="border-b border-slate-100 p-4 dark:border-slate-700">
@@ -394,7 +420,11 @@
             </div>
 
             <div class="max-h-[489px] overflow-y-auto md:hidden">
-              @if (movimientos.length === 0) {
+              @if (errorMovimientos) {
+                <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                  No pudimos cargar el historial de esta cuenta.
+                </div>
+              } @else if (movimientos.length === 0) {
                 <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                   Aun no hay movimientos para esta cuenta.
                 </div>
@@ -531,7 +561,13 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-                @if (movimientos.length === 0) {
+                @if (errorMovimientos) {
+                  <tr>
+                    <td colspan="4" class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+                      No pudimos cargar el historial de esta cuenta.
+                    </td>
+                  </tr>
+                } @else if (movimientos.length === 0) {
                   <tr>
                     <td colspan="4" class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
                       Aun no hay movimientos para esta cuenta.
@@ -596,111 +632,20 @@
     [isOpen]="modalPagoTarjetaAbierto"
     [cuentaDestinoId]="cuenta.id"
     (closed)="cerrarModalPagoTarjeta()"
+    (saved)="pagoTarjetaRealizado()"
   />
 }
 
 @if (movimientoSeleccionado) {
-  <app-modal
+  <app-movimiento-detalle-modal
     [isOpen]="modalMovimientoAbierto"
-    [modalTitle]="fechaMovimientoSeleccionado"
+    [movimiento]="movimientoSeleccionado"
+    [cuentaFallback]="cuenta"
+    [eliminandoMovimiento]="eliminandoMovimiento"
     (closed)="cerrarDetalleMovimiento()"
-  >
-    <div class="flex flex-col items-center justify-center py-3 mt-10 mb-10 text-center">
-      <span class="font-semibold text-gray-700 dark:text-slate-200">
-        {{ movimientoSeleccionado.descripcion }}
-      </span>
-      <span
-        class="mt-2 text-3xl font-bold"
-        [class.text-emerald-600]="movimientoSeleccionado.id_tipo_movimiento === 1"
-        [class.dark:text-emerald-400]="movimientoSeleccionado.id_tipo_movimiento === 1"
-        [class.text-rose-600]="movimientoSeleccionado.id_tipo_movimiento !== 1"
-        [class.dark:text-rose-400]="movimientoSeleccionado.id_tipo_movimiento !== 1"
-      >
-        {{ movimientoSeleccionado.id_tipo_movimiento === 1 ? '+' : '' }}{{ movimientoSeleccionado.monto | currency:'MXN':'symbol-narrow' }}
-      </span>
-    </div>
-
-    <div class="flex flex-col divide-y divide-default dark:divide-slate-700 text-sm">
-      <div class="flex flex-col items-start justify-between py-3">
-        <span class="mb-2 flex items-center gap-2 text-body dark:text-slate-400">
-          <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-            height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.583 8.445h.01M10.86 19.71l-6.573-6.63a.993.993 0 0 1 0-1.4l7.329-7.394A.98.98 0 0 1 12.31 4l5.734.007A1.968 1.968 0 0 1 20 5.983v5.5a.992.992 0 0 1-.316.727l-7.44 7.5a.974.974 0 0 1-1.384.001Z"/>
-          </svg>
-          Tags
-        </span>
-        @if (movimientoSeleccionado.etiquetas.length) {
-          <div class="flex flex-wrap gap-1.5">
-            @for (etiqueta of movimientoSeleccionado.etiquetas; track etiqueta.id) {
-              <span
-                class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
-                [style.backgroundColor]="etiqueta.color + '33'"
-                [style.color]="etiqueta.color"
-                [style.borderColor]="etiqueta.color"
-              >
-                {{ etiqueta.nombre }}
-              </span>
-            }
-          </div>
-        } @else {
-          <span class="font-medium text-body dark:text-slate-400">Sin etiquetas</span>
-        }
-      </div>
-
-      <div class="flex flex-col items-start justify-between py-3">
-        <span class="mb-2 flex items-center gap-2 text-body dark:text-slate-400">
-          <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-            height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
-          </svg>
-          Cuenta
-        </span>
-        <span class="font-medium text-body dark:text-slate-400">
-          {{ movimientoSeleccionado.cuenta || cuenta?.nombre }}
-          @if (movimientoSeleccionado.tipo_cuenta || cuenta?.tipo) {
-            - {{ movimientoSeleccionado.tipo_cuenta || cuenta?.tipo }}
-          }
-        </span>
-      </div>
-
-      <div class="flex flex-col items-start justify-between py-3">
-        <span class="mb-2 flex items-center gap-2 text-body dark:text-slate-400">
-          <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-            height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3-4v4m-6 8h6m-6 4h6"/>
-          </svg>
-          Notas
-        </span>
-        <span class="whitespace-pre-wrap font-medium text-body dark:text-slate-200">
-          {{ movimientoSeleccionado.notas || 'Sin notas' }}
-        </span>
-      </div>
-    </div>
-
-    <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-      <button
-        type="button"
-        (click)="eliminarMovimiento()"
-        [disabled]="eliminandoMovimiento"
-        class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-base border border-rose-200 bg-white px-4 py-2.5 text-sm font-bold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/30 dark:focus:ring-rose-950"
-      >
-        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12m-10 0 1 13h6l1-13M9 7V4h6v3" />
-        </svg>
-        {{ eliminandoMovimiento ? 'Eliminando...' : 'Eliminar' }}
-      </button>
-      <button
-        type="button"
-        (click)="abrirEditarMovimiento()"
-        class="inline-flex cursor-pointer items-center gap-2 rounded-base bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-900"
-      >
-        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.3 4.8 4.9 4.9M4 20h4.6L19.5 9.1a2.1 2.1 0 0 0-3-3L5.6 17H4v3Z" />
-        </svg>
-        Editar
-      </button>
-    </div>
-  </app-modal>
+    (editRequested)="abrirEditarMovimiento()"
+    (deleteRequested)="eliminarMovimiento()"
+  />
 
   <app-nuevo-movimiento-modal
     [isOpen]="modalEditarMovimientoAbierto"

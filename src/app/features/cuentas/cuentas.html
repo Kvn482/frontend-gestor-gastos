@@ -13,7 +13,7 @@
 </div>
 
 <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Acciones rápidas</p>
-<div class="grid grid-cols-3 gap-3 mb-6 max-w-5xl">
+<div class="grid grid-cols-4 gap-3 mb-6 max-w-5xl">
 
   <!-- Agregar Cuenta -->
   <app-quick-action label="Agregar Cuenta" (action)="abrirModalCrearCuenta()">
@@ -27,6 +27,13 @@
     <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M7 7h11m0 0-3-3m3 3-3 3M17 17H6m0 0 3 3m-3-3 3-3" />
+    </svg>
+  </app-quick-action>
+
+  <!-- Movimientos -->
+  <app-quick-action label="Movimientos" route="/movimientos">
+    <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10" />
     </svg>
   </app-quick-action>
 

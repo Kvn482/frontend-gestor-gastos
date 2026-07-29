@@ -31,6 +31,7 @@ export class PagarTarjetaModal implements OnChanges {
   @Input() isOpen = false;
   @Input() cuentaDestinoId = '';
   @Output() closed = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
 
   cuentas: CuentaPago[] = [];
   cargandoCuentas = signal(false);
@@ -167,6 +168,7 @@ export class PagarTarjetaModal implements OnChanges {
       .subscribe({
         next: (res: any) => {
           this.toastService.show(res?.message ?? 'Pago realizado correctamente.', 'success');
+          this.saved.emit();
           this.closed.emit();
         },
         error: (err) => {

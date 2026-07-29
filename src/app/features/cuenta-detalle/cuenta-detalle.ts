@@ -9,7 +9,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
 import { TransferirSaldo } from '../components/transferir-saldo/transferir-saldo';
-import { Modal } from '../../shared/modal/modal';
+import { MovimientoDetalleModal } from '../components/movimiento-detalle-modal/movimiento-detalle-modal';
 import { crearFechaLocal, formatearFechaLocal } from '../../shared/utils/fechas';
 import Swal from 'sweetalert2';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
@@ -24,6 +24,7 @@ interface CuentaDetalleModel {
   color: string;
   limite_credito?: number | string | null;
   dia_corte?: number | string | null;
+  dia_limite_pago?: number | string | null;
   fecha_limite_pago?: number | string | null;
 }
 
@@ -67,10 +68,16 @@ type GrupoFiltroActivo = 'fecha' | 'tipo' | 'etiquetas';
 type OrdenMovimientoCampo = 'fecha' | 'descripcion' | 'etiquetas' | 'monto';
 type OrdenMovimientoDireccion = 'asc' | 'desc';
 
+interface ResultadoConsulta<T> {
+  ok: boolean;
+  data: T;
+  mensaje?: string;
+}
+
 @Component({
   selector: 'app-cuenta-detalle',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, NuevoMovimientoModal, TransferirSaldo, Modal],
+  imports: [CurrencyPipe, DatePipe, PercentPipe, FormsModule, RouterLink, PagarTarjetaModal, MovimientoDetalleModal, NuevoMovimientoModal, TransferirSaldo],
   templateUrl: './cuenta-detalle.html',
   styleUrl: './cuenta-detalle.css',
 })
@@ -84,6 +91,8 @@ export class CuentaDetalle implements OnInit {
   modalEditarMovimientoAbierto = false;
   modalEditarTransferenciaAbierto = false;
   eliminandoMovimiento = false;
+  errorCarga = '';
+  errorMovimientos = '';
   filtrosAbiertos = false;
   grupoFiltroActivo: GrupoFiltroActivo = 'fecha';
   busquedaMovimiento = '';
@@ -116,17 +125,7 @@ export class CuentaDetalle implements OnInit {
         })
       )
       .subscribe(({ idCuenta, cuentas, movimientos }) => {
-        const cuentasLista = cuentas as CuentaDetalleModel[];
-        const movimientosLista = movimientos as MovimientoCuenta[];
-
-        this.cuenta =
-            cuentasLista.find((cuenta) => String(cuenta.id) === String(idCuenta)) ??
-            this.crearCuentaDemo(idCuenta);
-
-        this.movimientos = movimientosLista;
-        this.etiquetasDisponibles = this.obtenerEtiquetasDisponibles(movimientosLista);
-        this.cargando = false;
-        this.cd.detectChanges();
+        this.aplicarDetalle(idCuenta, cuentas, movimientos);
       });
   }
 
@@ -154,6 +153,10 @@ export class CuentaDetalle implements OnInit {
 
   get barraCreditoWidth(): string {
     return `${this.porcentajeCreditoUtilizado * 100}%`;
+  }
+
+  get diaLimitePago(): number | string {
+    return this.cuenta?.dia_limite_pago ?? this.cuenta?.fecha_limite_pago ?? '28';
   }
 
   get saldoMostrado(): number {
@@ -387,6 +390,10 @@ export class CuentaDetalle implements OnInit {
 
   cerrarModalPagoTarjeta(): void {
     this.modalPagoTarjetaAbierto = false;
+  }
+
+  pagoTarjetaRealizado(): void {
+    this.modalPagoTarjetaAbierto = false;
     this.recargarDetalle();
   }
 
@@ -453,42 +460,85 @@ export class CuentaDetalle implements OnInit {
     if (!this.idCuentaActual) return;
 
     this.cargando = true;
+    this.errorCarga = '';
+    this.errorMovimientos = '';
 
     this.consultarDetalle(this.idCuentaActual).subscribe(({ idCuenta, cuentas, movimientos }) => {
-      const cuentasLista = cuentas as CuentaDetalleModel[];
-      const movimientosLista = movimientos as MovimientoCuenta[];
+      this.aplicarDetalle(idCuenta, cuentas, movimientos);
+    });
+  }
 
-      this.cuenta =
-          cuentasLista.find((cuenta) => String(cuenta.id) === String(idCuenta)) ??
-          this.crearCuentaDemo(idCuenta);
-
-      this.movimientos = movimientosLista;
-      this.etiquetasDisponibles = this.obtenerEtiquetasDisponibles(movimientosLista);
+  private aplicarDetalle(
+    idCuenta: string,
+    cuentas: ResultadoConsulta<CuentaDetalleModel[]>,
+    movimientos: ResultadoConsulta<MovimientoCuenta[]>
+  ): void {
+    if (!cuentas.ok) {
+      this.cuenta = null;
+      this.movimientos = [];
+      this.etiquetasDisponibles = [];
+      this.errorCarga = cuentas.mensaje ?? 'No pudimos cargar la informacion de la cuenta.';
+      this.errorMovimientos = '';
       this.cargando = false;
       this.cd.detectChanges();
-    });
+      return;
+    }
+
+    const cuentaEncontrada = cuentas.data.find((cuenta) => String(cuenta.id) === String(idCuenta));
+
+    if (!cuentaEncontrada) {
+      this.cuenta = null;
+      this.movimientos = [];
+      this.etiquetasDisponibles = [];
+      this.errorCarga = 'No pudimos encontrar esta cuenta. Puede que haya sido eliminada o no este disponible.';
+      this.errorMovimientos = '';
+      this.cargando = false;
+      this.cd.detectChanges();
+      return;
+    }
+
+    this.cuenta = cuentaEncontrada;
+    this.movimientos = movimientos.ok ? movimientos.data : [];
+    this.etiquetasDisponibles = this.obtenerEtiquetasDisponibles(this.movimientos);
+    this.errorCarga = '';
+    this.errorMovimientos = movimientos.ok
+      ? ''
+      : movimientos.mensaje ?? 'No pudimos cargar los movimientos de esta cuenta.';
+    this.cargando = false;
+    this.cd.detectChanges();
   }
 
   private consultarDetalle(idCuenta: string) {
     return forkJoin({
-      cuentas: this.cuentasService.consultarCuentas().pipe(catchError(() => of([]))),
+      cuentas: this.cuentasService.consultarCuentas().pipe(
+        map((cuentas) => ({
+          ok: true,
+          data: Array.isArray(cuentas) ? (cuentas as CuentaDetalleModel[]) : [],
+        })),
+        catchError((err) =>
+          of({
+            ok: false,
+            data: [] as CuentaDetalleModel[],
+            mensaje: err?.error?.message ?? 'No pudimos cargar la informacion de la cuenta.',
+          })
+        )
+      ),
       movimientos: this.movimientosService
         .consultarMovimientosPorCuenta(idCuenta)
-        .pipe(catchError(() => of([]))),
+        .pipe(
+          map((movimientos) => ({
+            ok: true,
+            data: Array.isArray(movimientos) ? (movimientos as MovimientoCuenta[]) : [],
+          })),
+          catchError((err) =>
+            of({
+              ok: false,
+              data: [] as MovimientoCuenta[],
+              mensaje: err?.error?.message ?? 'No pudimos cargar los movimientos de esta cuenta.',
+            })
+          )
+        ),
     }).pipe(map(({ cuentas, movimientos }) => ({ idCuenta, cuentas, movimientos })));
-  }
-
-  private crearCuentaDemo(idCuenta: string): CuentaDetalleModel {
-    return {
-      id: idCuenta || '2',
-      nombre: 'Tarjeta Monetra',
-      tipo: 'CREDITO',
-      saldo_actual: -12840,
-      color: '#4f46e5',
-      limite_credito: 35000,
-      dia_corte: 12,
-      fecha_limite_pago: 28,
-    };
   }
 
   private obtenerEtiquetasDisponibles(movimientos: MovimientoCuenta[]): EtiquetaMovimiento[] {
