@@ -138,20 +138,22 @@ export class Movimientos implements OnInit {
         return false;
       }
 
-      if (this.filtrosEtiquetas.length > 0) {
-        const tieneEtiqueta = movimiento.etiquetas?.some((etiqueta) =>
-          this.filtrosEtiquetas.includes(String(etiqueta.id))
-        );
+      if (this.filtrosEtiquetas.length > 0 || this.categoriaSeleccionada) {
+        const filtrarSinCategoria = this.categoriaSeleccionada === 'sin categoria';
+        const filtrarCategoriaPorNombre = this.categoriaSeleccionada && !filtrarSinCategoria;
+        const tieneEtiquetaSeleccionada =
+          this.filtrosEtiquetas.length > 0 &&
+          movimiento.etiquetas?.some((etiqueta) => this.filtrosEtiquetas.includes(String(etiqueta.id)));
+        const tieneCategoriaPorNombre =
+          filtrarCategoriaPorNombre &&
+          movimiento.etiquetas?.some(
+            (etiqueta) => this.normalizarTexto(etiqueta.nombre) === this.categoriaSeleccionada
+          );
+        const noTieneCategoria = filtrarSinCategoria && !movimiento.etiquetas?.length;
 
-        if (!tieneEtiqueta) return false;
-      }
-
-      if (this.categoriaSeleccionada) {
-        const tieneCategoria = movimiento.etiquetas?.some(
-          (etiqueta) => this.normalizarTexto(etiqueta.nombre) === this.categoriaSeleccionada
-        );
-
-        if (!tieneCategoria) return false;
+        if (!tieneEtiquetaSeleccionada && !tieneCategoriaPorNombre && !noTieneCategoria) {
+          return false;
+        }
       }
 
       if (rango.desde && fechaMovimiento < rango.desde) return false;
@@ -239,6 +241,7 @@ export class Movimientos implements OnInit {
   }
 
   get etiquetaFiltroEtiqueta(): string {
+    if (this.categoriaSeleccionada === 'sin categoria') return 'Sin categoria';
     if (this.categoriaSeleccionada) return this.categoriaSeleccionada;
     if (this.filtrosEtiquetas.length === 0) return 'Todas';
 
@@ -331,12 +334,20 @@ export class Movimientos implements OnInit {
   toggleFiltroEtiqueta(idEtiqueta: number | string): void {
     const id = String(idEtiqueta);
 
+    if (this.categoriaSeleccionada !== 'sin categoria') {
+      this.categoriaSeleccionada = '';
+    }
+
     if (this.filtrosEtiquetas.includes(id)) {
       this.filtrosEtiquetas = this.filtrosEtiquetas.filter((item) => item !== id);
       return;
     }
 
     this.filtrosEtiquetas = [...this.filtrosEtiquetas, id];
+  }
+
+  seleccionarSinCategoria(): void {
+    this.categoriaSeleccionada = this.categoriaSeleccionada === 'sin categoria' ? '' : 'sin categoria';
   }
 
   etiquetaSeleccionada(idEtiqueta: number | string): boolean {

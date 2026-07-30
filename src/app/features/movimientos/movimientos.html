@@ -238,6 +238,15 @@
                             Todas las etiquetas
                             @if (filtrosEtiquetas.length === 0 && !categoriaSeleccionada) { <span class="text-violet-300">&#10003;</span> }
                           </button>
+                          <button type="button" (click)="seleccionarSinCategoria()" class="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="categoriaSeleccionada === 'sin categoria'">
+                            <span class="flex min-w-0 items-center gap-2">
+                              <span class="h-2.5 w-2.5 rounded-full border border-dashed border-slate-400"></span>
+                              <span class="truncate">Sin categoria</span>
+                            </span>
+                            <span class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white/20 text-[10px] text-violet-300" [class.bg-violet-500]="categoriaSeleccionada === 'sin categoria'" [class.border-violet-400]="categoriaSeleccionada === 'sin categoria'" [class.text-white]="categoriaSeleccionada === 'sin categoria'">
+                              @if (categoriaSeleccionada === 'sin categoria') { &#10003; }
+                            </span>
+                          </button>
                           @for (etiqueta of etiquetasDisponibles; track etiqueta.id) {
                             <button type="button" (click)="toggleFiltroEtiqueta(etiqueta.id)" class="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-semibold transition hover:bg-white/10" [class.bg-slate-700]="etiquetaSeleccionada(etiqueta.id)">
                               <span class="flex min-w-0 items-center gap-2">
