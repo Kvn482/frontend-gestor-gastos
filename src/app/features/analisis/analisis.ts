@@ -1,7 +1,7 @@
 import { CurrencyPipe, NgClass } from '@angular/common'
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { FormsModule } from '@angular/forms'
-import { Router, RouterLink } from '@angular/router'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import {
   AnalisisCategoria,
   AnalisisInsight,
@@ -39,6 +39,7 @@ export class Analisis {
   ]
 
   constructor(
+    private route: ActivatedRoute,
     private analisisService: AnalisisService,
     private cuentasService: CuentasService,
     private router: Router,
@@ -46,6 +47,7 @@ export class Analisis {
   ) {}
 
   ngOnInit() {
+    this.aplicarQueryParams()
     this.cargarCuentas()
     this.cargarAnalisis()
   }
@@ -88,6 +90,12 @@ export class Analisis {
   seleccionarPeriodo(periodo: string) {
     if (this.periodoSeleccionado === periodo) return
     this.periodoSeleccionado = periodo
+    this.actualizarQueryParams()
+    this.cargarAnalisis()
+  }
+
+  seleccionarCuenta() {
+    this.actualizarQueryParams()
     this.cargarAnalisis()
   }
 
@@ -164,6 +172,8 @@ export class Analisis {
       ...this.obtenerQueryPeriodo(),
       ...extra,
       origen: 'analisis',
+      analisisPeriodo: this.periodoSeleccionado,
+      analisisCuenta: this.cuentaSeleccionada,
       transferencias: 'false',
     }
 
@@ -185,6 +195,31 @@ export class Analisis {
   abrirMovimientosMes(mes: AnalisisMensual, tipo: 'ingresos' | 'gastos' | 'egresos' | 'todos' = 'todos') {
     const mesQuery = this.obtenerMesQuery(mes.mes)
     this.abrirMovimientos(tipo, mesQuery ? { mes: mesQuery } : {})
+  }
+
+  private aplicarQueryParams() {
+    const params = this.route.snapshot.queryParamMap
+    const periodo = params.get('periodo')
+    const cuenta = params.get('cuenta')
+
+    if (periodo && this.periodos.some((item) => item.valor === periodo)) {
+      this.periodoSeleccionado = periodo
+    }
+
+    if (cuenta) {
+      this.cuentaSeleccionada = cuenta
+    }
+  }
+
+  private actualizarQueryParams() {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        periodo: this.periodoSeleccionado,
+        cuenta: this.cuentaSeleccionada,
+      },
+      replaceUrl: true,
+    })
   }
 
   private obtenerQueryPeriodo(): Record<string, string> {

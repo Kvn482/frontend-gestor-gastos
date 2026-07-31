@@ -298,22 +298,22 @@
     </form>
   </div>
 
-  <!-- Lista de etiquetas -->
-  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 max-w-5xl">
+  <!-- Etiquetas predeterminadas -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6 max-w-5xl">
     <div class="mb-5">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tus etiquetas</h2>
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Etiquetas predeterminadas</h2>
       <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-        Las etiquetas predeterminadas no pueden eliminarse
+        Estas etiquetas vienen incluidas en la app y no pueden eliminarse
       </p>
     </div>
 
-    @if (etiquetas.length === 0) {
+    @if (etiquetasPredeterminadas.length === 0) {
       <p class="text-sm text-slate-400 dark:text-slate-500 text-center py-8">
-        No hay etiquetas disponibles
+        No hay etiquetas predeterminadas disponibles
       </p>
     } @else {
       <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-        @for (etiqueta of etiquetas; track etiqueta.id) {
+        @for (etiqueta of etiquetasPredeterminadas; track etiqueta.id) {
           <li class="flex items-center justify-between py-3">
             <div class="flex items-center gap-3">
               <span
@@ -323,24 +323,52 @@
               <span class="text-sm font-medium text-gray-800 dark:text-slate-200">
                 {{ etiqueta.nombre }}
               </span>
-              @if (!etiqueta.id_usuario) {
-                <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">
-                  Predeterminada
-                </span>
-              }
             </div>
-            @if (etiqueta.id_usuario) {
-              <button
-                type="button"
-                (click)="eliminarEtiqueta(etiqueta.id)"
-                class="text-slate-400 cursor-pointer hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
-                title="Eliminar etiqueta"
-              >
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-                </svg>
-              </button>
-            }
+            <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">
+              Predeterminada
+            </span>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <!-- Tus etiquetas -->
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 max-w-5xl">
+    <div class="mb-5">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tus etiquetas</h2>
+      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
+        Etiquetas personalizadas creadas por ti
+      </p>
+    </div>
+
+    @if (etiquetasUsuario.length === 0) {
+      <p class="text-sm text-slate-400 dark:text-slate-500 text-center py-8">
+        Aun no has creado etiquetas personalizadas
+      </p>
+    } @else {
+      <ul class="divide-y divide-slate-100 dark:divide-slate-700">
+        @for (etiqueta of etiquetasUsuario; track etiqueta.id) {
+          <li class="flex items-center justify-between py-3">
+            <div class="flex items-center gap-3">
+              <span
+                class="w-3 h-3 rounded-full shrink-0"
+                [style.background-color]="etiqueta.color"
+              ></span>
+              <span class="text-sm font-medium text-gray-800 dark:text-slate-200">
+                {{ etiqueta.nombre }}
+              </span>
+            </div>
+            <button
+              type="button"
+              (click)="eliminarEtiqueta(etiqueta)"
+              class="text-slate-400 cursor-pointer hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
+              title="Eliminar etiqueta"
+            >
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+              </svg>
+            </button>
           </li>
         }
       </ul>
