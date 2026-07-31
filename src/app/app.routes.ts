@@ -16,7 +16,7 @@ import { Analisis } from './features/analisis/analisis';
 import { Movimientos } from './features/movimientos/movimientos';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    { path: '', redirectTo: 'inicio', pathMatch: 'full' },
     { 
         path: 'login', 
         component: Login, 
@@ -47,7 +47,8 @@ export const routes: Routes = [
         component: Layout,
         canActivate: [authGuard],
         children: [
-            { path: 'dashboard', component: Dashboard },
+            { path: 'inicio', component: Dashboard },
+            { path: 'dashboard', redirectTo: 'inicio', pathMatch: 'full' },
             { path: 'analisis', component: Analisis },
             { path: 'movimientos', component: Movimientos },
             { path: 'configuracion', component: Settings },
