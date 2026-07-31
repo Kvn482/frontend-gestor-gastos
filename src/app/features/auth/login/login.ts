@@ -85,7 +85,7 @@ export class Login {
 
         this.authService.saveSession(res.accessToken, res.refreshToken);
         this.successMessage.set('Inicio de sesión exitoso.');
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/inicio';
 
         setTimeout(() => {
           this.router.navigate([returnUrl]);
