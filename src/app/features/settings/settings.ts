@@ -2,9 +2,11 @@ import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import Swal from 'sweetalert2';
 import { AuthService } from '../../core/services/auth.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { ToastService } from '../../core/services/toast.service';
+import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
 
 
 interface Etiqueta {
@@ -81,6 +83,14 @@ export class Settings {
       return `0 0 0 2px white, 0 0 0 4px ${color}`;
     }
     return 'none';
+  }
+
+  get etiquetasPredeterminadas(): Etiqueta[] {
+    return this.etiquetas.filter((etiqueta) => !etiqueta.id_usuario);
+  }
+
+  get etiquetasUsuario(): Etiqueta[] {
+    return this.etiquetas.filter((etiqueta) => etiqueta.id_usuario);
   }
 
   // ----- Avatar -----
@@ -232,11 +242,25 @@ export class Settings {
       });
   }
 
-  eliminarEtiqueta(id: number) {
-    this.movimientosService.eliminarEtiqueta(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+  async eliminarEtiqueta(etiqueta: Etiqueta): Promise<void> {
+    const result = await Swal.fire({
+      title: 'Eliminar etiqueta',
+      text: `La etiqueta "${etiqueta.nombre}" se eliminara de tus opciones personalizadas.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      customClass: monetraSweetAlertClasses,
+      buttonsStyling: false,
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.movimientosService.eliminarEtiqueta(etiqueta.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.toastService.show('Etiqueta eliminada', 'success');
-        this.etiquetas = this.etiquetas.filter((e) => e.id !== id);
+        this.etiquetas = this.etiquetas.filter((e) => e.id !== etiqueta.id);
       },
       error: (err) =>
         this.toastService.show(err?.error?.message || 'Error al eliminar la etiqueta', 'error'),
