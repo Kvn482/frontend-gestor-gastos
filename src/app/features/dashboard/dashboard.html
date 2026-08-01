@@ -1,7 +1,9 @@
 <!-- Welcome -->
 <div class="mb-8 max-w-5xl">
-  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Hola, <span class="text-indigo-600 dark:text-indigo-400">{{ nombre }}</span> 👋</h1>
-  <p class="text-gray-400 dark:text-slate-500 text-sm mt-1">Bienvenido de vuelta a Monetra</p>
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+    Hola, <span class="text-indigo-600 dark:text-indigo-400">{{ nombre }}</span>
+  </h1>
+  <p class="mt-1 text-sm text-gray-400 dark:text-slate-500">Bienvenido de vuelta a Monetra</p>
 </div>
 
 <!-- Balance -->
@@ -9,42 +11,169 @@
   <app-balance-general />
 </div>
 
-<!-- Acciones rápidas -->
-<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Acciones rápidas</p>
-<div class="grid grid-cols-3 gap-3 mb-6 max-w-5xl">
+<!-- Alertas de creditos -->
+@if (cargandoAlertasCredito || errorAlertasCredito || alertasCredito.length > 0) {
+<section class="mb-5 max-w-5xl">
+  <div class="mb-3 flex items-center justify-between gap-3">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+        Alertas de creditos
+      </p>
+      <h2 class="text-base font-bold text-slate-900 dark:text-white">Cortes y pagos pendientes</h2>
+    </div>
+    <span class="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+      {{ cargandoAlertasCredito ? 'Cargando' : alertasCredito.length + ' activas' }}
+    </span>
+  </div>
+
+  @if (errorAlertasCredito) {
+    <div class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/35 dark:text-rose-300">
+      {{ errorAlertasCredito }}
+    </div>
+  } @else if (cargandoAlertasCredito) {
+    <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="h-32 animate-pulse rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900"></div>
+      }
+    </div>
+  } @else {
+    <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+      @for (alerta of alertasCredito; track alerta.cuentaId + '-' + alerta.estado) {
+        <article
+          class="rounded-lg border p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          [class]="clasesAlertaCredito(alerta.estado)"
+        >
+          <div class="flex items-start gap-2.5">
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/80 shadow-sm dark:bg-slate-950/50">
+              @if (alerta.estado === 'atrasado') {
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                  />
+                </svg>
+              } @else if (alerta.estado === 'vence-hoy') {
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6l4 2m5-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              } @else {
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+                  />
+                </svg>
+              }
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h3 class="text-xs font-extrabold uppercase tracking-wide">{{ alerta.titulo }}</h3>
+                <span class="rounded-full bg-white/75 px-2 py-0.5 text-[10px] font-bold dark:bg-slate-950/45">
+                  {{ alerta.fecha }}
+                </span>
+              </div>
+              <p class="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{{ alerta.cuenta }}</p>
+              <p class="mt-0.5 text-xs leading-4 text-slate-600 dark:text-slate-400">{{ alerta.detalle }}</p>
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between gap-2 border-t border-current/15 pt-2.5">
+            <div>
+              @if (alerta.monto) {
+                <p class="text-[10px] font-semibold uppercase tracking-wide opacity-75">Monto sugerido</p>
+                <p class="text-sm font-extrabold text-slate-900 dark:text-white">{{ alerta.monto | currency:'MXN':'symbol-narrow' }}</p>
+              } @else {
+                <p class="text-[10px] font-semibold uppercase tracking-wide opacity-75">Sin pago requerido</p>
+                <p class="text-sm font-extrabold text-slate-900 dark:text-white">Solo revisar</p>
+              }
+            </div>
+            <a
+              [routerLink]="['/cuentas', alerta.cuentaId]"
+              class="shrink-0 rounded-md bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+            >
+              {{ alerta.accion }}
+            </a>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
+}
+
+<!-- Acciones rapidas -->
+<p class="mb-4 max-w-5xl text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+  Acciones rapidas
+</p>
+<div class="mb-6 grid max-w-5xl grid-cols-3 gap-3">
 
   <!-- Nuevo Movimiento -->
   <app-quick-action label="Nuevo Movimiento" (action)="abrirModalMovimiento()">
-    <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M5 12h14m-7 7V5" />
+    <svg icon class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <path
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M5 12h14m-7 7V5"
+      />
     </svg>
   </app-quick-action>
 
   <!-- Mis Cuentas -->
   <app-quick-action label="Mis Cuentas" route="/cuentas">
-    <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-      <path fill-rule="evenodd"
+    <svg icon class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+      <path
+        fill-rule="evenodd"
         d="M12 14a3 3 0 0 1 3-3h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4a3 3 0 0 1-3-3Zm3-1a1 1 0 1 0 0 2h4v-2h-4Z"
-        clip-rule="evenodd" />
-      <path fill-rule="evenodd"
+        clip-rule="evenodd"
+      />
+      <path
+        fill-rule="evenodd"
         d="M12.293 3.293a1 1 0 0 1 1.414 0L16.414 6h-2.828l-1.293-1.293a1 1 0 0 1 0-1.414ZM12.414 6 9.707 3.293a1 1 0 0 0-1.414 0L5.586 6h6.828ZM4.586 7l-.056.055A2 2 0 0 0 3 9v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2h-4a5 5 0 0 1 0-10h4a2 2 0 0 0-1.53-1.945L17.414 7H4.586Z"
-        clip-rule="evenodd" />
+        clip-rule="evenodd"
+      />
     </svg>
   </app-quick-action>
 
   <!-- Analisis -->
   <app-quick-action label="Analisis" route="/analisis">
-    <svg icon class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-      width="24" height="24" fill="none" viewBox="0 0 24 24">
-      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M3 15v4m6-6v6m6-4v4m6-6v6M3 11l6-5 6 5 5.5-5.5" />
+    <svg
+      icon
+      class="h-5 w-5"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M3 15v4m6-6v6m6-4v4m6-6v6M3 11l6-5 6 5 5.5-5.5"
+      />
     </svg>
   </app-quick-action>
 
-  <!-- Préstamos -->
-  <!-- <app-quick-action label="Préstamos" route="/prestamos">
-    <svg icon class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+  <!-- Prestamos -->
+  <!-- <app-quick-action label="Prestamos" route="/prestamos">
+    <svg icon class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z" />
     </svg>
@@ -53,10 +182,16 @@
 </div>
 
 <!-- Movimientos -->
-<p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500 mb-4 max-w-5xl">Movimientos</p>
+<p class="mb-4 max-w-5xl text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+  Movimientos
+</p>
 <div class="mb-6 max-w-5xl">
   <app-ultimos-movimientos></app-ultimos-movimientos>
 </div>
 
-<app-nuevo-movimiento-modal [isOpen]="modalMovimientoAbierto" (closed)="cerrarModalMovimiento()">
+<app-nuevo-movimiento-modal
+  [isOpen]="modalMovimientoAbierto"
+  (closed)="cerrarModalMovimiento()"
+  (saved)="cargarAlertasCredito()"
+>
 </app-nuevo-movimiento-modal>
