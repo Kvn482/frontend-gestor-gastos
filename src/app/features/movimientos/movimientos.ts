@@ -462,6 +462,10 @@ export class Movimientos implements OnInit {
         ...(analisisCuenta ? { cuenta: analisisCuenta } : {}),
       };
       this.textoRegreso = 'Analisis';
+    } else if (origen === 'inicio' || origen === 'dashboard') {
+      this.rutaRegreso = '/inicio';
+      this.rutaRegresoQueryParams = {};
+      this.textoRegreso = 'Inicio';
     }
 
     if (tipo === 'ingresos' || tipo === '1') {

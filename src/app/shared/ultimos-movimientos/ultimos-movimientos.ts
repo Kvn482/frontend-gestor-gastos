@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component } from '@angular/core'
 import { MovimientosService } from '../../core/services/movimientos.service'
 import { CurrencyPipe } from '@angular/common'
+import { RouterLink } from '@angular/router'
 import { formatearFechaLocal } from '../utils/fechas'
 import { NuevoMovimientoModal } from '../../features/components/nuevo-movimiento-modal/nuevo-movimiento-modal'
 import { TransferirSaldo } from '../../features/components/transferir-saldo/transferir-saldo'
@@ -13,7 +14,7 @@ import { monetraSweetAlertClasses } from '../utils/sweet-alert'
 @Component({
   selector: 'app-ultimos-movimientos',
   standalone: true,
-  imports: [CurrencyPipe, MovimientoDetalleModal, NuevoMovimientoModal, TransferirSaldo],
+  imports: [CurrencyPipe, RouterLink, MovimientoDetalleModal, NuevoMovimientoModal, TransferirSaldo],
   templateUrl: './ultimos-movimientos.html',
   styleUrl: './ultimos-movimientos.css',
 })
