@@ -1,10 +1,14 @@
-<div class="relative overflow-hidden rounded-2xl
+<div class="relative overflow-hidden rounded-2xl min-h-[220px]
   bg-white dark:bg-slate-800/70 border border-slate-100 dark:border-slate-700
   shadow-sm">
   <div class="md:hidden">  <!-- Mobile view -->
-    @if (movimientos.length === 0) {
+    @if (todosLosMovimientos.length === 0) {
       <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
         Aun no haces movimientos.
+      </div>
+    } @else if (movimientos.length === 0) {
+      <div class="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+        No se encontraron movimientos con "{{ busqueda }}".
       </div>
     }
 
@@ -54,13 +58,18 @@
   <div class="hidden overflow-x-auto md:block"> <!-- Desktop view -->
     <table class="w-full text-sm text-left text-body">
       <tbody>
-        @if (movimientos.length === 0) {
+        @if (todosLosMovimientos.length === 0) {
         <tr
           class="group bg-neutral-primary-soft border-b border-default hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-neutral-secondary-medium cursor-pointer transition-colors duration-200">
-          <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap flex gap-3 items-center justify-center align-middle">
-            <span class="rounded-full" style="display: inline-flex; align-items: center; justify-content: center;">
-              Aun no haces movimientos.
-            </span>
+          <th colspan="3" scope="row" class="px-6 py-8 font-medium text-slate-400 dark:text-slate-500 text-center align-middle">
+            Aun no haces movimientos.
+          </th>
+        </tr>
+        } @else if (movimientos.length === 0) {
+        <tr
+          class="group bg-neutral-primary-soft border-b border-default hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-neutral-secondary-medium cursor-pointer transition-colors duration-200">
+          <th colspan="3" scope="row" class="px-6 py-8 font-medium text-slate-400 dark:text-slate-500 text-center align-middle">
+            No se encontraron movimientos con "{{ busqueda }}".
           </th>
         </tr>
         }

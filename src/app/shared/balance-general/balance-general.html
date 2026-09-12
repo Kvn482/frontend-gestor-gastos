@@ -8,8 +8,12 @@
   <p class="text-indigo-200 text-xs font-semibold uppercase tracking-widest mb-3">Balance General</p>
 
   <p class="text-4xl font-bold tracking-tight">
-    {{ balance | currency:'MXN':'symbol-narrow' }}
-    <span class="text-2xl font-medium text-indigo-300 ml-1">MXN</span>
+    @if (ocultar) {
+      <span class="tracking-widest">$ ••••••</span>
+    } @else {
+      {{ balance | currency:'MXN':'symbol-narrow' }}
+      <span class="text-2xl font-medium text-indigo-300 ml-1">MXN</span>
+    }
   </p>
 
   <p class="text-indigo-300 text-sm mt-3 flex items-center gap-1.5">

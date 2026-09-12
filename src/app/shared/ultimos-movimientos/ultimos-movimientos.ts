@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core'
+import { ChangeDetectorRef, Component, Input } from '@angular/core'
 import { MovimientosService } from '../../core/services/movimientos.service'
 import { CurrencyPipe } from '@angular/common'
 import { RouterLink } from '@angular/router'
@@ -25,7 +25,18 @@ export class UltimosMovimientos {
     private cd: ChangeDetectorRef
   ) { }
 
+  todosLosMovimientos: any[] = []
   movimientos: any[] = []
+  private _busqueda = ''
+
+  @Input() set busqueda(valor: string) {
+    this._busqueda = valor ?? ''
+    this.aplicarFiltroBusqueda()
+  }
+
+  get busqueda(): string {
+    return this._busqueda
+  }
   modalAbierto = false
   modalEditarAbierto = false
   modalEditarTransferenciaAbierto = false
@@ -144,14 +155,46 @@ export class UltimosMovimientos {
 
   cargarUltimosMovimientos() {
     this.movimientosService.consultarUltimosMovimientos().subscribe((res: any) => {
-
-      this.movimientos = res.map((mov: any) => ({
+      this.todosLosMovimientos = (Array.isArray(res) ? res : []).map((mov: any) => ({
         ...mov,
         fecha_formateada: formatearFechaLocal(mov.fecha)
       }))
-
-      this.cd.detectChanges()
-
+      this.aplicarFiltroBusqueda()
     })
+  }
+
+  aplicarFiltroBusqueda() {
+    const q = (this._busqueda || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+
+    if (!q) {
+      this.movimientos = [...this.todosLosMovimientos]
+    } else {
+      this.movimientos = this.todosLosMovimientos.filter((mov: any) => {
+        const desc = String(mov.descripcion ?? '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+        const cuenta = String(mov.cuenta ?? '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+        const etiquetas = (mov.etiquetas ?? [])
+          .map((e: any) =>
+            String(e.nombre ?? '')
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+          )
+          .join(' ')
+
+        return desc.includes(q) || cuenta.includes(q) || etiquetas.includes(q)
+      })
+    }
+
+    this.cd.detectChanges()
   }
 }

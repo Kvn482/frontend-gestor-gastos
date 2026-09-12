@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { CurrencyPipe } from '@angular/common';
 
@@ -15,6 +15,7 @@ export class BalanceGeneral {
     private cd: ChangeDetectorRef
   ) { }
 
+  @Input() ocultar = false;
   balance: number = 0
 
   ngOnInit() {

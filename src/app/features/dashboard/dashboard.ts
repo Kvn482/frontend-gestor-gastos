@@ -1,6 +1,15 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import {
+  ChangeDetectorRef,
+  Component,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { QuickAction } from '../../shared/quick-action/quick-action';
 import { NuevoMovimientoModal } from '../components/nuevo-movimiento-modal/nuevo-movimiento-modal';
@@ -8,7 +17,9 @@ import { BalanceGeneral } from '../../shared/balance-general/balance-general';
 import { AuthService } from '../../core/services/auth.service';
 import { UltimosMovimientos } from '../../shared/ultimos-movimientos/ultimos-movimientos';
 import { CuentasService } from '../../core/services/cuentas.service';
+import { MovimientosService } from '../../core/services/movimientos.service';
 import { AlertaCredito } from '../../core/models/alerta-credito.interface';
+import { BalanceResponse } from '../../core/models/balance-response.interface';
 import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 
 @Component({
@@ -16,6 +27,7 @@ import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarje
   imports: [
     CurrencyPipe,
     RouterLink,
+    FormsModule,
     QuickAction,
     NuevoMovimientoModal,
     BalanceGeneral,
@@ -25,15 +37,17 @@ import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarje
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-
-export class Dashboard {
+export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private cuentasService: CuentasService,
+    private movimientosService: MovimientosService,
+    private router: Router,
     private cdr: ChangeDetectorRef,
   ) {}
 
   @ViewChild('carouselRef') carouselRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('balanceContainer') balanceContainer?: ElementRef<HTMLDivElement>;
 
   nombre = '';
   alertasCredito: AlertaCredito[] = [];
@@ -44,6 +58,14 @@ export class Dashboard {
   modalPagarTarjetaAbierto = false;
   cuentaIdAPagar = '';
 
+  // Sticky Top Bar con Balance y Búsqueda
+  mostrarStickyBalance = false;
+  busquedaSticky = '';
+  buscadorEnfocado = false;
+  saldoOculto = false;
+  balanceData: BalanceResponse = { balance: 0, ingresos: 0, egresos: 0 };
+  private balanceObserver?: IntersectionObserver;
+
   ngAfterViewInit(): void {
     // Inicialización del datepicker de Flowbite
     if (typeof window !== 'undefined' && (window as any).Datepicker) {
@@ -53,12 +75,111 @@ export class Dashboard {
         new (window as any).Datepicker(datepickerEl);
       }
     }
+
+    // Observer para mostrar barra sticky cuando el balance deja de ser visible por arriba
+    if (this.balanceContainer?.nativeElement && typeof IntersectionObserver !== 'undefined') {
+      this.balanceObserver = new IntersectionObserver(
+        ([entry]) => {
+          this.actualizarVisibilidadSticky(entry);
+        },
+        {
+          threshold: 0,
+          rootMargin: '-20px 0px 0px 0px',
+        }
+      );
+      this.balanceObserver.observe(this.balanceContainer.nativeElement);
+    }
+  }
+
+  actualizarVisibilidadSticky(entry?: IntersectionObserverEntry) {
+    // Si el usuario está enfocado o buscando texto, NUNCA ocultar la barra sticky aunque la pantalla se acorte
+    if (this.buscadorEnfocado || this.busquedaSticky.trim().length > 0) {
+      this.mostrarStickyBalance = true;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (entry) {
+      this.mostrarStickyBalance = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+    } else if (this.balanceContainer?.nativeElement) {
+      const rect = this.balanceContainer.nativeElement.getBoundingClientRect();
+      this.mostrarStickyBalance = rect.bottom < 60;
+    }
+    this.cdr.detectChanges();
   }
 
   ngOnInit() {
+    if (typeof localStorage !== 'undefined') {
+      this.saldoOculto = localStorage.getItem('monetra_ocultar_saldo') === 'true';
+    }
+
     const currentUser = this.authService.getCurrentUser();
     this.nombre = currentUser?.nombre ?? '';
     this.cargarAlertasCredito();
+    this.cargarBalance();
+
+    // Escucha cambios de balance al crear/editar movimientos
+    this.movimientosService.refreshBalanceObservable$.subscribe(() => {
+      this.cargarBalance();
+    });
+  }
+
+  toggleSaldoOculto() {
+    this.saldoOculto = !this.saldoOculto;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('monetra_ocultar_saldo', String(this.saldoOculto));
+    }
+    this.cdr.detectChanges();
+  }
+
+  ngOnDestroy(): void {
+    if (this.balanceObserver) {
+      this.balanceObserver.disconnect();
+    }
+  }
+
+  cargarBalance() {
+    this.movimientosService.consultarBalanceGeneral().subscribe({
+      next: (res) => {
+        if (res) {
+          this.balanceData = res;
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  onBuscadorFocus() {
+    this.buscadorEnfocado = true;
+    this.mostrarStickyBalance = true;
+    this.cdr.detectChanges();
+  }
+
+  onBuscadorBlur() {
+    // Timeout para permitir que clicks en limpiar u otros elementos del sticky se procesen primero
+    setTimeout(() => {
+      this.buscadorEnfocado = false;
+      this.actualizarVisibilidadSticky();
+    }, 200);
+  }
+
+  onBusquedaStickyChange(valor: string) {
+    this.busquedaSticky = valor;
+    this.actualizarVisibilidadSticky();
+  }
+
+  limpiarBusquedaSticky() {
+    this.busquedaSticky = '';
+    this.actualizarVisibilidadSticky();
+  }
+
+  irAlHistorialConBusqueda() {
+    const queryParams: any = { origen: 'inicio' };
+    if (this.busquedaSticky.trim()) {
+      queryParams.q = this.busquedaSticky.trim();
+    }
+    this.router.navigate(['/movimientos'], { queryParams });
   }
 
   scrollCarrusel(direccion: 'prev' | 'next'): void {
