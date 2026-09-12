@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, AfterViewInit } from '@angular/core';
+import { ChangeDetectorRef, Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { QuickAction } from '../../shared/quick-action/quick-action';
@@ -9,10 +9,19 @@ import { AuthService } from '../../core/services/auth.service';
 import { UltimosMovimientos } from '../../shared/ultimos-movimientos/ultimos-movimientos';
 import { CuentasService } from '../../core/services/cuentas.service';
 import { AlertaCredito } from '../../core/models/alerta-credito.interface';
+import { PagarTarjetaModal } from '../components/pagar-tarjeta-modal/pagar-tarjeta-modal';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, RouterLink, QuickAction, NuevoMovimientoModal, BalanceGeneral, UltimosMovimientos],
+  imports: [
+    CurrencyPipe,
+    RouterLink,
+    QuickAction,
+    NuevoMovimientoModal,
+    BalanceGeneral,
+    UltimosMovimientos,
+    PagarTarjetaModal,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
@@ -24,10 +33,16 @@ export class Dashboard {
     private cdr: ChangeDetectorRef,
   ) {}
 
-  nombre = ''
+  @ViewChild('carouselRef') carouselRef?: ElementRef<HTMLDivElement>;
+
+  nombre = '';
   alertasCredito: AlertaCredito[] = [];
   cargandoAlertasCredito = false;
   errorAlertasCredito = '';
+
+  modalMovimientoAbierto = false;
+  modalPagarTarjetaAbierto = false;
+  cuentaIdAPagar = '';
 
   ngAfterViewInit(): void {
     // Inicialización del datepicker de Flowbite
@@ -40,13 +55,21 @@ export class Dashboard {
     }
   }
 
-  ngOnInit() { // 3. Place your logic here
+  ngOnInit() {
     const currentUser = this.authService.getCurrentUser();
-    this.nombre = currentUser.nombre
+    this.nombre = currentUser?.nombre ?? '';
     this.cargarAlertasCredito();
   }
 
-  modalMovimientoAbierto = false;
+  scrollCarrusel(direccion: 'prev' | 'next'): void {
+    if (!this.carouselRef?.nativeElement) return;
+    const contenedor = this.carouselRef.nativeElement;
+    const scrollAmount = contenedor.clientWidth * 0.8;
+    contenedor.scrollBy({
+      left: direccion === 'next' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth',
+    });
+  }
 
   abrirModalMovimiento() {
     this.modalMovimientoAbierto = true;
@@ -54,6 +77,25 @@ export class Dashboard {
 
   cerrarModalMovimiento() {
     this.modalMovimientoAbierto = false;
+  }
+
+  abrirModalPagarTarjeta(cuentaId: number | string) {
+    this.cuentaIdAPagar = String(cuentaId);
+    this.modalPagarTarjetaAbierto = true;
+  }
+
+  cerrarModalPagarTarjeta() {
+    this.modalPagarTarjetaAbierto = false;
+    this.cuentaIdAPagar = '';
+  }
+
+  pagoTarjetaRealizado() {
+    this.cerrarModalPagarTarjeta();
+    this.cargarAlertasCredito();
+  }
+
+  esAlertaPago(estado: AlertaCredito['estado']): boolean {
+    return estado === 'atrasado' || estado === 'vence-hoy' || estado === 'proximo';
   }
 
   cargarAlertasCredito() {
@@ -75,7 +117,7 @@ export class Dashboard {
         error: (err) => {
           this.alertasCredito = [];
           this.errorAlertasCredito =
-            err?.error?.message ?? 'No pudimos cargar las alertas de creditos.';
+            err?.error?.message ?? 'No pudimos cargar las alertas de créditos.';
         },
       });
   }
@@ -91,5 +133,4 @@ export class Dashboard {
 
     return clases[estado];
   }
-
 }

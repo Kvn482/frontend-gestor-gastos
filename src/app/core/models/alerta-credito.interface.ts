@@ -11,6 +11,7 @@ export interface AlertaCredito {
   titulo: string;
   detalle: string;
   fecha: string;
+  fechaIso?: string;
   monto?: number;
   estado: EstadoAlertaCredito;
   accion: string;

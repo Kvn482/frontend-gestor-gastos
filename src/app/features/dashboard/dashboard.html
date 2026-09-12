@@ -17,13 +17,44 @@
   <div class="mb-3 flex items-center justify-between gap-3">
     <div>
       <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">
-        Alertas de creditos
+        Alertas de créditos
       </p>
       <h2 class="text-base font-bold text-slate-900 dark:text-white">Cortes y pagos pendientes</h2>
     </div>
-    <span class="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-      {{ cargandoAlertasCredito ? 'Cargando' : alertasCredito.length + ' activas' }}
-    </span>
+
+    <div class="flex items-center gap-2">
+      <span class="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-500 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+        {{ cargandoAlertasCredito ? 'Cargando' : alertasCredito.length + ' activas' }}
+      </span>
+
+      <!-- Controles del carrusel si hay más de una alerta -->
+      @if (alertasCredito.length > 1 && !cargandoAlertasCredito) {
+        <div class="hidden md:flex items-center gap-1">
+          <button
+            type="button"
+            (click)="scrollCarrusel('prev')"
+            class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:bg-slate-100 hover:text-slate-900 active:scale-90 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
+            title="Anterior"
+            aria-label="Alerta anterior"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            (click)="scrollCarrusel('next')"
+            class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:bg-slate-100 hover:text-slate-900 active:scale-90 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white cursor-pointer"
+            title="Siguiente"
+            aria-label="Siguiente alerta"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      }
+    </div>
   </div>
 
   @if (errorAlertasCredito) {
@@ -31,62 +62,68 @@
       {{ errorAlertasCredito }}
     </div>
   } @else if (cargandoAlertasCredito) {
-    <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+    <div class="flex gap-3 overflow-hidden pb-2">
       @for (item of [1, 2, 3]; track item) {
-        <div class="h-32 animate-pulse rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900"></div>
+        <div class="h-32 w-[86%] shrink-0 animate-pulse rounded-lg border border-slate-200 bg-slate-100 sm:w-[360px] md:w-[380px] dark:border-slate-800 dark:bg-slate-900"></div>
       }
     </div>
   } @else {
-    <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+    <!-- Contenedor carrusel con scroll-snap nativo y scrollbar oculta -->
+    <div
+      #carouselRef
+      class="flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       @for (alerta of alertasCredito; track alerta.cuentaId + '-' + alerta.estado) {
         <article
-          class="rounded-lg border p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          class="snap-start shrink-0 w-[86%] sm:w-[360px] md:w-[380px] rounded-lg border p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between"
           [class]="clasesAlertaCredito(alerta.estado)"
         >
-          <div class="flex items-start gap-2.5">
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/80 shadow-sm dark:bg-slate-950/50">
-              @if (alerta.estado === 'atrasado') {
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
-                  />
-                </svg>
-              } @else if (alerta.estado === 'vence-hoy') {
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 6v6l4 2m5-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
-              } @else {
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
-                  />
-                </svg>
-              }
-            </div>
-
-            <div class="min-w-0 flex-1">
-              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <h3 class="text-xs font-extrabold uppercase tracking-wide">{{ alerta.titulo }}</h3>
-                <span class="rounded-full bg-white/75 px-2 py-0.5 text-[10px] font-bold dark:bg-slate-950/45">
-                  {{ alerta.fecha }}
-                </span>
+          <div>
+            <div class="flex items-start gap-2.5">
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/80 shadow-sm dark:bg-slate-950/50">
+                @if (alerta.estado === 'atrasado') {
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"
+                    />
+                  </svg>
+                } @else if (alerta.estado === 'vence-hoy') {
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 6v6l4 2m5-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                } @else {
+                  <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+                    />
+                  </svg>
+                }
               </div>
-              <p class="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{{ alerta.cuenta }}</p>
-              <p class="mt-0.5 text-xs leading-4 text-slate-600 dark:text-slate-400">{{ alerta.detalle }}</p>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <h3 class="text-xs font-extrabold uppercase tracking-wide">{{ alerta.titulo }}</h3>
+                  <span class="rounded-full bg-white/75 px-2 py-0.5 text-[10px] font-bold dark:bg-slate-950/45">
+                    {{ alerta.fecha }}
+                  </span>
+                </div>
+                <p class="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">{{ alerta.cuenta }}</p>
+                <p class="mt-0.5 text-xs leading-4 text-slate-600 dark:text-slate-400">{{ alerta.detalle }}</p>
+              </div>
             </div>
           </div>
 
@@ -100,12 +137,23 @@
                 <p class="text-sm font-extrabold text-slate-900 dark:text-white">Solo revisar</p>
               }
             </div>
-            <a
-              [routerLink]="['/cuentas', alerta.cuentaId]"
-              class="shrink-0 rounded-md bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-            >
-              {{ alerta.accion }}
-            </a>
+
+            @if (esAlertaPago(alerta.estado)) {
+              <button
+                type="button"
+                (click)="abrirModalPagarTarjeta(alerta.cuentaId)"
+                class="cursor-pointer shrink-0 rounded-md bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700 active:scale-95 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              >
+                {{ alerta.accion }}
+              </button>
+            } @else {
+              <a
+                [routerLink]="['/cuentas', alerta.cuentaId]"
+                class="shrink-0 rounded-md bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+              >
+                {{ alerta.accion }}
+              </a>
+            }
           </div>
         </article>
       }
@@ -195,3 +243,11 @@
   (saved)="cargarAlertasCredito()"
 >
 </app-nuevo-movimiento-modal>
+
+<app-pagar-tarjeta-modal
+  [isOpen]="modalPagarTarjetaAbierto"
+  [cuentaDestinoId]="cuentaIdAPagar"
+  (closed)="cerrarModalPagarTarjeta()"
+  (saved)="pagoTarjetaRealizado()"
+>
+</app-pagar-tarjeta-modal>
