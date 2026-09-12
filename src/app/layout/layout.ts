@@ -40,7 +40,9 @@ export class Layout {
     this.apellido = currentUser?.apellido ?? ''
     this.nombreCompleto = this.nombre ? `${this.nombre} ${this.apellido}` : ''
     this.email = currentUser?.email ?? ''
-    this.darkMode = localStorage.getItem('theme') === 'dark'
+    const theme = localStorage.getItem('theme')
+    const systemPrefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    this.darkMode = theme === 'dark' || (theme !== 'light' && systemPrefersDark)
     this.applyTheme()
 
     const avatarOverride = localStorage.getItem('avatarOverride')

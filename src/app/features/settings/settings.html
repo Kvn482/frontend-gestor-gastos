@@ -1,378 +1,1035 @@
-<!-- Header -->
-<div class="mb-8">
-  <a
-    routerLink="/inicio"
-    class="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
-  >
-    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7" />
-    </svg>
-    Inicio
-  </a>
-  <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Configuración</h1>
-  <p class="text-gray-400 dark:text-slate-500 text-sm mt-1">Gestiona tu perfil y preferencias</p>
-</div>
+<div class="max-w-xl mx-auto space-y-6 pb-28 pt-2 transition-colors duration-200">
 
-<!-- Tabs -->
-<div class="border-b border-slate-200 dark:border-slate-700 mb-8">
-  <div class="flex gap-8">
-    <button type="button" (click)="tabActivo = 'perfil'" [class]="getTabClass('perfil')">
-      Perfil
-    </button>
-    <button type="button" (click)="tabActivo = 'etiquetas'" [class]="getTabClass('etiquetas')">
-      Etiquetas
-    </button>
+  <!-- ==================== HEADER ==================== -->
+  <div class="px-1">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Configuración</h1>
+    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">General y Cuenta</p>
   </div>
+
+  <!-- ==================== TARJETA DE PERFIL (TOP) ==================== -->
+  <div
+    (click)="modalPerfilAbierto = true"
+    class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all cursor-pointer group"
+  >
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3.5 min-w-0">
+        <!-- Avatar con indicador verde -->
+        <div class="relative shrink-0">
+          @if (avatarPreview) {
+            <img [src]="avatarPreview" alt="Avatar" class="w-13 h-13 rounded-2xl object-cover ring-2 ring-indigo-500/40" />
+          } @else {
+            <div class="w-13 h-13 rounded-2xl bg-indigo-900/40 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-base">
+              {{ perfil.nombre.charAt(0).toUpperCase() }}{{ perfil.apellido.charAt(0).toUpperCase() }}
+            </div>
+          }
+          <!-- Online status dot -->
+          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#131b2a]"></span>
+        </div>
+
+        <!-- Info del usuario -->
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 mb-0.5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">
+              SESIÓN ACTIVA
+            </span>
+            <span class="text-[11px] text-amber-400">✨</span>
+          </div>
+          <h2 class="text-base font-bold text-gray-900 dark:text-white truncate">
+            {{ nombreCompleto }}
+          </h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+            {{ perfil.email || 'Tus datos están sincronizados' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Botón de flecha circular -->
+      <button
+        type="button"
+        (click)="modalPerfilAbierto = true; $event.stopPropagation()"
+        class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/80 group-hover:bg-indigo-500/20 group-hover:text-indigo-400 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors shrink-0"
+        title="Editar perfil"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ==================== SECCIÓN: APARIENCIA ==================== -->
+  <div>
+    <h4 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+      APARIENCIA
+    </h4>
+    <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm divide-y divide-slate-100 dark:divide-slate-800/60">
+
+      <!-- Idioma -->
+      <div
+        (click)="mostrarInfoIdioma()"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Idioma</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ idiomaActual }}</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Tema -->
+      <div
+        (click)="modalTemaAbierto = true"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4 4 4 0 014-4h1a2 2 0 002-2V7a4 4 0 014-4h1a4 4 0 014 4v1a2 2 0 002 2h1a4 4 0 014 4 4 4 0 01-4 4h-1a2 2 0 00-2 2v1a4 4 0 01-4 4h-1a4 4 0 01-4-4" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Tema</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ temaActualLabel }}</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Moneda -->
+      <div
+        (click)="modalMonedaAbierto = true"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 font-bold text-base">
+            $
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Moneda</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ monedaActualData.bandera }} {{ monedaActualData.nombre }}</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN: GESTIÓN DE GASTOS ==================== -->
+  <div>
+    <h4 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+      GESTIÓN DE GASTOS
+    </h4>
+    <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm divide-y divide-slate-100 dark:divide-slate-800/60">
+
+      <!-- Período de presupuesto -->
+      <div
+        (click)="modalPeriodoAbierto = true"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Período de presupuesto</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ periodoPresupuesto }}</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Categorías -->
+      <div
+        (click)="modalEtiquetasAbierto = true"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Categorías ({{ etiquetas.length }})</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Administrar etiquetas y categorías</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Movimientos frecuentes -->
+      <div
+        (click)="abrirInfoModal('frecuentes')"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Movimientos frecuentes</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Registros repetidos en 1 toque</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Transacciones programadas -->
+      <div
+        (click)="abrirInfoModal('programados')"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Programados</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Transacciones automáticas y periódicas</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Acceso rápido -->
+      <div
+        (click)="abrirInfoModal('acceso_rapido')"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Acceso rápido</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Atajos desde el ícono o ajustes rápidos</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Disponible para gastar (Safe to spend) -->
+      <div
+        (click)="toggleSafeToSpend()"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Disponible para gastar</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Visible en la pantalla de inicio</p>
+          </div>
+        </div>
+        <!-- Toggle Switch con estilo Monetra (indigo) -->
+        <div class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" [checked]="safeToSpend" (change)="toggleSafeToSpend()" class="sr-only peer" />
+          <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN: DATOS Y SEGURIDAD ==================== -->
+  <div>
+    <h4 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+      DATOS Y SEGURIDAD
+    </h4>
+    <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm divide-y divide-slate-100 dark:divide-slate-800/60">
+
+      <!-- Copia de seguridad -->
+      <div
+        (click)="abrirInfoModal('backup')"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Copia de seguridad y restaurar</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Respaldar y restaurar datos</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Seguridad y Contraseña -->
+      <div
+        (click)="modalContrasenaAbierto = true"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Seguridad y contraseña</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Actualizar tu contraseña de acceso</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Exportar datos CSV -->
+      <div
+        (click)="exportarDatosCSV()"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Exportar datos</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Descargar reporte como archivo CSV</p>
+          </div>
+        </div>
+        @if (exportandoCSV) {
+          <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        } @else {
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        }
+      </div>
+
+      <!-- Notificaciones -->
+      <div
+        (click)="toggleNotificaciones()"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Notificaciones</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Recordatorios y alertas</p>
+          </div>
+        </div>
+        <!-- Toggle Switch con estilo Monetra (indigo) -->
+        <div class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" [checked]="notificaciones" (change)="toggleNotificaciones()" class="sr-only peer" />
+          <div class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN: LEGAL ==================== -->
+  <div>
+    <h4 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+      LEGAL
+    </h4>
+    <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-sm divide-y divide-slate-100 dark:divide-slate-800/60">
+
+      <!-- Términos de servicio -->
+      <div
+        (click)="abrirInfoModal('terminos')"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Términos de servicio</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Política de privacidad -->
+      <div
+        (click)="abrirInfoModal('privacidad')"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Política de privacidad</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+
+      <!-- Conectar con el desarrollador (@kevindrums92) -->
+      <div
+        (click)="conectarDesarrollador()"
+        class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500/20 via-rose-500/20 to-purple-500/20 text-rose-400 flex items-center justify-center shrink-0">
+            <!-- Instagram icon -->
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">Conectar con el desarrollador</p>
+            <p class="text-xs text-rose-400 font-medium">&#64;kevinacostaespinoza</p>
+          </div>
+        </div>
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== FOOTER & ACCIONES ==================== -->
+  <div class="text-center pt-3 pb-8 space-y-3">
+    <!-- Version -->
+    <p class="text-xs text-slate-500 dark:text-slate-500 font-mono">
+      v0.17.8 · Monetra
+    </p>
+
+    <!-- Botón rojo destacado -->
+    <div>
+      <button
+        type="button"
+        (click)="confirmarCerrarSesion()"
+        class="text-rose-500 hover:text-rose-400 text-sm font-semibold tracking-wide transition-colors cursor-pointer py-1 px-3 rounded-xl hover:bg-rose-500/10"
+      >
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+
 </div>
 
-<!-- ==================== TAB: PERFIL ==================== -->
-@if (tabActivo === 'perfil') {
 
-  <!-- Información personal -->
-  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6 max-w-5xl">
-    <div class="mb-5">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Información personal</h2>
-      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Actualiza tu nombre visible en la app</p>
-    </div>
-
-    <!-- Avatar -->
-    <div class="flex items-center gap-5 mb-6">
-      @if (avatarPreview) {
-        <img [src]="avatarPreview" alt="Avatar" class="w-30 h-30 rounded-full object-cover ring-2 ring-indigo-500/50 shrink-0" />
-      } @else {
-        <div class="w-30 h-30 rounded-full bg-indigo-900/40 flex items-center justify-center text-indigo-400 text-2xl font-bold shrink-0">
-          {{ perfil.nombre.charAt(0).toUpperCase() }}{{ perfil.apellido.charAt(0).toUpperCase() }}
+<!-- ========================================================================= -->
+<!-- ======================== MODAL: EDITAR PERFIL =========================== -->
+<!-- ========================================================================= -->
+@if (modalPerfilAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalPerfilAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header del modal -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Perfil y Cuenta</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Actualiza tus datos y foto visible</p>
         </div>
-      }
-      <div>
-        <input #fileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden" (change)="seleccionarAvatar($event)" />
-        <div class="flex flex-wrap gap-3">
+        <button
+          type="button"
+          (click)="modalPerfilAbierto = false"
+          class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Foto / Avatar -->
+      <div class="flex items-center gap-4">
+        @if (avatarPreview) {
+          <img [src]="avatarPreview" alt="Avatar" class="w-20 h-20 rounded-2xl object-cover ring-2 ring-indigo-500/40 shrink-0 shadow-sm" />
+        } @else {
+          <div class="w-20 h-20 rounded-2xl bg-indigo-900/40 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl font-bold shrink-0">
+            {{ perfil.nombre.charAt(0).toUpperCase() }}{{ perfil.apellido.charAt(0).toUpperCase() }}
+          </div>
+        }
+        <div>
+          <input #fileInput type="file" accept="image/png,image/jpeg,image/webp" class="hidden" (change)="seleccionarAvatar($event)" />
           <button
             type="button"
             (click)="fileInput.click()"
-            class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+            class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
           >
             Cambiar foto
           </button>
-        </div>
-        <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">PNG, JPG o WEBP · Máx. 2 MB</p>
-        @if (archivoAvatar) {
-          <span class="text-xs text-indigo-500 dark:text-indigo-400 font-medium">La foto se actualizará al guardar</span>
-        }
-      </div>
-    </div>
-
-    <form (ngSubmit)="guardarPerfil()">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-            Nombre
-          </label>
-          <input
-            type="text"
-            [(ngModel)]="perfil.nombre"
-            name="nombre"
-            placeholder="Tu nombre"
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-slate-400"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-            Apellido
-          </label>
-          <input
-            type="text"
-            [(ngModel)]="perfil.apellido"
-            name="apellido"
-            placeholder="Tu apellido"
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-slate-400"
-          />
-        </div>
-      </div>
-
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-          Correo electrónico
-        </label>
-        <input
-          type="email"
-          [value]="perfil.email"
-          disabled
-          class="w-full bg-slate-100 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-400 dark:text-slate-500 rounded-xl px-3.5 py-2.5 text-sm cursor-not-allowed"
-        />
-        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
-          El correo electrónico no puede cambiarse
-        </p>
-      </div>
-
-      <div class="flex justify-end">
-        <button
-          type="submit"
-          [disabled]="cargandoPerfil"
-          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
-        >
-          @if (cargandoPerfil) { Guardando... } @else { Guardar cambios }
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Cambiar contraseña -->
-  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 max-w-5xl">
-    <div class="mb-5">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Cambiar contraseña</h2>
-      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Actualiza tu contraseña de acceso</p>
-    </div>
-
-    <form (ngSubmit)="cambiarContrasena()">
-      <!-- Contraseña actual -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-          Contraseña actual
-        </label>
-        <div class="relative">
-          <input
-            [type]="mostrarContrasenaActual ? 'text' : 'password'"
-            [(ngModel)]="contrasena.actual"
-            name="actual"
-            placeholder="••••••••"
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
-          />
-          <button
-            type="button"
-            (click)="mostrarContrasenaActual = !mostrarContrasenaActual"
-            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-          >
-            @if (mostrarContrasenaActual) {
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-              </svg>
-            } @else {
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
-              </svg>
-            }
-          </button>
-        </div>
-      </div>
-
-      <!-- Nueva contraseña -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-          Nueva contraseña
-        </label>
-        <div class="relative">
-          <input
-            [type]="mostrarContrasenaNueva ? 'text' : 'password'"
-            [(ngModel)]="contrasena.nueva"
-            name="nueva"
-            placeholder="••••••••"
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
-          />
-          <button
-            type="button"
-            (click)="mostrarContrasenaNueva = !mostrarContrasenaNueva"
-            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-          >
-            @if (mostrarContrasenaNueva) {
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-              </svg>
-            } @else {
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
-              </svg>
-            }
-          </button>
-        </div>
-      </div>
-
-      <!-- Confirmar contraseña -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-          Confirmar nueva contraseña
-        </label>
-        <div class="relative">
-          <input
-            [type]="mostrarContrasenaConfirmar ? 'text' : 'password'"
-            [(ngModel)]="contrasena.confirmar"
-            name="confirmar"
-            placeholder="••••••••"
-            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
-          />
-          <button
-            type="button"
-            (click)="mostrarContrasenaConfirmar = !mostrarContrasenaConfirmar"
-            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-          >
-            @if (mostrarContrasenaConfirmar) {
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-              </svg>
-            } @else {
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
-              </svg>
-            }
-          </button>
-        </div>
-      </div>
-
-      <div class="flex justify-end">
-        <button
-          type="submit"
-          [disabled]="cargandoContrasena"
-          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
-        >
-          @if (cargandoContrasena) { Cambiando... } @else { Cambiar contraseña }
-        </button>
-      </div>
-    </form>
-  </div>
-
-}
-
-<!-- ==================== TAB: ETIQUETAS ==================== -->
-@if (tabActivo === 'etiquetas') {
-
-  <!-- Nueva etiqueta -->
-  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6 max-w-5xl">
-    <div class="mb-5">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Nueva etiqueta</h2>
-      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">Crea etiquetas personalizadas para clasificar tus movimientos</p>
-    </div>
-
-    <form (ngSubmit)="crearEtiqueta()">
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
-          Nombre
-        </label>
-        <input
-          type="text"
-          [(ngModel)]="nuevaEtiqueta.nombre"
-          name="nombre"
-          placeholder="ej. Supermercado, Entretenimiento..."
-          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-slate-400"
-        />
-      </div>
-
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
-          Color
-        </label>
-        <div class="flex flex-wrap gap-2.5 mb-4">
-          @for (color of coloresPredefinidos; track color) {
-            <button
-              type="button"
-              (click)="nuevaEtiqueta.color = color"
-              class="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
-              [style.background-color]="color"
-              [style.box-shadow]="swatchShadow(color)"
-            ></button>
+          <p class="text-[11px] text-slate-400 mt-1.5">PNG, JPG o WEBP · Máx. 2 MB</p>
+          @if (archivoAvatar) {
+            <span class="text-[11px] text-indigo-500 font-medium">Se actualizará al guardar cambios</span>
           }
         </div>
-        <!-- Vista previa -->
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-400 dark:text-slate-500">Vista previa:</span>
-          <span
-            class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium text-white"
-            [style.background-color]="nuevaEtiqueta.color"
-          >
-            {{ nuevaEtiqueta.nombre || 'Etiqueta' }}
-          </span>
-        </div>
       </div>
 
-      <div class="flex justify-end">
+      <!-- Formulario -->
+      <form (ngSubmit)="guardarPerfil()" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="perfil.nombre"
+              name="nombre"
+              placeholder="Tu nombre"
+              class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Apellido</label>
+            <input
+              type="text"
+              [(ngModel)]="perfil.apellido"
+              name="apellido"
+              placeholder="Tu apellido"
+              class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Correo electrónico</label>
+          <input
+            type="email"
+            [value]="perfil.email"
+            disabled
+            class="w-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-400 rounded-xl px-3.5 py-2.5 text-sm cursor-not-allowed"
+          />
+          <p class="text-[11px] text-slate-400 mt-1">El correo electrónico no puede modificarse directamente</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+          <button
+            type="button"
+            (click)="modalPerfilAbierto = false"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="cargandoPerfil"
+            class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+          >
+            @if (cargandoPerfil) { Guardando... } @else { Guardar cambios }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+
+<!-- ========================================================================= -->
+<!-- ==================== MODAL: CAMBIAR CONTRASEÑA ========================== -->
+<!-- ========================================================================= -->
+@if (modalContrasenaAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalContrasenaAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header del modal -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Cambiar Contraseña</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Protege tu cuenta con una clave segura</p>
+        </div>
         <button
-          type="submit"
-          [disabled]="creandoEtiqueta"
-          class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors"
+          type="button"
+          (click)="modalContrasenaAbierto = false"
+          class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
         >
-          @if (creandoEtiqueta) { Creando... } @else { Crear etiqueta }
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
-    </form>
-  </div>
 
-  <!-- Etiquetas predeterminadas -->
-  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6 max-w-5xl">
-    <div class="mb-5">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Etiquetas predeterminadas</h2>
-      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-        Estas etiquetas vienen incluidas en la app y no pueden eliminarse
-      </p>
-    </div>
-
-    @if (etiquetasPredeterminadas.length === 0) {
-      <p class="text-sm text-slate-400 dark:text-slate-500 text-center py-8">
-        No hay etiquetas predeterminadas disponibles
-      </p>
-    } @else {
-      <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-        @for (etiqueta of etiquetasPredeterminadas; track etiqueta.id) {
-          <li class="flex items-center justify-between py-3">
-            <div class="flex items-center gap-3">
-              <span
-                class="w-3 h-3 rounded-full shrink-0"
-                [style.background-color]="etiqueta.color"
-              ></span>
-              <span class="text-sm font-medium text-gray-800 dark:text-slate-200">
-                {{ etiqueta.nombre }}
-              </span>
-            </div>
-            <span class="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full">
-              Predeterminada
-            </span>
-          </li>
-        }
-      </ul>
-    }
-  </div>
-
-  <!-- Tus etiquetas -->
-  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 max-w-5xl">
-    <div class="mb-5">
-      <h2 class="text-base font-semibold text-gray-900 dark:text-white">Tus etiquetas</h2>
-      <p class="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
-        Etiquetas personalizadas creadas por ti
-      </p>
-    </div>
-
-    @if (etiquetasUsuario.length === 0) {
-      <p class="text-sm text-slate-400 dark:text-slate-500 text-center py-8">
-        Aun no has creado etiquetas personalizadas
-      </p>
-    } @else {
-      <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-        @for (etiqueta of etiquetasUsuario; track etiqueta.id) {
-          <li class="flex items-center justify-between py-3">
-            <div class="flex items-center gap-3">
-              <span
-                class="w-3 h-3 rounded-full shrink-0"
-                [style.background-color]="etiqueta.color"
-              ></span>
-              <span class="text-sm font-medium text-gray-800 dark:text-slate-200">
-                {{ etiqueta.nombre }}
-              </span>
-            </div>
+      <form (ngSubmit)="cambiarContrasena()" class="space-y-4">
+        <!-- Contraseña actual -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Contraseña actual</label>
+          <div class="relative">
+            <input
+              [type]="mostrarContrasenaActual ? 'text' : 'password'"
+              [(ngModel)]="contrasena.actual"
+              name="actual"
+              placeholder="••••••••"
+              class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
             <button
               type="button"
-              (click)="eliminarEtiqueta(etiqueta)"
-              class="text-slate-400 cursor-pointer hover:text-rose-500 dark:hover:text-rose-400 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
-              title="Eliminar etiqueta"
+              (click)="mostrarContrasenaActual = !mostrarContrasenaActual"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
             >
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             </button>
-          </li>
-        }
-      </ul>
-    }
-  </div>
+          </div>
+        </div>
 
+        <!-- Nueva contraseña -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nueva contraseña</label>
+          <div class="relative">
+            <input
+              [type]="mostrarContrasenaNueva ? 'text' : 'password'"
+              [(ngModel)]="contrasena.nueva"
+              name="nueva"
+              placeholder="••••••••"
+              class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              (click)="mostrarContrasenaNueva = !mostrarContrasenaNueva"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirmar nueva contraseña -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Confirmar nueva contraseña</label>
+          <div class="relative">
+            <input
+              [type]="mostrarContrasenaConfirmar ? 'text' : 'password'"
+              [(ngModel)]="contrasena.confirmar"
+              name="confirmar"
+              placeholder="••••••••"
+              class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button
+              type="button"
+              (click)="mostrarContrasenaConfirmar = !mostrarContrasenaConfirmar"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+          <button
+            type="button"
+            (click)="modalContrasenaAbierto = false"
+            class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="cargandoContrasena"
+            class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+          >
+            @if (cargandoContrasena) { Actualizando... } @else { Actualizar contraseña }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+
+<!-- ========================================================================= -->
+<!-- ==================== MODAL: GESTIÓN DE ETIQUETAS ======================== -->
+<!-- ========================================================================= -->
+@if (modalEtiquetasAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalEtiquetasAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-6 max-h-[88vh] overflow-y-auto"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header del modal -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4 sticky top-0 bg-white dark:bg-[#131b2a] z-10">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Categorías y Etiquetas</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Crea y organiza las categorías de tus movimientos</p>
+        </div>
+        <button
+          type="button"
+          (click)="modalEtiquetasAbierto = false"
+          class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Crear nueva etiqueta -->
+      <div class="bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4">
+        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-3">
+          Nueva Etiqueta
+        </h4>
+        <form (ngSubmit)="crearEtiqueta()" class="space-y-3.5">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaEtiqueta.nombre"
+              name="nombreEtiqueta"
+              placeholder="ej. Gimnasio, Mascotas, Educación..."
+              class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">Color</label>
+            <div class="flex flex-wrap gap-2.5 mb-3">
+              @for (color of coloresPredefinidos; track color) {
+                <button
+                  type="button"
+                  (click)="nuevaEtiqueta.color = color"
+                  class="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none cursor-pointer"
+                  [style.background-color]="color"
+                  [style.box-shadow]="swatchShadow(color)"
+                ></button>
+              }
+            </div>
+
+            <!-- Previsualización -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500 dark:text-slate-400">Vista previa:</span>
+              <span
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm"
+                [style.background-color]="nuevaEtiqueta.color"
+              >
+                {{ nuevaEtiqueta.nombre || 'Nombre de etiqueta' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button
+              type="submit"
+              [disabled]="creandoEtiqueta"
+              class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-500/20"
+            >
+              @if (creandoEtiqueta) { Creando... } @else { + Crear etiqueta }
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tus etiquetas personalizadas -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider px-1">
+          Tus Etiquetas Personalizadas ({{ etiquetasUsuario.length }})
+        </h4>
+
+        @if (etiquetasUsuario.length === 0) {
+          <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-6 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+            Aún no has creado etiquetas personalizadas
+          </p>
+        } @else {
+          <div class="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 divide-y divide-slate-200/60 dark:divide-slate-800/60 overflow-hidden">
+            @for (etiqueta of etiquetasUsuario; track etiqueta.id) {
+              <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" [style.background-color]="etiqueta.color"></span>
+                  <span class="text-sm font-semibold text-gray-800 dark:text-slate-200">{{ etiqueta.nombre }}</span>
+                </div>
+                <button
+                  type="button"
+                  (click)="eliminarEtiqueta(etiqueta)"
+                  class="text-slate-400 hover:text-rose-500 p-1.5 rounded-xl hover:bg-rose-500/10 transition-colors cursor-pointer"
+                  title="Eliminar etiqueta"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Etiquetas predeterminadas del sistema -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider px-1">
+          Etiquetas Predeterminadas ({{ etiquetasPredeterminadas.length }})
+        </h4>
+
+        @if (etiquetasPredeterminadas.length === 0) {
+          <p class="text-xs text-slate-400 dark:text-slate-500 text-center py-6 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+            No hay etiquetas predeterminadas registradas
+          </p>
+        } @else {
+          <div class="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 divide-y divide-slate-200/60 dark:divide-slate-800/60 overflow-hidden">
+            @for (etiqueta of etiquetasPredeterminadas; track etiqueta.id) {
+              <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <span class="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" [style.background-color]="etiqueta.color"></span>
+                  <span class="text-sm font-medium text-gray-800 dark:text-slate-200">{{ etiqueta.nombre }}</span>
+                </div>
+                <span class="text-[11px] font-medium bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2.5 py-0.5 rounded-full">
+                  Predeterminada
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+}
+
+
+<!-- ========================================================================= -->
+<!-- ==================== MODAL: SELECCIÓN DE TEMA =========================== -->
+<!-- ========================================================================= -->
+@if (modalTemaAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalTemaAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">Selecciona el Tema</h3>
+        <button (click)="modalTemaAbierto = false" class="text-slate-400 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <button
+          type="button"
+          (click)="seleccionarTema('oscuro')"
+          class="w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer"
+          [class.border-indigo-500]="temaActual === 'oscuro'"
+          [class.bg-indigo-500/10]="temaActual === 'oscuro'"
+          [class.border-slate-200]="temaActual !== 'oscuro'"
+          [class.dark:border-slate-800]="temaActual !== 'oscuro'"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-lg">🌙</span>
+            <span class="text-sm font-semibold text-gray-900 dark:text-white">Oscuro (Predeterminado)</span>
+          </div>
+          @if (temaActual === 'oscuro') {
+            <span class="text-indigo-400 font-bold">✓</span>
+          }
+        </button>
+
+        <button
+          type="button"
+          (click)="seleccionarTema('claro')"
+          class="w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer"
+          [class.border-indigo-500]="temaActual === 'claro'"
+          [class.bg-indigo-500/10]="temaActual === 'claro'"
+          [class.border-slate-200]="temaActual !== 'claro'"
+          [class.dark:border-slate-800]="temaActual !== 'claro'"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-lg">☀️</span>
+            <span class="text-sm font-semibold text-gray-900 dark:text-white">Claro</span>
+          </div>
+          @if (temaActual === 'claro') {
+            <span class="text-indigo-400 font-bold">✓</span>
+          }
+        </button>
+
+        <button
+          type="button"
+          (click)="seleccionarTema('sistema')"
+          class="w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer"
+          [class.border-indigo-500]="temaActual === 'sistema'"
+          [class.bg-indigo-500/10]="temaActual === 'sistema'"
+          [class.border-slate-200]="temaActual !== 'sistema'"
+          [class.dark:border-slate-800]="temaActual !== 'sistema'"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-lg">💻</span>
+            <span class="text-sm font-semibold text-gray-900 dark:text-white">Sistema</span>
+          </div>
+          @if (temaActual === 'sistema') {
+            <span class="text-indigo-400 font-bold">✓</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ========================================================================= -->
+<!-- ==================== MODAL: SELECCIÓN DE MONEDA ========================= -->
+<!-- ========================================================================= -->
+@if (modalMonedaAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalMonedaAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">Moneda Principal</h3>
+        <button (click)="modalMonedaAbierto = false" class="text-slate-400 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="space-y-2 max-h-80 overflow-y-auto">
+        @for (m of opcionesMoneda; track m.codigo) {
+          <button
+            type="button"
+            (click)="seleccionarMoneda(m.codigo)"
+            class="w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer"
+            [class.border-indigo-500]="monedaActual === m.codigo"
+            [class.bg-indigo-500/10]="monedaActual === m.codigo"
+            [class.border-slate-200]="monedaActual !== m.codigo"
+            [class.dark:border-slate-800]="monedaActual !== m.codigo"
+          >
+            <div class="flex items-center gap-3">
+              <span class="text-xl">{{ m.bandera }}</span>
+              <div class="text-left">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ m.nombre }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Símbolo: {{ m.simbolo }}</p>
+              </div>
+            </div>
+            @if (monedaActual === m.codigo) {
+              <span class="text-indigo-400 font-bold">✓</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ========================================================================= -->
+<!-- ==================== MODAL: PERÍODO PRESUPUESTO ========================= -->
+<!-- ========================================================================= -->
+@if (modalPeriodoAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalPeriodoAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">Período de Presupuesto</h3>
+        <button (click)="modalPeriodoAbierto = false" class="text-slate-400 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        @for (p of opcionesPeriodo; track p.valor) {
+          <button
+            type="button"
+            (click)="seleccionarPeriodo(p.valor)"
+            class="w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer text-left"
+            [class.border-indigo-500]="periodoPresupuesto === p.valor"
+            [class.bg-indigo-500/10]="periodoPresupuesto === p.valor"
+            [class.border-slate-200]="periodoPresupuesto !== p.valor"
+            [class.dark:border-slate-800]="periodoPresupuesto !== p.valor"
+          >
+            <div>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ p.valor }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ p.descripcion }}</p>
+            </div>
+            @if (periodoPresupuesto === p.valor) {
+              <span class="text-indigo-400 font-bold">✓</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ========================================================================= -->
+<!-- ==================== MODAL: INFORMACIÓN / DIÁLOGO ======================= -->
+<!-- ========================================================================= -->
+@if (modalInfoAbierto) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalInfoAbierto = false">
+    <div
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
+        <h3 class="text-base font-bold text-gray-900 dark:text-white">{{ infoModalTitulo }}</h3>
+        <button (click)="modalInfoAbierto = false" class="text-slate-400 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <p class="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+        {{ infoModalDescripcion }}
+      </p>
+
+      <div class="flex justify-end pt-2">
+        <button
+          type="button"
+          (click)="modalInfoAbierto = false"
+          class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200 text-xs font-semibold px-4 py-2 rounded-xl transition-colors cursor-pointer"
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
 }
