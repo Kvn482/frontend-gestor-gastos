@@ -1,34 +1,7 @@
-<!-- Mobile toggle: solo visible cuando el sidebar está cerrado -->
-@if (!sidebarOpen) {
-<button (click)="sidebarOpen = true" type="button"
-  class="fixed top-3 left-3 z-50 text-white bg-slate-800 hover:bg-slate-700 focus:ring-2 focus:ring-indigo-500 rounded-xl p-2 inline-flex sm:hidden">
-  <span class="sr-only">Abrir sidebar</span>
-  <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10" />
-  </svg>
-</button>
-}
-
-<!-- Overlay oscuro en mobile -->
-@if (sidebarOpen) {
-<div class="fixed inset-0 z-30 bg-black/50 sm:hidden" (click)="sidebarOpen = false"></div>
-}
-
 <aside
-  class="fixed top-0 left-0 z-40 w-64 h-screen transition-transform sm:translate-x-0"
-  [class.-translate-x-full]="!sidebarOpen"
+  class="hidden sm:block fixed top-0 left-0 z-40 w-64 h-screen"
   aria-label="Sidebar">
   <div class="h-full flex flex-col px-4 py-5 overflow-y-auto bg-slate-900">
-
-    <!-- Botón cerrar (solo mobile) -->
-    <div class="flex items-center justify-between mb-1 sm:mb-0">
-      <button (click)="sidebarOpen = false" type="button"
-        class="sm:hidden ml-auto text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl p-1.5 transition-colors">
-        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
 
     <!-- Logo -->
     <div class="flex items-center gap-1 px-2 mb-8">
@@ -105,7 +78,7 @@
           <ul class="px-2 pb-2 text-sm text-slate-300 font-medium space-y-0.5">
             <li>
               <a routerLink="/configuracion" (click)="profileDropdownOpen = false" class="inline-flex items-center w-full p-2 rounded-lg hover:bg-slate-700 hover:text-white transition-colors">
-                <svg class="w-4 h-4 me-2 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M20 6H10m0 0a2 2 0 1 0-4 0m4 0a2 2 0 1 1-4 0m0 0H4m16 6h-2m0 0a2 2 0 1 0-4 0m4 0a2 2 0 1 1-4 0m0 0H4m16 6H10m0 0a2 2 0 1 0-4 0m4 0a2 2 0 1 1-4 0m0 0H4"/></svg>
+                <svg class="w-4 h-4 me-2 shrink-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
                 Configuración
               </a>
             </li>
@@ -161,7 +134,86 @@
 
 <!-- Main content -->
 <div class="sm:ml-64 min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
-  <div class="p-6 pt-16 sm:pt-6 md:p-8">
+  <div class="p-6 pb-28 sm:pb-6 md:p-8">
     <router-outlet />
   </div>
 </div>
+
+<!-- Floating Bottom Navigation Bar (solo mobile) -->
+<nav
+  aria-label="Navegación móvil"
+  class="fixed inset-x-4 z-40 sm:hidden mx-auto max-w-md transition-transform duration-300 ease-out origin-bottom"
+  [class.scale-90]="isScrolledDown"
+  [class.translate-y-1]="isScrolledDown"
+  style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px));"
+>
+  <div
+    class="flex items-center justify-around px-3 py-2 rounded-2xl bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-800/90 shadow-2xl shadow-black/50 ring-1 ring-white/10 transition-opacity duration-300 ease-out"
+    [class.opacity-90]="isScrolledDown"
+  >
+    <!-- Home / Inicio -->
+    <a
+      routerLink="/inicio"
+      (click)="irA('/inicio')"
+      routerLinkActive="!text-indigo-400 bg-indigo-500/15"
+      [routerLinkActiveOptions]="{ exact: true }"
+      title="Inicio"
+      aria-label="Inicio"
+      class="flex flex-1 items-center justify-center py-2.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition-colors duration-150 active:scale-95 cursor-pointer select-none touch-manipulation"
+    >
+      <svg class="w-6 h-6 shrink-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="m3 10.5 9-7 9 7" />
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M5 10v9a1 1 0 0 0 1 1h4v-5h4v5h4a1 1 0 0 0 1-1v-9" />
+      </svg>
+    </a>
+
+    <!-- Cuentas -->
+    <a
+      routerLink="/cuentas"
+      (click)="irA('/cuentas')"
+      routerLinkActive="!text-indigo-400 bg-indigo-500/15"
+      title="Cuentas"
+      aria-label="Cuentas"
+      class="flex flex-1 items-center justify-center py-2.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition-colors duration-150 active:scale-95 cursor-pointer select-none touch-manipulation"
+    >
+      <svg class="w-6 h-6 shrink-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 8H5m12 0a1 1 0 0 1 1 1v2.6M17 8l-4-4M5 8a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.6M5 8l4-4 4 4m6 4h-4a2 2 0 1 0 0 4h4a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z" />
+      </svg>
+    </a>
+
+    <!-- Análisis -->
+    <a
+      routerLink="/analisis"
+      (click)="irA('/analisis')"
+      routerLinkActive="!text-indigo-400 bg-indigo-500/15"
+      title="Análisis"
+      aria-label="Análisis"
+      class="flex flex-1 items-center justify-center py-2.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition-colors duration-150 active:scale-95 cursor-pointer select-none touch-manipulation"
+    >
+      <svg class="w-6 h-6 shrink-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 15v4m6-6v6m6-4v4m6-6v6M3 11l6-5 6 5 5.5-5.5" />
+      </svg>
+    </a>
+
+    <!-- Configuración (Engrane) -->
+    <a
+      routerLink="/configuracion"
+      (click)="irA('/configuracion')"
+      routerLinkActive="!text-indigo-400 bg-indigo-500/15"
+      title="Configuración"
+      aria-label="Configuración"
+      class="flex flex-1 items-center justify-center py-2.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition-colors duration-150 active:scale-95 cursor-pointer select-none touch-manipulation"
+    >
+      <svg class="w-6 h-6 shrink-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z" />
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+    </a>
+  </div>
+</nav>

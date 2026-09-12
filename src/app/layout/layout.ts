@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, HostListener } from '@angular/core'
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 import { AuthService } from '../core/services/auth.service'
 
 @Component({
@@ -29,6 +29,8 @@ export class Layout {
   dropdownTop = 0
   dropdownLeft = 0
   isMobile = false
+  isScrolledDown = false
+  private lastScrollTop = 0
 
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser()
@@ -83,6 +85,32 @@ export class Layout {
       }
       this.cdr.markForCheck()
     })
+
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.isScrolledDown = false
+        this.lastScrollTop = 0
+        this.cdr.markForCheck()
+      }
+    })
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0
+    const scrollDelta = currentScroll - this.lastScrollTop
+
+    if (Math.abs(scrollDelta) < 10) {
+      return
+    }
+
+    if (currentScroll > 60 && scrollDelta > 0) {
+      this.isScrolledDown = true
+    } else if (scrollDelta < -10 || currentScroll <= 60) {
+      this.isScrolledDown = false
+    }
+
+    this.lastScrollTop = Math.max(0, currentScroll)
   }
 
   @HostListener('document:click')
@@ -108,6 +136,11 @@ export class Layout {
         this.dropdownLeft = rect.right + 25
       }
     }
+  }
+
+  irA(ruta: string) {
+    this.isScrolledDown = false
+    this.router.navigate([ruta])
   }
 
   logout() {
