@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Subject, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AlertaCredito } from '../models/alerta-credito.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -46,6 +47,10 @@ export class CuentasService {
 
   consultarCuentasActivas() {
     return this.http.get(`${this.api}/activas`);
+  }
+
+  consultarAlertasCreditos() {
+    return this.http.get<AlertaCredito[]>(`${environment.apiUrl}/api/alertas-creditos`);
   }
 
   updateStatus(id: string, status: number) {
