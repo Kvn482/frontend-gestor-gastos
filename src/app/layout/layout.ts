@@ -30,6 +30,7 @@ export class Layout {
   dropdownLeft = 0
   isMobile = false
   isScrolledDown = false
+  activeTab = 0
   private lastScrollTop = 0
 
   ngOnInit() {
@@ -86,13 +87,28 @@ export class Layout {
       this.cdr.markForCheck()
     })
 
+    this.actualizarTabActivo(this.router.url)
+
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
+        this.actualizarTabActivo(event.urlAfterRedirects || event.url)
         this.isScrolledDown = false
         this.lastScrollTop = 0
         this.cdr.markForCheck()
       }
     })
+  }
+
+  actualizarTabActivo(url: string) {
+    if (url.includes('/cuentas')) {
+      this.activeTab = 1
+    } else if (url.includes('/analisis')) {
+      this.activeTab = 2
+    } else if (url.includes('/configuracion')) {
+      this.activeTab = 3
+    } else {
+      this.activeTab = 0
+    }
   }
 
   @HostListener('window:scroll')
@@ -138,7 +154,10 @@ export class Layout {
     }
   }
 
-  irA(ruta: string) {
+  irA(ruta: string, index?: number) {
+    if (index !== undefined) {
+      this.activeTab = index
+    }
     this.isScrolledDown = false
     this.router.navigate([ruta])
   }
