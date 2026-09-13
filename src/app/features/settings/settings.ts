@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { ToastService } from '../../core/services/toast.service';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
+import { environment } from '../../../environments/environment';
 
 export interface Etiqueta {
   id: number;
@@ -34,6 +35,9 @@ export class Settings {
     public toastService: ToastService,
     public cd: ChangeDetectorRef,
   ) {}
+
+  // Versión de la app
+  appVersion = environment.appVersion;
 
   // Estados de modales
   modalPerfilAbierto = false;
