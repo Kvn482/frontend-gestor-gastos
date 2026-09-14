@@ -45,7 +45,6 @@ export class Settings {
   modalEtiquetasAbierto = false;
   modalMonedaAbierto = false;
   modalTemaAbierto = false;
-  modalPeriodoAbierto = false;
   modalInfoAbierto = false;
 
   infoModalTitulo = '';
@@ -81,9 +80,6 @@ export class Settings {
   idiomaActual = 'Español';
   temaActual: TemaOpcion = 'oscuro';
   monedaActual = 'USD';
-  periodoPresupuesto = 'Mensual';
-  safeToSpend = true;
-  notificaciones = true;
   exportandoCSV = false;
 
   opcionesMoneda = [
@@ -93,12 +89,6 @@ export class Settings {
     { codigo: 'COP', nombre: 'COP - Peso Colombiano', simbolo: '$', bandera: '🇨🇴' },
     { codigo: 'ARS', nombre: 'ARS - Peso Argentino', simbolo: '$', bandera: '🇦🇷' },
     { codigo: 'CLP', nombre: 'CLP - Peso Chileno', simbolo: '$', bandera: '🇨🇱' },
-  ];
-
-  opcionesPeriodo = [
-    { valor: 'Mensual', descripcion: 'Reinicia el primer día de cada mes' },
-    { valor: 'Quincenal', descripcion: 'Cada 15 días (quincena laboral)' },
-    { valor: 'Semanal', descripcion: 'Cada lunes' },
   ];
 
   ngOnInit() {
@@ -144,9 +134,6 @@ export class Settings {
     }
 
     this.monedaActual = localStorage.getItem('moneda') || 'USD';
-    this.periodoPresupuesto = localStorage.getItem('periodo_presupuesto') || 'Mensual';
-    this.safeToSpend = localStorage.getItem('safe_to_spend') !== 'false';
-    this.notificaciones = localStorage.getItem('notificaciones_push') !== 'false';
 
     this.cargarEtiquetas();
   }
@@ -218,30 +205,6 @@ export class Settings {
     this.toastService.show(`Moneda principal: ${codigo}`, 'success');
   }
 
-  seleccionarPeriodo(periodo: string) {
-    this.periodoPresupuesto = periodo;
-    localStorage.setItem('periodo_presupuesto', periodo);
-    this.modalPeriodoAbierto = false;
-    this.toastService.show(`Período de presupuesto: ${periodo}`, 'success');
-  }
-
-  toggleSafeToSpend() {
-    this.safeToSpend = !this.safeToSpend;
-    localStorage.setItem('safe_to_spend', String(this.safeToSpend));
-    this.toastService.show(
-      this.safeToSpend ? 'Disponible para gastar visible en inicio' : 'Disponible para gastar ocultado',
-      'info'
-    );
-  }
-
-  toggleNotificaciones() {
-    this.notificaciones = !this.notificaciones;
-    localStorage.setItem('notificaciones_push', String(this.notificaciones));
-    this.toastService.show(
-      this.notificaciones ? 'Recordatorios y alertas activados' : 'Recordatorios y alertas pausados',
-      'info'
-    );
-  }
 
   // ----- Exportar CSV -----
   exportarDatosCSV() {
@@ -490,7 +453,7 @@ export class Settings {
   }
 
   // ----- Modales informativos -----
-  abrirInfoModal(tipo: 'terminos' | 'privacidad' | 'frecuentes' | 'programados' | 'backup' | 'acceso_rapido') {
+  abrirInfoModal(tipo: 'terminos' | 'privacidad' | 'frecuentes' | 'programados') {
     if (tipo === 'terminos') {
       this.infoModalTitulo = 'Términos de Servicio';
       this.infoModalDescripcion =
@@ -507,14 +470,6 @@ export class Settings {
       this.infoModalTitulo = 'Transacciones Programadas';
       this.infoModalDescripcion =
         'Planifica pagos periódicos como suscripciones, servicios o alquileres para que se registren automáticamente en tus balances.';
-    } else if (tipo === 'backup') {
-      this.infoModalTitulo = 'Copia de Seguridad y Restauración';
-      this.infoModalDescripcion =
-        'Tus movimientos se sincronizan en la nube. Puedes exportar en cualquier momento una copia local en formato CSV desde la sección de Exportar Datos.';
-    } else if (tipo === 'acceso_rapido') {
-      this.infoModalTitulo = 'Acceso Rápido';
-      this.infoModalDescripcion =
-        'Atajos directos para registrar movimientos rápidamente desde la barra de accesos o notificaciones de tu dispositivo.';
     }
     this.modalInfoAbierto = true;
   }

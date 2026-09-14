@@ -68,11 +68,5 @@ describe('Settings', () => {
     component.seleccionarMoneda('EUR');
     expect(component.monedaActual).toBe('EUR');
   });
-
-  it('debe alternar safeToSpend', () => {
-    const estadoInicial = component.safeToSpend;
-    component.toggleSafeToSpend();
-    expect(component.safeToSpend).toBe(!estadoInicial);
-  });
 });
 
