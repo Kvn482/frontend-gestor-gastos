@@ -41,7 +41,6 @@ export class Settings {
 
   // Estados de modales
   modalContrasenaAbierto = false;
-  modalEtiquetasAbierto = false;
   modalMonedaAbierto = false;
   modalTemaAbierto = false;
   modalInfoAbierto = false;
@@ -62,16 +61,8 @@ export class Settings {
   mostrarContrasenaNueva = false;
   mostrarContrasenaConfirmar = false;
 
-  // Etiquetas
+  // Etiquetas (para conteo en menú)
   etiquetas: Etiqueta[] = [];
-  nuevaEtiqueta = { nombre: '', color: '#6366f1' };
-  creandoEtiqueta = false;
-
-  coloresPredefinidos = [
-    '#6366f1', '#4f46e5', '#8b5cf6', '#a855f7',
-    '#ec4899', '#f43f5e', '#ef4444', '#f97316',
-    '#eab308', '#22c55e', '#14b8a6', '#64748b',
-  ];
 
   // Preferencias
   idiomaActual = 'Español';
@@ -91,7 +82,6 @@ export class Settings {
   @HostListener('window:keydown.escape')
   onEscapeKey() {
     this.cerrarModalContrasena();
-    this.modalEtiquetasAbierto = false;
     this.modalMonedaAbierto = false;
     this.modalTemaAbierto = false;
     this.modalInfoAbierto = false;
@@ -211,20 +201,7 @@ export class Settings {
     return this.opcionesMoneda.find((m) => m.codigo === this.monedaActual) || this.opcionesMoneda[0];
   }
 
-  get etiquetasPredeterminadas(): Etiqueta[] {
-    return this.etiquetas.filter((etiqueta) => !etiqueta.id_usuario);
-  }
 
-  get etiquetasUsuario(): Etiqueta[] {
-    return this.etiquetas.filter((etiqueta) => etiqueta.id_usuario);
-  }
-
-  swatchShadow(color: string): string {
-    if (this.nuevaEtiqueta.color === color) {
-      return `0 0 0 2px #0f172a, 0 0 0 4px ${color}`;
-    }
-    return 'none';
-  }
 
   mostrarInfoIdioma() {
     this.toastService.show('Monetra está configurado en Español actualmente', 'info');
@@ -391,59 +368,6 @@ export class Settings {
       });
   }
 
-  crearEtiqueta() {
-    if (!this.nuevaEtiqueta.nombre.trim()) {
-      this.toastService.show('El nombre de la etiqueta es requerido', 'error');
-      return;
-    }
-    this.creandoEtiqueta = true;
-    this.movimientosService
-      .crearEtiqueta(this.nuevaEtiqueta)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (etiqueta: any) => {
-          this.etiquetas = [...this.etiquetas, etiqueta];
-          this.nuevaEtiqueta = { nombre: '', color: '#6366f1' };
-          this.creandoEtiqueta = false;
-          this.cd.detectChanges();
-          this.toastService.show('Etiqueta creada correctamente', 'success');
-        },
-        error: (err) => {
-          this.creandoEtiqueta = false;
-          this.cd.detectChanges();
-          this.toastService.show(err?.error?.message || 'Error al crear la etiqueta', 'error');
-        },
-      });
-  }
-
-  async eliminarEtiqueta(etiqueta: Etiqueta): Promise<void> {
-    const result = await Swal.fire({
-      title: 'Eliminar etiqueta',
-      text: `La etiqueta "${etiqueta.nombre}" se eliminará de tus opciones personalizadas.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Eliminar',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true,
-      customClass: monetraSweetAlertClasses,
-      buttonsStyling: false,
-    });
-
-    if (!result.isConfirmed) return;
-
-    this.movimientosService
-      .eliminarEtiqueta(etiqueta.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.toastService.show('Etiqueta eliminada', 'success');
-          this.etiquetas = this.etiquetas.filter((e) => e.id !== etiqueta.id);
-          this.cd.detectChanges();
-        },
-        error: (err) =>
-          this.toastService.show(err?.error?.message || 'Error al eliminar la etiqueta', 'error'),
-      });
-  }
 
   // ----- Modales informativos -----
   abrirInfoModal(tipo: 'terminos' | 'privacidad' | 'frecuentes' | 'programados') {
