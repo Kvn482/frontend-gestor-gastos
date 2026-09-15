@@ -36,9 +36,9 @@ export class Layout {
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser()
 
-    this.nombre = currentUser?.nombre?.split(' ')[0] ?? ''
+    this.nombre = currentUser?.nombre ?? ''
     this.apellido = currentUser?.apellido ?? ''
-    this.nombreCompleto = this.nombre ? `${this.nombre} ${this.apellido}` : ''
+    this.nombreCompleto = `${this.nombre} ${this.apellido}`.trim() || 'Usuario'
     this.email = currentUser?.email ?? ''
     const theme = localStorage.getItem('theme')
     const systemPrefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -54,13 +54,10 @@ export class Layout {
     this.authService.getPerfil().subscribe({
       next: (perfil) => {
         if (perfil?.nombre) {
-          const override = localStorage.getItem('perfilOverride')
-          if (!override) {
-            this.nombre = perfil.nombre.split(' ')[0]
-            this.apellido = perfil.apellido ?? ''
-            this.nombreCompleto = `${this.nombre} ${this.apellido}`
-            this.email = perfil.email ?? this.email
-          }
+          this.nombre = perfil.nombre
+          this.apellido = perfil.apellido ?? ''
+          this.nombreCompleto = `${this.nombre} ${this.apellido}`.trim() || 'Usuario'
+          this.email = perfil.email ?? this.email
         }
         if (perfil?.avatar_url) {
           this.profileImageUrl = perfil.avatar_url
@@ -72,9 +69,9 @@ export class Layout {
     })
 
     this.authService.perfilActualizado$.subscribe(({ nombre, apellido }) => {
-      this.nombre = nombre.split(' ')[0]
+      this.nombre = nombre
       this.apellido = apellido
-      this.nombreCompleto = `${nombre} ${apellido}`
+      this.nombreCompleto = `${nombre} ${apellido}`.trim() || 'Usuario'
       this.cdr.markForCheck()
     })
 

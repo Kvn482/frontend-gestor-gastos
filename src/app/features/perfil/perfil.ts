@@ -55,16 +55,13 @@ export class Perfil {
       .subscribe({
         next: (perfilBackend) => {
           if (perfilBackend?.nombre) {
-            const override = localStorage.getItem('perfilOverride');
-            if (!override) {
-              this.perfil.nombre = perfilBackend.nombre;
-              this.perfil.apellido = perfilBackend.apellido || '';
-              this.perfil.email = perfilBackend.email || this.perfil.email;
-              this.perfilOriginal = {
-                nombre: this.perfil.nombre,
-                apellido: this.perfil.apellido,
-              };
-            }
+            this.perfil.nombre = perfilBackend.nombre;
+            this.perfil.apellido = perfilBackend.apellido || '';
+            this.perfil.email = perfilBackend.email || this.perfil.email;
+            this.perfilOriginal = {
+              nombre: this.perfil.nombre,
+              apellido: this.perfil.apellido,
+            };
           }
           if (perfilBackend?.avatar_url) {
             this.avatarPreview = perfilBackend.avatar_url;

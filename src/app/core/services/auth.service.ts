@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
-import { Observable, Subject, finalize, shareReplay } from 'rxjs';
+import { Observable, Subject, finalize, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -144,6 +144,15 @@ export class AuthService {
   getPerfil(): Observable<any> {
     if (!this.perfilInFlight$) {
       this.perfilInFlight$ = this.http.get<any>(`${this.api}/perfil`).pipe(
+        tap((perfil) => {
+          if (perfil?.nombre) {
+            const apellido = perfil.apellido || '';
+            this.notificarActualizacionPerfil(perfil.nombre, apellido);
+          }
+          if (perfil?.avatar_url) {
+            this.notificarActualizacionAvatar(perfil.avatar_url);
+          }
+        }),
         shareReplay(1),
         finalize(() => {
           this.perfilInFlight$ = null;
