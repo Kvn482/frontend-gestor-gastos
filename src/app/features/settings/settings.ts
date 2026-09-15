@@ -9,13 +9,6 @@ import { ToastService } from '../../core/services/toast.service';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
 import { environment } from '../../../environments/environment';
 
-export interface Etiqueta {
-  id: number;
-  nombre: string;
-  color: string;
-  id_usuario: number | null;
-}
-
 export type TemaOpcion = 'oscuro' | 'claro' | 'sistema';
 
 @Component({
@@ -60,9 +53,6 @@ export class Settings {
   mostrarContrasenaActual = false;
   mostrarContrasenaNueva = false;
   mostrarContrasenaConfirmar = false;
-
-  // Etiquetas (para conteo en menú)
-  etiquetas: Etiqueta[] = [];
 
   // Preferencias
   idiomaActual = 'Español';
@@ -169,8 +159,6 @@ export class Settings {
     }
 
     this.monedaActual = localStorage.getItem('moneda') || 'USD';
-
-    this.cargarEtiquetas();
   }
 
   get nombreCompleto(): string {
@@ -351,22 +339,7 @@ export class Settings {
       });
   }
 
-  // ----- Etiquetas -----
-  cargarEtiquetas() {
-    this.movimientosService
-      .consultarEtiquetas()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res: any) => {
-          this.etiquetas = Array.isArray(res) ? res : [];
-          this.cd.detectChanges();
-        },
-        error: () => {
-          this.etiquetas = [];
-          this.cd.detectChanges();
-        },
-      });
-  }
+
 
 
   // ----- Modales informativos -----
