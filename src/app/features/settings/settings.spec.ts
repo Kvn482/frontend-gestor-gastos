@@ -65,13 +65,13 @@ describe('Settings', () => {
     expect(component.iniciales).toBe('KR');
   });
 
-  it('debe inicializar y cancelar edición de perfil sin alterar datos persistidos', () => {
-    component.abrirModalPerfil();
-    expect(component.perfilEdicion.nombre).toBe('Kevin');
-    component.perfilEdicion.nombre = 'Modificado';
-    component.cerrarModalPerfil();
-    expect(component.perfil.nombre).toBe('Kevin');
-    expect(component.modalPerfilAbierto).toBeFalse();
+  it('debe abrir y cerrar modal de contraseña limpiando campos', () => {
+    component.abrirModalContrasena();
+    expect(component.modalContrasenaAbierto).toBe(true);
+    component.contrasena.actual = '123456';
+    component.cerrarModalContrasena();
+    expect(component.modalContrasenaAbierto).toBe(false);
+    expect(component.contrasena.actual).toBe('');
   });
 
   it('debe permitir cambiar de tema', () => {

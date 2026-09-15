@@ -14,6 +14,7 @@ import { Cuentas } from './features/cuentas/cuentas';
 import { CuentaDetalle } from './features/cuenta-detalle/cuenta-detalle';
 import { Analisis } from './features/analisis/analisis';
 import { Movimientos } from './features/movimientos/movimientos';
+import { Perfil } from './features/perfil/perfil';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -52,6 +53,8 @@ export const routes: Routes = [
             { path: 'analisis', component: Analisis },
             { path: 'movimientos', component: Movimientos },
             { path: 'configuracion', component: Settings },
+            { path: 'configuracion/perfil', component: Perfil },
+            { path: 'perfil', redirectTo: 'configuracion/perfil', pathMatch: 'full' },
             { path: 'cuentas', component: Cuentas },
             { path: 'cuentas/:id', component: CuentaDetalle },
         ]

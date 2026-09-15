@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, DestroyRef, HostListener, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../core/services/auth.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
@@ -21,7 +21,7 @@ export type TemaOpcion = 'oscuro' | 'claro' | 'sistema';
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
@@ -40,7 +40,6 @@ export class Settings {
   appVersion = environment.appVersion;
 
   // Estados de modales
-  modalPerfilAbierto = false;
   modalContrasenaAbierto = false;
   modalEtiquetasAbierto = false;
   modalMonedaAbierto = false;
@@ -52,13 +51,9 @@ export class Settings {
 
   // Perfil
   perfil = { nombre: '', apellido: '', email: '' };
-  perfilEdicion = { nombre: '', apellido: '' };
-  cargandoPerfil = false;
 
   // Avatar
   avatarPreview: string | null = null;
-  avatarPreviewEdicion: string | null = null;
-  archivoAvatar: File | null = null;
 
   // Contraseña
   contrasena = { actual: '', nueva: '', confirmar: '' };
@@ -95,7 +90,6 @@ export class Settings {
 
   @HostListener('window:keydown.escape')
   onEscapeKey() {
-    this.cerrarModalPerfil();
     this.cerrarModalContrasena();
     this.modalEtiquetasAbierto = false;
     this.modalMonedaAbierto = false;
@@ -197,12 +191,6 @@ export class Settings {
   get iniciales(): string {
     const n = this.perfil.nombre?.trim().charAt(0).toUpperCase() || '';
     const a = this.perfil.apellido?.trim().charAt(0).toUpperCase() || '';
-    return n || a ? `${n}${a}` : 'U';
-  }
-
-  get inicialesEdicion(): string {
-    const n = this.perfilEdicion.nombre?.trim().charAt(0).toUpperCase() || '';
-    const a = this.perfilEdicion.apellido?.trim().charAt(0).toUpperCase() || '';
     return n || a ? `${n}${a}` : 'U';
   }
 
@@ -329,112 +317,6 @@ export class Settings {
           this.exportandoCSV = false;
           this.toastService.show('Error al descargar los datos de movimientos', 'error');
           this.cd.detectChanges();
-        },
-      });
-  }
-
-  // ----- Perfil Modal Controls -----
-  abrirModalPerfil() {
-    this.perfilEdicion = {
-      nombre: this.perfil.nombre,
-      apellido: this.perfil.apellido,
-    };
-    this.avatarPreviewEdicion = this.avatarPreview;
-    this.archivoAvatar = null;
-    this.modalPerfilAbierto = true;
-  }
-
-  cerrarModalPerfil() {
-    this.modalPerfilAbierto = false;
-    this.archivoAvatar = null;
-    this.avatarPreviewEdicion = this.avatarPreview;
-  }
-
-  // ----- Avatar -----
-  seleccionarAvatar(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0];
-    if (!archivo) return;
-
-    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!tiposPermitidos.includes(archivo.type)) {
-      this.toastService.show('Solo se permiten imágenes PNG, JPG o WEBP', 'error');
-      input.value = '';
-      return;
-    }
-
-    const maxSize = 2 * 1024 * 1024;
-    if (archivo.size > maxSize) {
-      this.toastService.show('La imagen no debe superar 2 MB', 'error');
-      input.value = '';
-      return;
-    }
-
-    this.archivoAvatar = archivo;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      this.avatarPreviewEdicion = e.target?.result as string;
-      this.cd.detectChanges();
-    };
-    reader.readAsDataURL(archivo);
-  }
-
-  // ----- Perfil -----
-  guardarPerfil() {
-    const nombre = this.perfilEdicion.nombre.trim();
-    const apellido = this.perfilEdicion.apellido.trim();
-
-    if (!nombre || !apellido) {
-      this.toastService.show('El nombre y apellido son requeridos', 'error');
-      return;
-    }
-    this.cargandoPerfil = true;
-    this.authService
-      .actualizarPerfil({ nombre, apellido })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.perfil.nombre = nombre;
-          this.perfil.apellido = apellido;
-          this.authService.notificarActualizacionPerfil(nombre, apellido);
-
-          if (this.archivoAvatar) {
-            const formData = new FormData();
-            formData.append('avatar', this.archivoAvatar);
-            this.authService
-              .actualizarAvatar(formData)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({
-                next: (res: any) => {
-                  const avatarUrl = res?.avatar_url || res?.avatar || res?.avatarUrl;
-                  if (avatarUrl) {
-                    this.authService.notificarActualizacionAvatar(avatarUrl);
-                    this.avatarPreview = avatarUrl;
-                    this.avatarPreviewEdicion = avatarUrl;
-                  }
-                  this.archivoAvatar = null;
-                  this.cargandoPerfil = false;
-                  this.modalPerfilAbierto = false;
-                  this.cd.detectChanges();
-                  this.toastService.show('Perfil actualizado correctamente', 'success');
-                },
-                error: (err) => {
-                  this.cargandoPerfil = false;
-                  this.cd.detectChanges();
-                  this.toastService.show(err?.error?.message || 'Error al subir el avatar', 'error');
-                },
-              });
-          } else {
-            this.cargandoPerfil = false;
-            this.modalPerfilAbierto = false;
-            this.cd.detectChanges();
-            this.toastService.show('Perfil actualizado correctamente', 'success');
-          }
-        },
-        error: (err) => {
-          this.cargandoPerfil = false;
-          this.cd.detectChanges();
-          this.toastService.show(err?.error?.message || 'Error al actualizar el perfil', 'error');
         },
       });
   }
