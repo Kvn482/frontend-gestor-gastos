@@ -8,7 +8,7 @@
 
   <!-- ==================== TARJETA DE PERFIL (TOP) ==================== -->
   <div
-    (click)="modalPerfilAbierto = true"
+    (click)="abrirModalPerfil()"
     class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all cursor-pointer group"
   >
     <div class="flex items-center justify-between gap-3">
@@ -19,7 +19,7 @@
             <img [src]="avatarPreview" alt="Avatar" class="w-13 h-13 rounded-2xl object-cover ring-2 ring-indigo-500/40" />
           } @else {
             <div class="w-13 h-13 rounded-2xl bg-indigo-900/40 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-base">
-              {{ perfil.nombre.charAt(0).toUpperCase() }}{{ perfil.apellido.charAt(0).toUpperCase() }}
+              {{ iniciales }}
             </div>
           }
           <!-- Online status dot -->
@@ -46,7 +46,7 @@
       <!-- Botón de flecha circular -->
       <button
         type="button"
-        (click)="modalPerfilAbierto = true; $event.stopPropagation()"
+        (click)="abrirModalPerfil(); $event.stopPropagation()"
         class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800/80 group-hover:bg-indigo-500/20 group-hover:text-indigo-400 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors shrink-0"
         title="Editar perfil"
       >
@@ -214,7 +214,7 @@
 
       <!-- Seguridad y Contraseña -->
       <div
-        (click)="modalContrasenaAbierto = true"
+        (click)="abrirModalContrasena()"
         class="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
       >
         <div class="flex items-center gap-3.5">
@@ -359,9 +359,9 @@
 <!-- ======================== MODAL: EDITAR PERFIL =========================== -->
 <!-- ========================================================================= -->
 @if (modalPerfilAbierto) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalPerfilAbierto = false">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="cerrarModalPerfil()">
     <div
-      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6"
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
       (click)="$event.stopPropagation()"
     >
       <!-- Header del modal -->
@@ -372,7 +372,7 @@
         </div>
         <button
           type="button"
-          (click)="modalPerfilAbierto = false"
+          (click)="cerrarModalPerfil()"
           class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -383,11 +383,11 @@
 
       <!-- Foto / Avatar -->
       <div class="flex items-center gap-4">
-        @if (avatarPreview) {
-          <img [src]="avatarPreview" alt="Avatar" class="w-20 h-20 rounded-2xl object-cover ring-2 ring-indigo-500/40 shrink-0 shadow-sm" />
+        @if (avatarPreviewEdicion) {
+          <img [src]="avatarPreviewEdicion" alt="Avatar" class="w-20 h-20 rounded-2xl object-cover ring-2 ring-indigo-500/40 shrink-0 shadow-sm" />
         } @else {
           <div class="w-20 h-20 rounded-2xl bg-indigo-900/40 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl font-bold shrink-0">
-            {{ perfil.nombre.charAt(0).toUpperCase() }}{{ perfil.apellido.charAt(0).toUpperCase() }}
+            {{ inicialesEdicion }}
           </div>
         }
         <div>
@@ -413,7 +413,7 @@
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Nombre</label>
             <input
               type="text"
-              [(ngModel)]="perfil.nombre"
+              [(ngModel)]="perfilEdicion.nombre"
               name="nombre"
               placeholder="Tu nombre"
               class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -423,7 +423,7 @@
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Apellido</label>
             <input
               type="text"
-              [(ngModel)]="perfil.apellido"
+              [(ngModel)]="perfilEdicion.apellido"
               name="apellido"
               placeholder="Tu apellido"
               class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -445,7 +445,7 @@
         <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <button
             type="button"
-            (click)="modalPerfilAbierto = false"
+            (click)="cerrarModalPerfil()"
             class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             Cancelar
@@ -468,9 +468,9 @@
 <!-- ==================== MODAL: CAMBIAR CONTRASEÑA ========================== -->
 <!-- ========================================================================= -->
 @if (modalContrasenaAbierto) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="modalContrasenaAbierto = false">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="cerrarModalContrasena()">
     <div
-      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6"
+      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
       (click)="$event.stopPropagation()"
     >
       <!-- Header del modal -->
@@ -481,7 +481,7 @@
         </div>
         <button
           type="button"
-          (click)="modalContrasenaAbierto = false"
+          (click)="cerrarModalContrasena()"
           class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -505,12 +505,19 @@
             <button
               type="button"
               (click)="mostrarContrasenaActual = !mostrarContrasenaActual"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300 cursor-pointer"
+              [title]="mostrarContrasenaActual ? 'Ocultar contraseña' : 'Ver contraseña'"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+              @if (mostrarContrasenaActual) {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                </svg>
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              }
             </button>
           </div>
         </div>
@@ -529,12 +536,19 @@
             <button
               type="button"
               (click)="mostrarContrasenaNueva = !mostrarContrasenaNueva"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300 cursor-pointer"
+              [title]="mostrarContrasenaNueva ? 'Ocultar contraseña' : 'Ver contraseña'"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+              @if (mostrarContrasenaNueva) {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                </svg>
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              }
             </button>
           </div>
         </div>
@@ -553,12 +567,19 @@
             <button
               type="button"
               (click)="mostrarContrasenaConfirmar = !mostrarContrasenaConfirmar"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-300 cursor-pointer"
+              [title]="mostrarContrasenaConfirmar ? 'Ocultar contraseña' : 'Ver contraseña'"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+              @if (mostrarContrasenaConfirmar) {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                </svg>
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              }
             </button>
           </div>
         </div>
@@ -566,7 +587,7 @@
         <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <button
             type="button"
-            (click)="modalContrasenaAbierto = false"
+            (click)="cerrarModalContrasena()"
             class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             Cancelar

@@ -18,6 +18,9 @@ describe('Settings', () => {
     notificarActualizacionPerfil: () => {},
     notificarActualizacionAvatar: () => {},
     logout: () => {},
+    getPerfil: () => of({ nombre: 'Kevin', apellido: 'Rivas', email: 'kevin@test.com', avatar_url: '' }),
+    perfilActualizado$: of({ nombre: 'Kevin', apellido: 'Rivas' }),
+    avatarActualizado$: of('https://example.com/avatar.png'),
   };
 
   const movimientosServiceMock = {
@@ -56,6 +59,19 @@ describe('Settings', () => {
 
   it('debe calcular el nombre completo correctamente', () => {
     expect(component.nombreCompleto).toBe('Kevin Rivas');
+  });
+
+  it('debe calcular las iniciales correctamente', () => {
+    expect(component.iniciales).toBe('KR');
+  });
+
+  it('debe inicializar y cancelar edición de perfil sin alterar datos persistidos', () => {
+    component.abrirModalPerfil();
+    expect(component.perfilEdicion.nombre).toBe('Kevin');
+    component.perfilEdicion.nombre = 'Modificado';
+    component.cerrarModalPerfil();
+    expect(component.perfil.nombre).toBe('Kevin');
+    expect(component.modalPerfilAbierto).toBeFalse();
   });
 
   it('debe permitir cambiar de tema', () => {

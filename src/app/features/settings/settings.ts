@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, HostListener, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../core/services/auth.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
@@ -52,10 +52,12 @@ export class Settings {
 
   // Perfil
   perfil = { nombre: '', apellido: '', email: '' };
+  perfilEdicion = { nombre: '', apellido: '' };
   cargandoPerfil = false;
 
   // Avatar
   avatarPreview: string | null = null;
+  avatarPreviewEdicion: string | null = null;
   archivoAvatar: File | null = null;
 
   // Contraseña
@@ -91,12 +93,61 @@ export class Settings {
     { codigo: 'CLP', nombre: 'CLP - Peso Chileno', simbolo: '$', bandera: '🇨🇱' },
   ];
 
+  @HostListener('window:keydown.escape')
+  onEscapeKey() {
+    this.cerrarModalPerfil();
+    this.cerrarModalContrasena();
+    this.modalEtiquetasAbierto = false;
+    this.modalMonedaAbierto = false;
+    this.modalTemaAbierto = false;
+    this.modalInfoAbierto = false;
+  }
+
   ngOnInit() {
     const currentUser = this.authService.getCurrentUser();
     this.perfil.nombre = currentUser?.nombre || '';
     this.perfil.apellido = currentUser?.apellido || '';
     this.perfil.email = currentUser?.email || '';
     this.avatarPreview = localStorage.getItem('avatarOverride') || currentUser?.avatar || null;
+
+    // Sincronizar perfil con datos frescos del backend
+    this.authService
+      .getPerfil()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (perfilBackend) => {
+          if (perfilBackend?.nombre) {
+            const override = localStorage.getItem('perfilOverride');
+            if (!override) {
+              this.perfil.nombre = perfilBackend.nombre;
+              this.perfil.apellido = perfilBackend.apellido || '';
+              this.perfil.email = perfilBackend.email || this.perfil.email;
+            }
+          }
+          if (perfilBackend?.avatar_url) {
+            this.avatarPreview = perfilBackend.avatar_url;
+            localStorage.setItem('avatarOverride', perfilBackend.avatar_url);
+          }
+          this.cd.detectChanges();
+        },
+        error: () => {},
+      });
+
+    // Escuchar actualizaciones reactivas de perfil y avatar
+    this.authService.perfilActualizado$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ nombre, apellido }) => {
+        this.perfil.nombre = nombre;
+        this.perfil.apellido = apellido;
+        this.cd.detectChanges();
+      });
+
+    this.authService.avatarActualizado$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((avatarUrl) => {
+        this.avatarPreview = avatarUrl || null;
+        this.cd.detectChanges();
+      });
 
     // Cargar preferencias guardadas
     const themeStorage = localStorage.getItem('theme');
@@ -141,6 +192,18 @@ export class Settings {
   get nombreCompleto(): string {
     const completo = `${this.perfil.nombre} ${this.perfil.apellido}`.trim();
     return completo || 'Usuario';
+  }
+
+  get iniciales(): string {
+    const n = this.perfil.nombre?.trim().charAt(0).toUpperCase() || '';
+    const a = this.perfil.apellido?.trim().charAt(0).toUpperCase() || '';
+    return n || a ? `${n}${a}` : 'U';
+  }
+
+  get inicialesEdicion(): string {
+    const n = this.perfilEdicion.nombre?.trim().charAt(0).toUpperCase() || '';
+    const a = this.perfilEdicion.apellido?.trim().charAt(0).toUpperCase() || '';
+    return n || a ? `${n}${a}` : 'U';
   }
 
   get temaActualLabel(): string {
@@ -225,33 +288,41 @@ export class Settings {
             return;
           }
 
-          const headers = ['Fecha', 'Descripción', 'Tipo', 'Monto', 'Cuenta', 'Etiquetas', 'Notas'];
-          const csvRows = [headers.join(',')];
+          try {
+            const headers = ['Fecha', 'Descripción', 'Tipo', 'Monto', 'Cuenta', 'Etiquetas', 'Notas'];
+            const csvRows = [headers.join(',')];
 
-          for (const m of lista) {
-            const fecha = m.fecha ? new Date(m.fecha).toISOString().slice(0, 10) : '';
-            const desc = `"${(m.descripcion || '').toString().replace(/"/g, '""')}"`;
-            const tipo = m.id_tipo_movimiento === 1 ? 'Ingreso' : 'Gasto';
-            const monto = m.monto ?? 0;
-            const cuenta = `"${(m.cuenta || m.tipo_cuenta || '').toString().replace(/"/g, '""')}"`;
-            const etiqs = `"${(m.etiquetas || []).map((e: any) => e.nombre).join('; ')}"`;
-            const notas = `"${(m.notas || '').toString().replace(/"/g, '""')}"`;
+            for (const m of lista) {
+              let fecha = '';
+              if (m.fecha) {
+                const d = new Date(m.fecha);
+                fecha = isNaN(d.getTime()) ? String(m.fecha).slice(0, 10) : d.toISOString().slice(0, 10);
+              }
+              const desc = `"${(m.descripcion || '').toString().replace(/"/g, '""')}"`;
+              const tipo = m.id_tipo_movimiento === 1 ? 'Ingreso' : 'Gasto';
+              const monto = m.monto ?? 0;
+              const cuenta = `"${(m.cuenta || m.tipo_cuenta || '').toString().replace(/"/g, '""')}"`;
+              const etiqs = `"${(m.etiquetas || []).map((e: any) => e.nombre).join('; ')}"`;
+              const notas = `"${(m.notas || '').toString().replace(/"/g, '""')}"`;
 
-            csvRows.push([fecha, desc, tipo, monto, cuenta, etiqs, notas].join(','));
+              csvRows.push([fecha, desc, tipo, monto, cuenta, etiqs, notas].join(','));
+            }
+
+            const csvString = '\uFEFF' + csvRows.join('\r\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `monetra_movimientos_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            this.toastService.show('Reporte CSV descargado con éxito', 'success');
+          } catch (_) {
+            this.toastService.show('Error al procesar el archivo CSV', 'error');
           }
-
-          const csvString = '\uFEFF' + csvRows.join('\r\n');
-          const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', `monetra_movimientos_${new Date().toISOString().slice(0, 10)}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-
-          this.toastService.show('Reporte CSV descargado con éxito', 'success');
           this.cd.detectChanges();
         },
         error: () => {
@@ -260,6 +331,23 @@ export class Settings {
           this.cd.detectChanges();
         },
       });
+  }
+
+  // ----- Perfil Modal Controls -----
+  abrirModalPerfil() {
+    this.perfilEdicion = {
+      nombre: this.perfil.nombre,
+      apellido: this.perfil.apellido,
+    };
+    this.avatarPreviewEdicion = this.avatarPreview;
+    this.archivoAvatar = null;
+    this.modalPerfilAbierto = true;
+  }
+
+  cerrarModalPerfil() {
+    this.modalPerfilAbierto = false;
+    this.archivoAvatar = null;
+    this.avatarPreviewEdicion = this.avatarPreview;
   }
 
   // ----- Avatar -----
@@ -285,7 +373,7 @@ export class Settings {
     this.archivoAvatar = archivo;
     const reader = new FileReader();
     reader.onload = (e) => {
-      this.avatarPreview = e.target?.result as string;
+      this.avatarPreviewEdicion = e.target?.result as string;
       this.cd.detectChanges();
     };
     reader.readAsDataURL(archivo);
@@ -293,17 +381,23 @@ export class Settings {
 
   // ----- Perfil -----
   guardarPerfil() {
-    if (!this.perfil.nombre.trim() || !this.perfil.apellido.trim()) {
+    const nombre = this.perfilEdicion.nombre.trim();
+    const apellido = this.perfilEdicion.apellido.trim();
+
+    if (!nombre || !apellido) {
       this.toastService.show('El nombre y apellido son requeridos', 'error');
       return;
     }
     this.cargandoPerfil = true;
     this.authService
-      .actualizarPerfil({ nombre: this.perfil.nombre, apellido: this.perfil.apellido })
+      .actualizarPerfil({ nombre, apellido })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.authService.notificarActualizacionPerfil(this.perfil.nombre, this.perfil.apellido);
+          this.perfil.nombre = nombre;
+          this.perfil.apellido = apellido;
+          this.authService.notificarActualizacionPerfil(nombre, apellido);
+
           if (this.archivoAvatar) {
             const formData = new FormData();
             formData.append('avatar', this.archivoAvatar);
@@ -316,6 +410,7 @@ export class Settings {
                   if (avatarUrl) {
                     this.authService.notificarActualizacionAvatar(avatarUrl);
                     this.avatarPreview = avatarUrl;
+                    this.avatarPreviewEdicion = avatarUrl;
                   }
                   this.archivoAvatar = null;
                   this.cargandoPerfil = false;
@@ -344,6 +439,23 @@ export class Settings {
       });
   }
 
+  // ----- Contraseña Modal Controls -----
+  abrirModalContrasena() {
+    this.contrasena = { actual: '', nueva: '', confirmar: '' };
+    this.mostrarContrasenaActual = false;
+    this.mostrarContrasenaNueva = false;
+    this.mostrarContrasenaConfirmar = false;
+    this.modalContrasenaAbierto = true;
+  }
+
+  cerrarModalContrasena() {
+    this.modalContrasenaAbierto = false;
+    this.contrasena = { actual: '', nueva: '', confirmar: '' };
+    this.mostrarContrasenaActual = false;
+    this.mostrarContrasenaNueva = false;
+    this.mostrarContrasenaConfirmar = false;
+  }
+
   // ----- Contraseña -----
   cambiarContrasena() {
     if (!this.contrasena.actual) {
@@ -367,9 +479,8 @@ export class Settings {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.contrasena = { actual: '', nueva: '', confirmar: '' };
           this.cargandoContrasena = false;
-          this.modalContrasenaAbierto = false;
+          this.cerrarModalContrasena();
           this.cd.detectChanges();
           this.toastService.show('Contraseña actualizada correctamente', 'success');
         },
