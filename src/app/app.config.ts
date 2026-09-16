@@ -6,11 +6,14 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { routes } from './app.routes';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { LoadingInterceptor } from './interceptors/loading.interceptor';
+import { provideIcons } from '@ng-icons/core';
+import { CATEGORY_ICONS_MAP } from './shared/utils/category-icons';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    provideIcons(CATEGORY_ICONS_MAP),
 
     provideHttpClient(withInterceptorsFromDi()),
 

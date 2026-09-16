@@ -2,22 +2,24 @@ import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angul
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { ToastService } from '../../core/services/toast.service';
-import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
+import { NgIcon } from '@ng-icons/core';
+import { getCategoryIconName, getCategoryIconPath } from '../../shared/utils/category-icons';
 
 export interface Etiqueta {
   id: number;
   nombre: string;
   color: string;
   id_usuario: number | null;
+  tipo?: 'gasto' | 'ingreso';
+  icono?: string;
 }
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, NgIcon],
   templateUrl: './categorias.html',
   styleUrl: './categorias.css',
 })
@@ -30,18 +32,8 @@ export class Categorias implements OnInit {
 
   etiquetas: Etiqueta[] = [];
   cargando = false;
-  creandoEtiqueta = false;
-
-  nuevaEtiqueta = {
-    nombre: '',
-    color: '#6366f1',
-  };
-
-  coloresPredefinidos: string[] = [
-    '#6366f1', '#4f46e5', '#8b5cf6', '#a855f7',
-    '#ec4899', '#f43f5e', '#ef4444', '#f97316',
-    '#eab308', '#22c55e', '#14b8a6', '#64748b',
-  ];
+  filtroActivo: 'todas' | 'gasto' | 'ingreso' = 'todas';
+  busqueda = '';
 
   ngOnInit() {
     this.cargarEtiquetas();
@@ -51,23 +43,66 @@ export class Categorias implements OnInit {
     return this.etiquetas.length;
   }
 
-  get etiquetasPredeterminadas(): Etiqueta[] {
-    return this.etiquetas.filter((etiqueta) => !etiqueta.id_usuario);
+  get totalEtiquetas(): number {
+    return this.etiquetas.length;
+  }
+
+  get totalGastos(): number {
+    return this.etiquetas.filter((e) => (e.tipo || 'gasto') === 'gasto').length;
+  }
+
+  get totalIngresos(): number {
+    return this.etiquetas.filter((e) => e.tipo === 'ingreso').length;
+  }
+
+  cumpleFiltro(e: Etiqueta): boolean {
+    const coincideTipo = this.filtroActivo === 'todas' || (e.tipo || 'gasto') === this.filtroActivo;
+    if (!coincideTipo) return false;
+
+    const query = this.busqueda.trim().toLowerCase();
+    if (!query) return true;
+
+    return (e.nombre || '').toLowerCase().includes(query);
   }
 
   get etiquetasUsuario(): Etiqueta[] {
-    return this.etiquetas.filter((etiqueta) => etiqueta.id_usuario);
+    return this.etiquetas.filter((e) => Boolean(e.id_usuario));
   }
 
-  swatchShadow(color: string): string {
-    if (this.nuevaEtiqueta.color === color) {
-      return `0 0 0 2px #0f172a, 0 0 0 4px ${color}`;
-    }
-    return 'none';
+  get etiquetasPredeterminadas(): Etiqueta[] {
+    return this.etiquetas.filter((e) => !e.id_usuario);
+  }
+
+  get etiquetasFiltradasUsuario(): Etiqueta[] {
+    return this.etiquetasUsuario.filter((e) => this.cumpleFiltro(e));
+  }
+
+  get etiquetasFiltradasPredeterminadas(): Etiqueta[] {
+    return this.etiquetasPredeterminadas.filter((e) => this.cumpleFiltro(e));
+  }
+
+  get totalFiltradas(): number {
+    return this.etiquetasFiltradasUsuario.length + this.etiquetasFiltradasPredeterminadas.length;
+  }
+
+  getIconSvg(iconId?: string | null): string {
+    return getCategoryIconPath(iconId);
+  }
+
+  getIconName(iconId?: string | null): string {
+    return getCategoryIconName(iconId);
   }
 
   volver() {
     this.router.navigate(['/configuracion']);
+  }
+
+  irACrear() {
+    this.router.navigate(['/configuracion/categorias/nueva']);
+  }
+
+  irADetalle(etiqueta: Etiqueta) {
+    this.router.navigate(['/configuracion/categorias', etiqueta.id]);
   }
 
   cargarEtiquetas() {
@@ -77,7 +112,16 @@ export class Categorias implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res: any) => {
-          this.etiquetas = Array.isArray(res) ? res : [];
+          this.etiquetas = Array.isArray(res)
+            ? res.map((item) => ({
+                id: item.id,
+                nombre: item.nombre || item.categoria || '',
+                color: item.color || '#6366f1',
+                id_usuario: item.id_usuario ?? null,
+                tipo: item.tipo === 'ingreso' ? 'ingreso' : 'gasto',
+                icono: item.icono || 'tag',
+              }))
+            : [];
           this.cargando = false;
           this.cd.detectChanges();
         },
@@ -86,66 +130,6 @@ export class Categorias implements OnInit {
           this.cargando = false;
           this.toastService.show('Error al cargar las categorías', 'error');
           this.cd.detectChanges();
-        },
-      });
-  }
-
-  crearEtiqueta() {
-    const nombre = this.nuevaEtiqueta.nombre.trim();
-    if (!nombre) {
-      this.toastService.show('El nombre de la categoría es requerido', 'error');
-      return;
-    }
-
-    this.creandoEtiqueta = true;
-    this.movimientosService
-      .crearEtiqueta({
-        nombre,
-        color: this.nuevaEtiqueta.color,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (etiquetaCreada: any) => {
-          this.etiquetas = [...this.etiquetas, etiquetaCreada];
-          this.nuevaEtiqueta = { nombre: '', color: '#6366f1' };
-          this.creandoEtiqueta = false;
-          this.cd.detectChanges();
-          this.toastService.show('Categoría creada correctamente', 'success');
-        },
-        error: (err) => {
-          this.creandoEtiqueta = false;
-          this.cd.detectChanges();
-          this.toastService.show(err?.error?.message || 'Error al crear la categoría', 'error');
-        },
-      });
-  }
-
-  async eliminarEtiqueta(etiqueta: Etiqueta): Promise<void> {
-    const result = await Swal.fire({
-      title: '¿Eliminar categoría?',
-      text: `La categoría "${etiqueta.nombre}" se eliminará de tus opciones personalizadas.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Eliminar',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true,
-      customClass: monetraSweetAlertClasses,
-      buttonsStyling: false,
-    });
-
-    if (!result.isConfirmed) return;
-
-    this.movimientosService
-      .eliminarEtiqueta(etiqueta.id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.etiquetas = this.etiquetas.filter((e) => e.id !== etiqueta.id);
-          this.toastService.show('Categoría eliminada', 'success');
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.toastService.show(err?.error?.message || 'Error al eliminar la categoría', 'error');
         },
       });
   }

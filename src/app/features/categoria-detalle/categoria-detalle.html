@@ -1,0 +1,344 @@
+<div class="max-w-xl mx-auto space-y-5 pt-2 pb-12 transition-colors duration-200">
+
+  <!-- ==================== HEADER NATIVO MÓVIL ==================== -->
+  <div class="flex items-center justify-between px-1">
+    <!-- Botón Volver -->
+    <button
+      type="button"
+      (click)="volver()"
+      class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-xs"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+      <span>Etiquetas</span>
+    </button>
+
+    <!-- Acciones en el Header (Eliminar + Guardar) -->
+    <div class="flex items-center gap-2">
+      @if (!esNueva && esCategoriaUsuario) {
+        <button
+          type="button"
+          (click)="eliminar()"
+          [disabled]="eliminando || guardando"
+          class="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+          title="Eliminar etiqueta"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      }
+
+      @if (esCategoriaUsuario) {
+        <button
+          type="button"
+          (click)="guardar()"
+          [disabled]="!hayCambios || guardando || !categoria.nombre.trim()"
+          class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs"
+          [class.bg-indigo-600]="hayCambios && !guardando && categoria.nombre.trim()"
+          [class.hover:bg-indigo-500]="hayCambios && !guardando && categoria.nombre.trim()"
+          [class.text-white]="hayCambios && !guardando && categoria.nombre.trim()"
+          [class.shadow-indigo-600/30]="hayCambios && !guardando && categoria.nombre.trim()"
+          [class.active:scale-95]="hayCambios && !guardando && categoria.nombre.trim()"
+          [class.cursor-pointer]="hayCambios && !guardando && categoria.nombre.trim()"
+          [class.bg-slate-200/70]="!hayCambios || guardando || !categoria.nombre.trim()"
+          [class.dark:bg-slate-800/70]="!hayCambios || guardando || !categoria.nombre.trim()"
+          [class.text-slate-400]="!hayCambios || guardando || !categoria.nombre.trim()"
+          [class.dark:text-slate-500]="!hayCambios || guardando || !categoria.nombre.trim()"
+          [class.cursor-not-allowed]="!hayCambios || guardando || !categoria.nombre.trim()"
+        >
+          @if (guardando) {
+            <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>Guardando...</span>
+          } @else {
+            <span>Guardar</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ==================== TÍTULO DE PANTALLA ==================== -->
+  <div class="px-1">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+      {{ esNueva ? 'Nueva Etiqueta' : (esCategoriaUsuario ? 'Editar Etiqueta' : 'Detalle de Etiqueta') }}
+    </h1>
+    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+      {{ esNueva ? 'Define el tipo, nombre, icono y color para tu movimiento' : 'Información y configuración de la etiqueta' }}
+    </p>
+  </div>
+
+  @if (!esCategoriaUsuario) {
+    <div class="bg-amber-50 dark:bg-amber-950/40 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs px-4 py-3 rounded-2xl flex items-center gap-2.5">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+      </svg>
+      <span>Esta es una etiqueta predeterminada del sistema y es de solo lectura.</span>
+    </div>
+  }
+
+  <!-- ==================== HERO PREVIEW (VISTA PREVIA EN VIVO) ==================== -->
+  <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+    <!-- Glow dinámico basado en el color seleccionado -->
+    <div
+      class="absolute -top-10 left-1/2 -translate-x-1/2 w-44 h-24 rounded-full blur-2xl pointer-events-none opacity-25 transition-colors"
+      [style.background-color]="categoria.color"
+    ></div>
+
+    <!-- Icono Badge Interactivo (Click para abrir modal) -->
+    <div class="relative mb-3.5">
+      <button
+        type="button"
+        (click)="abrirModalIcono()"
+        [disabled]="!esCategoriaUsuario"
+        class="w-20 h-20 rounded-3xl flex items-center justify-center text-white shadow-lg transition-all relative focus:outline-none group"
+        [class.cursor-pointer]="esCategoriaUsuario"
+        [class.hover:scale-105]="esCategoriaUsuario"
+        [class.active:scale-95]="esCategoriaUsuario"
+        [class.cursor-default]="!esCategoriaUsuario"
+        [style.background-color]="categoria.color"
+        [style.box-shadow]="'0 10px 25px -5px ' + categoria.color + '55'"
+        [title]="esCategoriaUsuario ? 'Haz clic para cambiar el icono' : 'Icono de la etiqueta'"
+      >
+        <ng-icon [name]="getIconName(categoria.icono)" class="text-4xl transition-transform group-hover:scale-110" />
+
+        <!-- Badge de lápiz flotante para indicar que es editable -->
+        @if (esCategoriaUsuario) {
+          <div
+            class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:bg-indigo-600 group-hover:text-white transition-colors"
+          >
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+            </svg>
+          </div>
+        }
+      </button>
+    </div>
+
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white truncate max-w-xs">
+      {{ categoria.nombre.trim() || 'Nombre de etiqueta' }}
+    </h2>
+
+    <div class="flex items-center gap-2 mt-2">
+      <span
+        class="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase"
+        [class.bg-rose-500/15]="categoria.tipo === 'gasto'"
+        [class.text-rose-600]="categoria.tipo === 'gasto'"
+        [class.dark:text-rose-400]="categoria.tipo === 'gasto'"
+        [class.bg-emerald-500/15]="categoria.tipo === 'ingreso'"
+        [class.text-emerald-600]="categoria.tipo === 'ingreso'"
+        [class.dark:text-emerald-400]="categoria.tipo === 'ingreso'"
+      >
+        {{ categoria.tipo === 'ingreso' ? 'Ingreso' : 'Gasto' }}
+      </span>
+
+      @if (!esCategoriaUsuario) {
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
+          Sistema
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- ==================== FORMULARIO DE CATEGORÍA ==================== -->
+  <div class="space-y-4">
+
+    <!-- 1. TIPO DE MOVIMIENTO (GASTO vs INGRESO) -->
+    <div>
+      <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+        TIPO DE MOVIMIENTO
+      </h3>
+      <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-2 shadow-sm grid grid-cols-2 gap-2">
+        <!-- Botón Gasto -->
+        <button
+          type="button"
+          (click)="seleccionarTipo('gasto')"
+          [disabled]="!esCategoriaUsuario"
+          class="flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer select-none"
+          [class.bg-rose-500]="categoria.tipo === 'gasto'"
+          [class.text-white]="categoria.tipo === 'gasto'"
+          [class.shadow-md]="categoria.tipo === 'gasto'"
+          [class.shadow-rose-500/25]="categoria.tipo === 'gasto'"
+          [class.text-slate-600]="categoria.tipo !== 'gasto'"
+          [class.dark:text-slate-400]="categoria.tipo !== 'gasto'"
+          [class.hover:bg-slate-100]="categoria.tipo !== 'gasto'"
+          [class.dark:hover:bg-slate-800/50]="categoria.tipo !== 'gasto'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" />
+          </svg>
+          <span>Gasto</span>
+        </button>
+
+        <!-- Botón Ingreso -->
+        <button
+          type="button"
+          (click)="seleccionarTipo('ingreso')"
+          [disabled]="!esCategoriaUsuario"
+          class="flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer select-none"
+          [class.bg-emerald-600]="categoria.tipo === 'ingreso'"
+          [class.text-white]="categoria.tipo === 'ingreso'"
+          [class.shadow-md]="categoria.tipo === 'ingreso'"
+          [class.shadow-emerald-600/25]="categoria.tipo === 'ingreso'"
+          [class.text-slate-600]="categoria.tipo !== 'ingreso'"
+          [class.dark:text-slate-400]="categoria.tipo !== 'ingreso'"
+          [class.hover:bg-slate-100]="categoria.tipo !== 'ingreso'"
+          [class.dark:hover:bg-slate-800/50]="categoria.tipo !== 'ingreso'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+          </svg>
+          <span>Ingreso</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. NOMBRE DE LA ETIQUETA -->
+    <div>
+      <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+        NOMBRE DE LA ETIQUETA
+      </h3>
+      <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+          Nombre
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="categoria.nombre"
+          [disabled]="!esCategoriaUsuario"
+          name="nombre"
+          required
+          placeholder="ej. Gimnasio, Mascotas, Salario, Cursos..."
+          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        />
+      </div>
+    </div>
+
+    <!-- 3. COLOR REPRESENTATIVO -->
+    <div>
+      <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+        COLOR REPRESENTATIVO
+      </h3>
+      <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+        <div class="flex flex-wrap gap-3">
+          @for (color of coloresPredefinidos; track color) {
+            <button
+              type="button"
+              (click)="categoria.color = color"
+              [disabled]="!esCategoriaUsuario"
+              class="w-8 h-8 rounded-full transition-transform hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
+              [style.background-color]="color"
+              [style.box-shadow]="swatchShadow(color)"
+              [title]="color"
+            ></button>
+          }
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== MODAL SELECTOR DE ICONO ==================== -->
+  <app-modal
+    [isOpen]="modalIconoAbierto"
+    (closed)="cerrarModalIcono()"
+    modalTitle="Seleccionar Icono"
+  >
+    <div class="space-y-4">
+      <!-- Buscador de iconos -->
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="busquedaIcono"
+          placeholder="Buscar icono (ej. comida, auto, wifi, salario)..."
+          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl ps-9 pe-8 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+        />
+        @if (busquedaIcono.trim()) {
+          <button
+            type="button"
+            (click)="busquedaIcono = ''"
+            class="absolute inset-y-0 end-0 pe-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+
+      <!-- Filtros por categoría (píldoras deslizables) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 text-xs">
+        @for (tab of categoriasIconos; track tab.id) {
+          <button
+            type="button"
+            (click)="seleccionarPestanaIcono(tab.id)"
+            class="px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer select-none text-[11px]"
+            [class.bg-indigo-600]="pestanaIconoActiva === tab.id"
+            [class.text-white]="pestanaIconoActiva === tab.id"
+            [class.shadow-xs]="pestanaIconoActiva === tab.id"
+            [class.bg-slate-100]="pestanaIconoActiva !== tab.id"
+            [class.dark:bg-slate-800]="pestanaIconoActiva !== tab.id"
+            [class.text-slate-600]="pestanaIconoActiva !== tab.id"
+            [class.dark:text-slate-400]="pestanaIconoActiva !== tab.id"
+            [class.hover:bg-slate-200]="pestanaIconoActiva !== tab.id"
+            [class.dark:hover:bg-slate-700]="pestanaIconoActiva !== tab.id"
+          >
+            {{ tab.label }}
+          </button>
+        }
+      </div>
+
+      <!-- Cuadrícula de iconos (4 a 5 filas visibles, solo iconos) -->
+      <div class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-72 overflow-y-auto p-1">
+        @for (item of iconosFiltrados; track item.id) {
+          <button
+            type="button"
+            (click)="seleccionarIcono(item.id)"
+            [title]="item.label"
+            class="aspect-square flex items-center justify-center rounded-xl border transition-all cursor-pointer active:scale-95 group select-none"
+            [class.border-indigo-500]="categoria.icono === item.id"
+            [class.bg-indigo-500/10]="categoria.icono === item.id"
+            [class.text-indigo-600]="categoria.icono === item.id"
+            [class.dark:text-indigo-400]="categoria.icono === item.id"
+            [class.ring-2]="categoria.icono === item.id"
+            [class.ring-indigo-500/30]="categoria.icono === item.id"
+            [class.border-slate-200/70]="categoria.icono !== item.id"
+            [class.dark:border-slate-700/80]="categoria.icono !== item.id"
+            [class.bg-slate-50]="categoria.icono !== item.id"
+            [class.dark:bg-slate-800/60]="categoria.icono !== item.id"
+            [class.text-slate-600]="categoria.icono !== item.id"
+            [class.dark:text-slate-400]="categoria.icono !== item.id"
+            [class.hover:border-indigo-300]="categoria.icono !== item.id"
+            [class.dark:hover:border-slate-600]="categoria.icono !== item.id"
+          >
+            <ng-icon [name]="item.iconName" class="text-2xl transition-transform group-hover:scale-110" />
+          </button>
+        }
+        @empty {
+          <div class="col-span-full py-8 text-center text-xs text-slate-400">
+            No se encontraron iconos que coincidan con "{{ busquedaIcono }}"
+          </div>
+        }
+      </div>
+
+      <!-- Footer del modal -->
+      <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex justify-between items-center text-xs text-slate-400">
+        <span>{{ iconosFiltrados.length }} disponibles</span>
+        <button
+          type="button"
+          (click)="cerrarModalIcono()"
+          class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold cursor-pointer transition-colors"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </app-modal>
+
+</div>
