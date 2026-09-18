@@ -64,13 +64,8 @@ describe('Categorias', () => {
   });
 
   it('debe filtrar correctamente por tipo de movimiento (gasto / ingreso)', () => {
-    // Inicialmente filtro 'todas'
-    expect(component.filtroActivo).toBe('todas');
-    expect(component.etiquetasFiltradasUsuario.length).toBe(2);
-    expect(component.etiquetasFiltradasPredeterminadas.length).toBe(3);
-
-    // Filtro 'gasto'
-    component.filtroActivo = 'gasto';
+    // Inicialmente filtro 'gasto'
+    expect(component.filtroActivo).toBe('gasto');
     expect(component.etiquetasFiltradasUsuario.length).toBe(1);
     expect(component.etiquetasFiltradasUsuario[0].nombre).toBe('Gimnasio');
     expect(component.etiquetasFiltradasPredeterminadas.length).toBe(2);
@@ -91,7 +86,9 @@ describe('Categorias', () => {
   it('debe navegar hacia la pantalla de detalle de una categoría', () => {
     const categoriaSeleccionada = component.etiquetas[0];
     component.irADetalle(categoriaSeleccionada);
-    expect(router.navigate).toHaveBeenCalledWith(['/configuracion/categorias', 1]);
+    expect(router.navigate).toHaveBeenCalledWith(['/configuracion/categorias', 1], {
+      state: { etiqueta: categoriaSeleccionada },
+    });
   });
 
   it('debe navegar hacia atrás a configuración', () => {
@@ -110,10 +107,10 @@ describe('Categorias', () => {
     expect(component.etiquetasFiltradasPredeterminadas.length).toBe(1);
     expect(component.etiquetasFiltradasPredeterminadas[0].nombre).toBe('Transporte');
 
-    // Limpiar búsqueda
+    // Limpiar búsqueda (manteniendo el filtro activo por defecto 'gasto')
     component.busqueda = '';
-    expect(component.etiquetasFiltradasUsuario.length).toBe(2);
-    expect(component.etiquetasFiltradasPredeterminadas.length).toBe(3);
+    expect(component.etiquetasFiltradasUsuario.length).toBe(1);
+    expect(component.etiquetasFiltradasPredeterminadas.length).toBe(2);
   });
 
   it('debe combinar búsqueda por texto con filtro de tipo de movimiento', () => {

@@ -69,20 +69,7 @@
 
   <!-- ==================== FILTRO DE TIPO (SEGMENTED CONTROL) ==================== -->
   <div class="p-1 bg-slate-100 dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex items-center gap-1 shadow-xs">
-    <button
-      type="button"
-      (click)="filtroActivo = 'todas'"
-      class="flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center select-none"
-      [class.bg-white]="filtroActivo === 'todas'"
-      [class.dark:bg-slate-800]="filtroActivo === 'todas'"
-      [class.text-indigo-600]="filtroActivo === 'todas'"
-      [class.dark:text-indigo-400]="filtroActivo === 'todas'"
-      [class.shadow-xs]="filtroActivo === 'todas'"
-      [class.text-slate-500]="filtroActivo !== 'todas'"
-      [class.dark:text-slate-400]="filtroActivo !== 'todas'"
-    >
-      Todas ({{ totalCategorias }})
-    </button>
+
     <button
       type="button"
       (click)="filtroActivo = 'gasto'"

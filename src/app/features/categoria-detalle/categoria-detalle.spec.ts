@@ -91,5 +91,20 @@ describe('CategoriaDetalle', () => {
     component.guardar();
     expect(component.guardando).toBe(false);
   });
+
+  it('debe cargar los datos de una categoría existente desde el servicio', () => {
+    component.cargarCategoria(5, false);
+    expect(component.categoria.nombre).toBe('Gimnasio');
+    expect(component.categoria.tipo).toBe('gasto');
+    expect(component.esCategoriaUsuario).toBe(true);
+    expect(component.cargando).toBe(false);
+  });
+
+  it('debe identificar correctamente una etiqueta del sistema predeterminada', () => {
+    component.esNueva = false;
+    component.cargarCategoria(1, false);
+    expect(component.categoria.nombre).toBe('Comida');
+    expect(component.esCategoriaUsuario).toBe(false);
+  });
 });
 

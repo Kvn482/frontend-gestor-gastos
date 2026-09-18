@@ -32,7 +32,7 @@ export class Categorias implements OnInit {
 
   etiquetas: Etiqueta[] = [];
   cargando = false;
-  filtroActivo: 'todas' | 'gasto' | 'ingreso' = 'todas';
+  filtroActivo: 'gasto' | 'ingreso' = 'gasto';
   busqueda = '';
 
   ngOnInit() {
@@ -56,7 +56,7 @@ export class Categorias implements OnInit {
   }
 
   cumpleFiltro(e: Etiqueta): boolean {
-    const coincideTipo = this.filtroActivo === 'todas' || (e.tipo || 'gasto') === this.filtroActivo;
+    const coincideTipo = (e.tipo || 'gasto') === this.filtroActivo;
     if (!coincideTipo) return false;
 
     const query = this.busqueda.trim().toLowerCase();
@@ -102,7 +102,9 @@ export class Categorias implements OnInit {
   }
 
   irADetalle(etiqueta: Etiqueta) {
-    this.router.navigate(['/configuracion/categorias', etiqueta.id]);
+    this.router.navigate(['/configuracion/categorias', etiqueta.id], {
+      state: { etiqueta },
+    });
   }
 
   cargarEtiquetas() {

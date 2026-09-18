@@ -15,51 +15,105 @@
     </button>
 
     <!-- Acciones en el Header (Eliminar + Guardar) -->
-    <div class="flex items-center gap-2">
-      @if (!esNueva && esCategoriaUsuario) {
-        <button
-          type="button"
-          (click)="eliminar()"
-          [disabled]="eliminando || guardando"
-          class="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
-          title="Eliminar etiqueta"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      }
+    @if (cargando) {
+      <div class="h-8 w-20 bg-slate-200/60 dark:bg-slate-800/60 rounded-xl animate-pulse"></div>
+    } @else {
+      <div class="flex items-center gap-2">
+        @if (!esNueva && esCategoriaUsuario) {
+          <button
+            type="button"
+            (click)="eliminar()"
+            [disabled]="eliminando || guardando"
+            class="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+            title="Eliminar etiqueta"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        }
 
-      @if (esCategoriaUsuario) {
-        <button
-          type="button"
-          (click)="guardar()"
-          [disabled]="!hayCambios || guardando || !categoria.nombre.trim()"
-          class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs"
-          [class.bg-indigo-600]="hayCambios && !guardando && categoria.nombre.trim()"
-          [class.hover:bg-indigo-500]="hayCambios && !guardando && categoria.nombre.trim()"
-          [class.text-white]="hayCambios && !guardando && categoria.nombre.trim()"
-          [class.shadow-indigo-600/30]="hayCambios && !guardando && categoria.nombre.trim()"
-          [class.active:scale-95]="hayCambios && !guardando && categoria.nombre.trim()"
-          [class.cursor-pointer]="hayCambios && !guardando && categoria.nombre.trim()"
-          [class.bg-slate-200/70]="!hayCambios || guardando || !categoria.nombre.trim()"
-          [class.dark:bg-slate-800/70]="!hayCambios || guardando || !categoria.nombre.trim()"
-          [class.text-slate-400]="!hayCambios || guardando || !categoria.nombre.trim()"
-          [class.dark:text-slate-500]="!hayCambios || guardando || !categoria.nombre.trim()"
-          [class.cursor-not-allowed]="!hayCambios || guardando || !categoria.nombre.trim()"
-        >
-          @if (guardando) {
-            <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span>Guardando...</span>
-          } @else {
-            <span>Guardar</span>
-          }
-        </button>
-      }
-    </div>
+        @if (esCategoriaUsuario) {
+          <button
+            type="button"
+            (click)="guardar()"
+            [disabled]="!hayCambios || guardando || !categoria.nombre.trim()"
+            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs"
+            [class.bg-indigo-600]="hayCambios && !guardando && categoria.nombre.trim()"
+            [class.hover:bg-indigo-500]="hayCambios && !guardando && categoria.nombre.trim()"
+            [class.text-white]="hayCambios && !guardando && categoria.nombre.trim()"
+            [class.shadow-indigo-600/30]="hayCambios && !guardando && categoria.nombre.trim()"
+            [class.active:scale-95]="hayCambios && !guardando && categoria.nombre.trim()"
+            [class.cursor-pointer]="hayCambios && !guardando && categoria.nombre.trim()"
+            [class.bg-slate-200/70]="!hayCambios || guardando || !categoria.nombre.trim()"
+            [class.dark:bg-slate-800/70]="!hayCambios || guardando || !categoria.nombre.trim()"
+            [class.text-slate-400]="!hayCambios || guardando || !categoria.nombre.trim()"
+            [class.dark:text-slate-500]="!hayCambios || guardando || !categoria.nombre.trim()"
+            [class.cursor-not-allowed]="!hayCambios || guardando || !categoria.nombre.trim()"
+          >
+            @if (guardando) {
+              <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Guardando...</span>
+            } @else {
+              <span>Guardar</span>
+            }
+          </button>
+        }
+      </div>
+    }
   </div>
 
-  <!-- ==================== TÍTULO DE PANTALLA ==================== -->
+  @if (cargando) {
+    <!-- ==================== SKELETON LOADER UX FRIENDLY ==================== -->
+    <div class="space-y-5 animate-pulse">
+      <!-- Título skeleton -->
+      <div class="px-1 space-y-2">
+        <div class="h-7 w-44 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+        <div class="h-3.5 w-64 bg-slate-200/70 dark:bg-slate-800/70 rounded-lg"></div>
+      </div>
+
+      <!-- Hero preview skeleton -->
+      <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center">
+        <div class="w-20 h-20 rounded-3xl bg-slate-200 dark:bg-slate-800 mb-3.5"></div>
+        <div class="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-lg mb-2"></div>
+        <div class="h-4 w-20 bg-slate-200/70 dark:bg-slate-800/70 rounded-full"></div>
+      </div>
+
+      <!-- Formulario skeleton -->
+      <div class="space-y-4">
+        <!-- Tipo de movimiento -->
+        <div>
+          <div class="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded-md mx-2 mb-2"></div>
+          <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-2 shadow-sm grid grid-cols-2 gap-2">
+            <div class="h-10 rounded-2xl bg-slate-200/60 dark:bg-slate-800/60"></div>
+            <div class="h-10 rounded-2xl bg-slate-200/60 dark:bg-slate-800/60"></div>
+          </div>
+        </div>
+
+        <!-- Nombre input -->
+        <div>
+          <div class="h-3 w-36 bg-slate-200 dark:bg-slate-800 rounded-md mx-2 mb-2"></div>
+          <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+            <div class="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-md mb-2"></div>
+            <div class="h-11 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl"></div>
+          </div>
+        </div>
+
+        <!-- Color pickers -->
+        <div>
+          <div class="h-3 w-32 bg-slate-200 dark:bg-slate-800 rounded-md mx-2 mb-2"></div>
+          <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm">
+            <div class="flex flex-wrap gap-3">
+              @for (c of [1,2,3,4,5,6,7,8,9,10,11,12]; track c) {
+                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- ==================== TÍTULO DE PANTALLA ==================== -->
   <div class="px-1">
     <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
       {{ esNueva ? 'Nueva Etiqueta' : (esCategoriaUsuario ? 'Editar Etiqueta' : 'Detalle de Etiqueta') }}
@@ -238,6 +292,8 @@
     </div>
 
   </div>
+
+  }
 
   <!-- ==================== MODAL SELECTOR DE ICONO ==================== -->
   <app-modal

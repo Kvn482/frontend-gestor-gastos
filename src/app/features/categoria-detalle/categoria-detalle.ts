@@ -72,6 +72,7 @@ export class CategoriaDetalle implements OnInit {
       const idParam = params.get('id');
       if (!idParam || idParam === 'nueva') {
         this.esNueva = true;
+        this.cargando = false;
         this.categoria = {
           id: 0,
           nombre: '',
@@ -84,7 +85,31 @@ export class CategoriaDetalle implements OnInit {
       } else {
         this.esNueva = false;
         this.idCategoria = Number(idParam);
-        this.cargarCategoria(this.idCategoria);
+
+        // Si se transmitió la información en el estado del router, la usamos para carga instantánea
+        const stateEtiqueta = history.state?.etiqueta;
+        if (stateEtiqueta && Number(stateEtiqueta.id) === this.idCategoria) {
+          this.categoria = {
+            id: stateEtiqueta.id,
+            nombre: stateEtiqueta.nombre || stateEtiqueta.categoria || '',
+            color: stateEtiqueta.color || '#6366f1',
+            tipo: stateEtiqueta.tipo === 'ingreso' ? 'ingreso' : 'gasto',
+            icono: stateEtiqueta.icono || 'tag',
+            id_usuario: stateEtiqueta.id_usuario ?? null,
+          };
+          this.categoriaOriginal = {
+            nombre: this.categoria.nombre,
+            color: this.categoria.color,
+            tipo: this.categoria.tipo,
+            icono: this.categoria.icono,
+          };
+          this.cargando = false;
+          // Sincronización silenciosa en background
+          this.cargarCategoria(this.idCategoria, true);
+        } else {
+          this.cargando = true;
+          this.cargarCategoria(this.idCategoria, false);
+        }
       }
     });
   }
@@ -174,8 +199,10 @@ export class CategoriaDetalle implements OnInit {
     this.modalIconoAbierto = false;
   }
 
-  cargarCategoria(id: number) {
-    this.cargando = true;
+  cargarCategoria(id: number, silencioso = false) {
+    if (!silencioso) {
+      this.cargando = true;
+    }
     this.movimientosService
       .consultarEtiquetas()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -183,21 +210,24 @@ export class CategoriaDetalle implements OnInit {
         next: (etiquetas: any[]) => {
           const encontrada = etiquetas.find((e) => Number(e.id) === id);
           if (encontrada) {
-            this.categoria = {
+            const nuevaCategoria = {
               id: encontrada.id,
               nombre: encontrada.nombre || encontrada.categoria || '',
               color: encontrada.color || '#6366f1',
-              tipo: encontrada.tipo === 'ingreso' ? 'ingreso' : 'gasto',
+              tipo: (encontrada.tipo === 'ingreso' ? 'ingreso' : 'gasto') as 'gasto' | 'ingreso',
               icono: encontrada.icono || 'tag',
               id_usuario: encontrada.id_usuario ?? null,
             };
-            this.categoriaOriginal = {
-              nombre: this.categoria.nombre,
-              color: this.categoria.color,
-              tipo: this.categoria.tipo,
-              icono: this.categoria.icono,
-            };
-          } else {
+            if (!this.hayCambios) {
+              this.categoria = nuevaCategoria;
+              this.categoriaOriginal = {
+                nombre: this.categoria.nombre,
+                color: this.categoria.color,
+                tipo: this.categoria.tipo,
+                icono: this.categoria.icono,
+              };
+            }
+          } else if (!silencioso) {
             this.toastService.show('Etiqueta no encontrada', 'error');
             this.volver();
           }
@@ -206,8 +236,11 @@ export class CategoriaDetalle implements OnInit {
         },
         error: () => {
           this.cargando = false;
-          this.toastService.show('Error al cargar la etiqueta', 'error');
-          this.volver();
+          if (!silencioso) {
+            this.toastService.show('Error al cargar la etiqueta', 'error');
+            this.volver();
+          }
+          this.cd.detectChanges();
         },
       });
   }
