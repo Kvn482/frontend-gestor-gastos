@@ -313,7 +313,7 @@
           type="text"
           [(ngModel)]="busquedaIcono"
           placeholder="Buscar icono (ej. comida, auto, wifi, salario)..."
-          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl ps-9 pe-8 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl ps-9 pe-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
         />
         @if (busquedaIcono.trim()) {
           <button
@@ -334,7 +334,7 @@
           <button
             type="button"
             (click)="seleccionarPestanaIcono(tab.id)"
-            class="px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer select-none text-[11px]"
+            class="px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer select-none text-[14px]"
             [class.bg-indigo-600]="pestanaIconoActiva === tab.id"
             [class.text-white]="pestanaIconoActiva === tab.id"
             [class.shadow-xs]="pestanaIconoActiva === tab.id"
