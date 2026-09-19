@@ -171,6 +171,7 @@ export const CATEGORY_ICONS_MAP: Record<string, string> = {
   insurance: lucideIcons.lucideShieldCheck,
   subscriptions: lucideIcons.lucideCalendarDays,
   delivery: lucideIcons.lucidePackage,
+  receipt: lucideIcons.lucideReceipt,
   other: lucideIcons.lucideTag,
 };
 
@@ -178,6 +179,8 @@ const ID_TO_ICON_NAME: Record<string, string> = {};
 for (const item of CATEGORY_ICONS) {
   ID_TO_ICON_NAME[item.id] = item.iconName;
 }
+ID_TO_ICON_NAME['receipt'] = 'lucideReceipt';
+ID_TO_ICON_NAME['coins'] = 'lucideCoins';
 ID_TO_ICON_NAME['pets'] = 'lucidePawPrint';
 ID_TO_ICON_NAME['fitness'] = 'lucideDumbbell';
 ID_TO_ICON_NAME['gym'] = 'lucideDumbbell';
