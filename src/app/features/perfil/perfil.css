@@ -1,0 +1,5 @@
+/* Estilos específicos para la vista nativa de perfil */
+:host {
+  display: block;
+}
+

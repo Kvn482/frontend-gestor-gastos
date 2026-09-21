@@ -29,4 +29,8 @@ export class MovimientoDetalleModal {
   get tipoCuenta(): string {
     return this.movimiento?.tipo_cuenta || this.cuentaFallback?.tipo || '';
   }
+
+  get etiquetasMostradas(): { id: number; nombre: string; color: string }[] {
+    return Array.isArray(this.movimiento?.etiquetas) ? this.movimiento.etiquetas : [];
+  }
 }

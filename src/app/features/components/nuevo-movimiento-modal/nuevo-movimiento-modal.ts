@@ -44,13 +44,52 @@ export class NuevoMovimientoModal implements OnChanges {
 
   agregarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
     if (!this.etiquetasSeleccionadas.find(e => e.id === etiqueta.id)) {
-      this.etiquetasSeleccionadas = [...this.etiquetasSeleccionadas, etiqueta];
+      if (
+        this.etiquetasSeleccionadas.length === 1 &&
+        this.esEtiquetaPorDefecto(this.etiquetasSeleccionadas[0]) &&
+        !this.esEtiquetaPorDefecto(etiqueta)
+      ) {
+        this.etiquetasSeleccionadas = [etiqueta];
+      } else {
+        this.etiquetasSeleccionadas = [...this.etiquetasSeleccionadas, etiqueta];
+      }
     }
     this.busquedaEtiqueta = '';
   }
 
   quitarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
     this.etiquetasSeleccionadas = this.etiquetasSeleccionadas.filter(e => e.id !== etiqueta.id);
+  }
+
+  obtenerEtiquetaPorDefecto(tipoMovimiento: number | string): { id: number; nombre: string; color: string } {
+    const esIngreso = Number(tipoMovimiento) === 1;
+    const nombreBuscado = esIngreso ? 'otros ingresos' : 'otros gastos';
+    const idBuscado = esIngreso ? 27 : 26;
+
+    const encontrada = this.etiquetasDisponibles.find(
+      (e) => e.id === idBuscado || e.nombre?.trim().toLowerCase() === nombreBuscado
+    );
+
+    if (encontrada) {
+      return encontrada;
+    }
+
+    return {
+      id: idBuscado,
+      nombre: esIngreso ? 'Otros ingresos' : 'Otros gastos',
+      color: esIngreso ? '#10b981' : '#ec4899',
+    };
+  }
+
+  esEtiquetaPorDefecto(etiqueta: any): boolean {
+    if (!etiqueta) return false;
+    const id = Number(etiqueta.id);
+    const nombre = String(etiqueta.nombre || '').trim().toLowerCase();
+    return id === 26 || id === 27 || nombre === 'otros gastos' || nombre === 'otros ingresos';
+  }
+
+  onTipoMovimientoChange() {
+    this.validarErrores('tipoMovimiento');
   }
 
   onBlurEtiqueta() {
@@ -131,8 +170,11 @@ export class NuevoMovimientoModal implements OnChanges {
       this.resetFormulario();
 
       this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
-        this.etiquetasDisponibles = res;
-        this.precargarEtiquetasEdicion();
+        this.etiquetasDisponibles = Array.isArray(res) ? res : [];
+
+        if (this.editando) {
+          this.precargarEtiquetasEdicion();
+        }
       });
 
       this.movimientosService.consultarTiposMovimiento().subscribe((res: any) => {
@@ -241,15 +283,15 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   private precargarEtiquetasEdicion() {
-    if (!this.movimientoEditar?.etiquetas?.length) return;
+    if (this.movimientoEditar?.etiquetas?.length) {
+      this.etiquetasSeleccionadas = this.movimientoEditar.etiquetas.map((etiqueta: any) => {
+        const etiquetaDisponible = this.etiquetasDisponibles.find(
+          (item) => String(item.id) === String(etiqueta.id)
+        );
 
-    this.etiquetasSeleccionadas = this.movimientoEditar.etiquetas.map((etiqueta: any) => {
-      const etiquetaDisponible = this.etiquetasDisponibles.find(
-        (item) => String(item.id) === String(etiqueta.id)
-      );
-
-      return etiquetaDisponible ?? etiqueta;
-    });
+        return etiquetaDisponible ?? etiqueta;
+      });
+    }
   }
 
   private formatearFechaFormulario(fecha: string | null | undefined): string {
@@ -328,9 +370,15 @@ export class NuevoMovimientoModal implements OnChanges {
     if (tieneErrores) this.isloading.set(false);
 
     if (!tieneErrores) {
+      const tipo = Number(this.movimiento.tipoMovimiento);
+      const idPorDefecto = tipo === 1 ? 27 : 26;
+      const etiquetasPayload = this.etiquetasSeleccionadas.length > 0
+        ? this.etiquetasSeleccionadas.map(e => e.id)
+        : (tipo === 1 || tipo === 2 ? [idPorDefecto] : []);
+
       const payload = {
         ...this.movimiento,
-        etiquetas: this.etiquetasSeleccionadas.map(e => e.id),
+        etiquetas: etiquetasPayload,
         monto: Number(this.movimiento.tipoMovimiento) === 2 ? Math.abs(Number(this.movimiento.monto)) * -1 : Math.abs(Number(this.movimiento.monto))
       };
 

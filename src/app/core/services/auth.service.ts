@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
-import { Subject } from 'rxjs';
+import { Observable, Subject, finalize, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -10,6 +10,7 @@ import { environment } from '../../../environments/environment';
 export class AuthService {
 
   private api = `${environment.apiUrl}/api/auth`;
+  private perfilInFlight$?: Observable<any> | null = null;
 
   private _perfilActualizado$ = new Subject<{ nombre: string; apellido: string }>();
   readonly perfilActualizado$ = this._perfilActualizado$.asObservable();
@@ -115,6 +116,7 @@ export class AuthService {
   }
 
   logout() {
+    this.perfilInFlight$ = null;
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('perfilOverride');
@@ -126,10 +128,12 @@ export class AuthService {
   }
 
   actualizarPerfil(data: { nombre: string; apellido: string }) {
+    this.perfilInFlight$ = null;
     return this.http.patch(`${this.api}/perfil`, data);
   }
 
   actualizarAvatar(formData: FormData) {
+    this.perfilInFlight$ = null;
     return this.http.patch(`${this.api}/perfil/avatar`, formData);
   }
 
@@ -137,7 +141,24 @@ export class AuthService {
     return this.http.patch(`${this.api}/cambiar-contrasena`, data);
   }
 
-  getPerfil() {
-    return this.http.get<any>(`${this.api}/perfil`);
+  getPerfil(): Observable<any> {
+    if (!this.perfilInFlight$) {
+      this.perfilInFlight$ = this.http.get<any>(`${this.api}/perfil`).pipe(
+        tap((perfil) => {
+          if (perfil?.nombre) {
+            const apellido = perfil.apellido || '';
+            this.notificarActualizacionPerfil(perfil.nombre, apellido);
+          }
+          if (perfil?.avatar_url) {
+            this.notificarActualizacionAvatar(perfil.avatar_url);
+          }
+        }),
+        shareReplay(1),
+        finalize(() => {
+          this.perfilInFlight$ = null;
+        })
+      );
+    }
+    return this.perfilInFlight$;
   }
 }

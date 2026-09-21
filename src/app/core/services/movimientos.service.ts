@@ -82,8 +82,12 @@ export class MovimientosService {
     return this.http.get(`${this.api}/movimientos/cuenta/${idCuenta}`);
   }
 
-  crearEtiqueta(data: { nombre: string; color: string }) {
+  crearEtiqueta(data: { nombre: string; color: string; tipo?: 'gasto' | 'ingreso'; icono?: string }) {
     return this.http.post(`${this.api}/movimientos/etiquetas`, data);
+  }
+
+  actualizarEtiqueta(id: number, data: { nombre: string; color: string; tipo?: 'gasto' | 'ingreso'; icono?: string }) {
+    return this.http.patch(`${this.api}/movimientos/etiquetas/${id}`, data);
   }
 
   eliminarEtiqueta(id: number) {

@@ -57,22 +57,20 @@
           </svg>
           Etiquetas
         </span>
-        @if (movimiento.etiquetas?.length) {
-          <div class="flex flex-wrap gap-1.5">
-            @for (etiqueta of movimiento.etiquetas ?? []; track etiqueta.id) {
-              <span
-                class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
-                [style.backgroundColor]="etiqueta.color + '33'"
-                [style.color]="etiqueta.color"
-                [style.borderColor]="etiqueta.color"
-              >
-                {{ etiqueta.nombre }}
-              </span>
-            }
-          </div>
-        } @else {
-          <span class="font-medium text-body dark:text-slate-400">Sin etiquetas</span>
-        }
+        <div class="flex flex-wrap gap-1.5">
+          @for (etiqueta of etiquetasMostradas; track etiqueta.id) {
+            <span
+              class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+              [style.backgroundColor]="etiqueta.color + '33'"
+              [style.color]="etiqueta.color"
+              [style.borderColor]="etiqueta.color"
+            >
+              {{ etiqueta.nombre }}
+            </span>
+          } @empty {
+            <span class="text-xs text-body dark:text-slate-400">Sin etiquetas</span>
+          }
+        </div>
       </div>
 
       <div class="flex flex-col items-start justify-between py-3">

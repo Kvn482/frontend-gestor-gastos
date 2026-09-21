@@ -17,8 +17,12 @@
   <script>
     (function () {
       try {
-        if (localStorage.getItem('theme') === 'dark') {
+        const theme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (theme === 'dark' || (theme !== 'light' && systemPrefersDark)) {
           document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
       } catch (_) {}
     })();
