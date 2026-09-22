@@ -253,9 +253,13 @@ export class NuevoMovimientoModal implements OnChanges {
     });
 
     setTimeout(() => {
-      this.montoInputRef?.nativeElement?.focus();
-      this.montoInputRef?.nativeElement?.select();
-    }, 150);
+      // Auto-enfocar sólo en pantallas grandes (desktop) para prevenir que el teclado virtual
+      // de teléfonos móviles interrumpa la animación o force recálculos bruscos de viewport
+      if (typeof window !== 'undefined' && window.innerWidth >= 640) {
+        this.montoInputRef?.nativeElement?.focus();
+        this.montoInputRef?.nativeElement?.select();
+      }
+    }, 280);
   }
 
   cambiarVistaConTransicion(cambio: () => void) {
@@ -282,7 +286,8 @@ export class NuevoMovimientoModal implements OnChanges {
       targetCard.style.height = `${alturaInicial}px`;
       void targetCard.offsetHeight;
 
-      targetCard.style.transition = 'height 0.32s cubic-bezier(0.16, 1, 0.3, 1)';
+      targetCard.style.willChange = 'height';
+      targetCard.style.transition = 'height 0.26s cubic-bezier(0.16, 1, 0.3, 1)';
       targetCard.style.height = `${alturaFinal}px`;
 
       if (this.transitionTimer) clearTimeout(this.transitionTimer);
@@ -290,8 +295,9 @@ export class NuevoMovimientoModal implements OnChanges {
         if (this.modalCardRef?.nativeElement) {
           this.modalCardRef.nativeElement.style.height = '';
           this.modalCardRef.nativeElement.style.transition = '';
+          this.modalCardRef.nativeElement.style.willChange = '';
         }
-      }, 340);
+      }, 280);
     });
   }
 
