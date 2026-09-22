@@ -525,16 +525,49 @@ export class Settings {
     this.cd.detectChanges();
   }
 
+  permitirSoloDigitosYPunto(event: KeyboardEvent): void {
+    const teclasPermitidas = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End',
+    ];
+
+    if (teclasPermitidas.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (/^[0-9]$/.test(event.key)) {
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    if (event.key === '.' && !input.value.includes('.')) {
+      return;
+    }
+
+    event.preventDefault();
+  }
+
   soloNumerosFrecuente(event: Event) {
     const input = event.target as HTMLInputElement;
     let valor = input.value.replace(/[^0-9.]/g, '');
     const partes = valor.split('.');
     if (partes.length > 2) {
-      valor = partes[0] + '.' + partes.slice(1).join('');
+      valor = `${partes.shift()}.${partes.join('')}`;
     }
-    if (partes.length === 2 && partes[1].length > 2) {
-      valor = partes[0] + '.' + partes[1].substring(0, 2);
+    if (valor.includes('.')) {
+      const [entero, decimales] = valor.split('.');
+      valor = `${entero}.${decimales.slice(0, 2)}`;
     }
+    input.value = valor;
     this.frecuenteForm.monto = valor;
   }
 

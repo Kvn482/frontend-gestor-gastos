@@ -934,6 +934,7 @@
                   [(ngModel)]="frecuenteForm.monto"
                   inputmode="decimal"
                   placeholder="0.00"
+                  (keydown)="permitirSoloDigitosYPunto($event)"
                   (input)="soloNumerosFrecuente($event)"
                   class="w-full bg-transparent text-base font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none border-none p-0 focus:ring-0"
                 />

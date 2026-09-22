@@ -276,11 +276,50 @@ export class NuevoMovimientoModal implements OnChanges {
     this.abrirSelectorCategorias();
   }
 
+  permitirSoloDigitosYPunto(event: KeyboardEvent): void {
+    const teclasPermitidas = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Escape',
+      'Enter',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End',
+    ];
+
+    if (teclasPermitidas.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (/^[0-9]$/.test(event.key)) {
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    if (event.key === '.' && !input.value.includes('.')) {
+      return;
+    }
+
+    event.preventDefault();
+  }
+
   soloNumerosFrecuente(event: any) {
-    const valor = event.target.value;
-    const limpio = valor.replace(/[^0-9.]/g, '');
-    this.nuevoFrecuente.monto = limpio;
-    event.target.value = limpio;
+    const input = event.target as HTMLInputElement;
+    let valor = input.value.replace(/[^0-9.]/g, '');
+    const partes = valor.split('.');
+    if (partes.length > 2) {
+      valor = `${partes.shift()}.${partes.join('')}`;
+    }
+    if (valor.includes('.')) {
+      const [entero, decimales] = valor.split('.');
+      valor = `${entero}.${decimales.slice(0, 2)}`;
+    }
+    input.value = valor;
+    this.nuevoFrecuente.monto = valor;
   }
 
   guardarNuevoFrecuente() {
@@ -748,10 +787,18 @@ export class NuevoMovimientoModal implements OnChanges {
   // MANEJO DEL MONTO Y CUENTAS
   // ==========================================
   soloNumeros(event: any) {
-    const valor = event.target.value;
-    const limpio = valor.replace(/[^0-9.]/g, '');
-    this.movimiento.monto = limpio;
-    event.target.value = limpio;
+    const input = event.target as HTMLInputElement;
+    let valor = input.value.replace(/[^0-9.]/g, '');
+    const partes = valor.split('.');
+    if (partes.length > 2) {
+      valor = `${partes.shift()}.${partes.join('')}`;
+    }
+    if (valor.includes('.')) {
+      const [entero, decimales] = valor.split('.');
+      valor = `${entero}.${decimales.slice(0, 2)}`;
+    }
+    input.value = valor;
+    this.movimiento.monto = valor;
     this.validarErrores();
   }
 
