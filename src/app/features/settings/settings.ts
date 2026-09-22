@@ -4,29 +4,24 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { AuthService } from '../../core/services/auth.service';
-import { CuentasService } from '../../core/services/cuentas.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { ToastService } from '../../core/services/toast.service';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
 import { environment } from '../../../environments/environment';
-
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { NgIcon } from '@ng-icons/core';
-import { getCategoryIconName } from '../../shared/utils/category-icons';
+import { CommonModule } from '@angular/common';
 
 export type TemaOpcion = 'oscuro' | 'claro' | 'sistema';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NgIcon, CurrencyPipe],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
 export class Settings {
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
-  private cuentasService = inject(CuentasService);
 
   constructor(
     public authService: AuthService,
@@ -43,27 +38,6 @@ export class Settings {
   modalMonedaAbierto = false;
   modalTemaAbierto = false;
   modalInfoAbierto = false;
-
-  // Movimientos Frecuentes
-  modalFrecuentesAbierto = false;
-  cargandoFrecuentes = false;
-  guardandoFrecuente = false;
-  vistaFrecuentes: 'lista' | 'formulario' = 'lista';
-  editandoFrecuenteId: number | string | null = null;
-  movimientosFrecuentes: any[] = [];
-
-  frecuenteForm = {
-    nombre: '',
-    tipoMovimiento: 2, // 2 = Gasto, 1 = Ingreso
-    monto: '' as number | string,
-    cuenta: '',
-    categoria: null as any,
-  };
-
-  cuentasFrecuentes: any[] = [];
-  categoriasFrecuentes: any[] = [];
-  mostrarSelectorCategoriasFrecuente = false;
-  busquedaCategoriaFrecuente = '';
 
   infoModalTitulo = '';
   infoModalDescripcion = '';
@@ -98,15 +72,6 @@ export class Settings {
 
   @HostListener('window:keydown.escape')
   onEscapeKey() {
-    if (this.mostrarSelectorCategoriasFrecuente) {
-      this.mostrarSelectorCategoriasFrecuente = false;
-      return;
-    }
-    if (this.modalFrecuentesAbierto && this.vistaFrecuentes === 'formulario') {
-      this.vistaFrecuentes = 'lista';
-      return;
-    }
-    this.cerrarModalFrecuentes();
     this.cerrarModalContrasena();
     this.modalMonedaAbierto = false;
     this.modalTemaAbierto = false;
@@ -397,274 +362,7 @@ export class Settings {
     this.modalInfoAbierto = true;
   }
 
-  getIconName(icono?: string | null): string {
-    return getCategoryIconName(icono);
-  }
 
-  get categoriasFrecuentesFiltradas(): any[] {
-    const q = this.busquedaCategoriaFrecuente.trim().toLowerCase();
-    if (!q) return this.categoriasFrecuentes;
-    return this.categoriasFrecuentes.filter((cat) =>
-      (cat.nombre || cat.categoria || '').toLowerCase().includes(q)
-    );
-  }
-
-  get cuentaFrecuenteSeleccionada() {
-    return this.cuentasFrecuentes.find((c) => String(c.id) === String(this.frecuenteForm.cuenta));
-  }
-
-  abrirMovimientosFrecuentes() {
-    this.modalFrecuentesAbierto = true;
-    this.vistaFrecuentes = 'lista';
-    this.editandoFrecuenteId = null;
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.cargarMovimientosFrecuentes();
-    this.cargarCatalogosFrecuentes();
-  }
-
-  cerrarModalFrecuentes() {
-    this.modalFrecuentesAbierto = false;
-    this.vistaFrecuentes = 'lista';
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.editandoFrecuenteId = null;
-  }
-
-  cargarMovimientosFrecuentes() {
-    this.cargandoFrecuentes = true;
-    this.movimientosService.consultarMovimientosRapidos().subscribe({
-      next: (res) => {
-        this.movimientosFrecuentes = Array.isArray(res) ? res : [];
-        this.cargandoFrecuentes = false;
-        this.cd.detectChanges();
-      },
-      error: () => {
-        this.cargandoFrecuentes = false;
-        this.toastService.show('Error al cargar movimientos frecuentes', 'error');
-        this.cd.detectChanges();
-      },
-    });
-  }
-
-  cargarCatalogosFrecuentes() {
-    if (this.cuentasFrecuentes.length === 0) {
-      this.cuentasService.consultarCuentasActivas().subscribe({
-        next: (res: any) => {
-          this.cuentasFrecuentes = Array.isArray(res) ? res : [];
-          this.cd.detectChanges();
-        },
-      });
-    }
-    if (this.categoriasFrecuentes.length === 0) {
-      this.movimientosService.consultarEtiquetas().subscribe({
-        next: (res: any) => {
-          this.categoriasFrecuentes = Array.isArray(res) ? res : [];
-          this.cd.detectChanges();
-        },
-      });
-    }
-  }
-
-  abrirCrearFrecuente() {
-    this.editandoFrecuenteId = null;
-    this.frecuenteForm = {
-      nombre: '',
-      tipoMovimiento: 2,
-      monto: '',
-      cuenta: '',
-      categoria: null,
-    };
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.busquedaCategoriaFrecuente = '';
-    this.vistaFrecuentes = 'formulario';
-    this.cd.detectChanges();
-  }
-
-  abrirEditarFrecuente(m: any) {
-    this.editandoFrecuenteId = m.id;
-    const cat = this.categoriasFrecuentes.find((c) => String(c.id) === String(m.categoriaId)) || {
-      id: m.categoriaId,
-      nombre: m.categoriaNombre,
-      color: m.categoriaColor,
-      icono: m.categoriaIcono,
-    };
-
-    this.frecuenteForm = {
-      nombre: m.nombre,
-      tipoMovimiento: Number(m.tipoMovimiento) || 2,
-      monto: Math.abs(Number(m.monto)),
-      cuenta: String(m.cuentaId || (this.cuentasFrecuentes.length > 0 ? this.cuentasFrecuentes[0].id : '')),
-      categoria: cat,
-    };
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.busquedaCategoriaFrecuente = '';
-    this.vistaFrecuentes = 'formulario';
-    this.cd.detectChanges();
-  }
-
-  volverAListaFrecuentes() {
-    this.vistaFrecuentes = 'lista';
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.editandoFrecuenteId = null;
-    this.cd.detectChanges();
-  }
-
-  abrirSelectorCategoriasFrecuente() {
-    this.mostrarSelectorCategoriasFrecuente = true;
-    this.busquedaCategoriaFrecuente = '';
-  }
-
-  cerrarSelectorCategoriasFrecuente() {
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.busquedaCategoriaFrecuente = '';
-  }
-
-  seleccionarCategoriaFrecuente(cat: any) {
-    this.frecuenteForm.categoria = cat;
-    this.mostrarSelectorCategoriasFrecuente = false;
-    this.busquedaCategoriaFrecuente = '';
-    this.cd.detectChanges();
-  }
-
-  permitirSoloDigitosYPunto(event: KeyboardEvent): void {
-    const teclasPermitidas = [
-      'Backspace',
-      'Delete',
-      'Tab',
-      'Escape',
-      'Enter',
-      'ArrowLeft',
-      'ArrowRight',
-      'ArrowUp',
-      'ArrowDown',
-      'Home',
-      'End',
-    ];
-
-    if (teclasPermitidas.includes(event.key) || event.ctrlKey || event.metaKey) {
-      return;
-    }
-
-    if (/^[0-9]$/.test(event.key)) {
-      return;
-    }
-
-    const input = event.target as HTMLInputElement;
-    if (event.key === '.' && !input.value.includes('.')) {
-      return;
-    }
-
-    event.preventDefault();
-  }
-
-  soloNumerosFrecuente(event: Event) {
-    const input = event.target as HTMLInputElement;
-    let valor = input.value.replace(/[^0-9.]/g, '');
-    const partes = valor.split('.');
-    if (partes.length > 2) {
-      valor = `${partes.shift()}.${partes.join('')}`;
-    }
-    if (valor.includes('.')) {
-      const [entero, decimales] = valor.split('.');
-      valor = `${entero}.${decimales.slice(0, 2)}`;
-    }
-    input.value = valor;
-    this.frecuenteForm.monto = valor;
-  }
-
-  guardarFrecuente() {
-    const nombre = this.frecuenteForm.nombre.trim();
-    const monto = Number(this.frecuenteForm.monto);
-
-    if (!nombre) {
-      this.toastService.show('Ingresa un nombre para el movimiento frecuente', 'warning');
-      return;
-    }
-    if (!monto || monto <= 0) {
-      this.toastService.show('Ingresa un monto válido mayor a 0', 'warning');
-      return;
-    }
-    if (!this.frecuenteForm.categoria?.id) {
-      this.toastService.show('Selecciona una etiqueta para el movimiento frecuente', 'warning');
-      return;
-    }
-    if (!this.frecuenteForm.cuenta) {
-      this.toastService.show('Selecciona una cuenta asociada', 'warning');
-      return;
-    }
-
-    this.guardandoFrecuente = true;
-    const payload = {
-      nombre,
-      tipoMovimiento: Number(this.frecuenteForm.tipoMovimiento),
-      monto,
-      cuentaId: Number(this.frecuenteForm.cuenta),
-      categoriaId: Number(this.frecuenteForm.categoria.id),
-      icono: this.frecuenteForm.categoria?.icono || 'tag',
-      color: this.frecuenteForm.categoria?.color || '#6366f1',
-    };
-
-    if (this.editandoFrecuenteId) {
-      this.movimientosService.actualizarMovimientoRapido(this.editandoFrecuenteId, payload).subscribe({
-        next: () => {
-          this.guardandoFrecuente = false;
-          this.toastService.show('✓ Movimiento frecuente actualizado', 'success');
-          this.vistaFrecuentes = 'lista';
-          this.cargarMovimientosFrecuentes();
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.guardandoFrecuente = false;
-          this.toastService.show(err?.error?.message || 'Error al actualizar', 'error');
-          this.cd.detectChanges();
-        },
-      });
-    } else {
-      this.movimientosService.crearMovimientoRapido(payload).subscribe({
-        next: () => {
-          this.guardandoFrecuente = false;
-          this.toastService.show('✓ Movimiento frecuente guardado', 'success');
-          this.vistaFrecuentes = 'lista';
-          this.cargarMovimientosFrecuentes();
-          this.cd.detectChanges();
-        },
-        error: (err) => {
-          this.guardandoFrecuente = false;
-          this.toastService.show(err?.error?.message || 'Error al guardar', 'error');
-          this.cd.detectChanges();
-        },
-      });
-    }
-  }
-
-  async eliminarMovimientoFrecuente(id: number | string, event?: Event): Promise<void> {
-    if (event) {
-      event.stopPropagation();
-    }
-    const result = await Swal.fire({
-      title: '¿Eliminar atajo frecuente?',
-      text: 'Este atajo se eliminará de tu cuenta. No afectará tus transacciones ya registradas.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Eliminar',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true,
-      customClass: monetraSweetAlertClasses,
-      buttonsStyling: false,
-    });
-
-    if (!result.isConfirmed) return;
-
-    this.movimientosService.eliminarMovimientoRapido(id).subscribe({
-      next: () => {
-        this.movimientosFrecuentes = this.movimientosFrecuentes.filter((m) => String(m.id) !== String(id));
-        this.toastService.show('Movimiento frecuente eliminado', 'warning');
-        this.cd.detectChanges();
-      },
-      error: (err) => {
-        this.toastService.show(err.error?.message || 'Error al eliminar', 'error');
-      },
-    });
-  }
 
   // ----- Cerrar sesión / Eliminar datos -----
   async confirmarCerrarSesion(): Promise<void> {
