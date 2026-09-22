@@ -263,41 +263,8 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   cambiarVistaConTransicion(cambio: () => void) {
-    const card = this.modalCardRef?.nativeElement;
-    if (!card) {
-      cambio();
-      return;
-    }
-
-    const alturaInicial = card.offsetHeight;
-    card.style.height = `${alturaInicial}px`;
-    card.style.transition = 'none';
-
     cambio();
     this.cd.detectChanges();
-
-    // Medición instantánea y directa de la nueva vista (sin forzar reflujos en la tarjeta)
-    const vista = card.querySelector('.vista-slide-enter') as HTMLElement | null;
-    const handle = card.querySelector('.shrink-0') as HTMLElement | null;
-    const handleHeight = handle ? handle.offsetHeight : 0;
-    const vistaHeight = vista ? vista.offsetHeight : card.scrollHeight;
-    const paddingBorde = 2;
-    const alturaCalculada = handleHeight + vistaHeight + paddingBorde;
-    const maxAltura = window.innerHeight * 0.9;
-    const alturaFinal = Math.min(alturaCalculada > 0 ? alturaCalculada : card.scrollHeight, maxAltura);
-
-    requestAnimationFrame(() => {
-      card.style.transition = 'height 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
-      card.style.height = `${alturaFinal}px`;
-
-      if (this.transitionTimer) clearTimeout(this.transitionTimer);
-      this.transitionTimer = setTimeout(() => {
-        if (this.modalCardRef?.nativeElement) {
-          this.modalCardRef.nativeElement.style.height = '';
-          this.modalCardRef.nativeElement.style.transition = '';
-        }
-      }, 300);
-    });
   }
 
   irAMovimientosRapidos() {
