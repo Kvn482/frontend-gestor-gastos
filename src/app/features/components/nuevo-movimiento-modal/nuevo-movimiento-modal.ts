@@ -47,6 +47,9 @@ export class NuevoMovimientoModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
   @ViewChild('montoInputRef') montoInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('modalCardRef') modalCardRef?: ElementRef<HTMLDivElement>;
+
+  private transitionTimer?: any;
 
   // Estado de navegación móvil interna: 'menu' | 'rapidos' | 'formulario' | 'crear-frecuente'
   vistaActual = signal<'menu' | 'rapidos' | 'formulario' | 'crear-frecuente'>('menu');
@@ -100,6 +103,8 @@ export class NuevoMovimientoModal implements OnChanges {
     descripcion: false,
   });
 
+  isClosing = false;
+
   constructor(
     private movimientosService: MovimientosService,
     private toastService: ToastService,
@@ -109,7 +114,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
   @HostListener('document:keydown.escape')
   onEscKey() {
-    if (this.isOpen) {
+    if (this.isOpen && !this.isClosing) {
       if (this.mostrarSelectorFecha) {
         this.mostrarSelectorFecha = false;
         return;
@@ -119,7 +124,9 @@ export class NuevoMovimientoModal implements OnChanges {
         return;
       }
       if (this.vistaActual() !== 'menu' && !this.editando) {
-        this.vistaActual.set('menu');
+        this.cambiarVistaConTransicion(() => {
+          this.vistaActual.set('menu');
+        });
         return;
       }
       this.cerrarModal();
@@ -144,6 +151,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true) {
+      this.isClosing = false;
       this.inicializarModal();
     }
   }
@@ -240,20 +248,64 @@ export class NuevoMovimientoModal implements OnChanges {
       descripcion: false,
     });
 
-    this.vistaActual.set('formulario');
+    this.cambiarVistaConTransicion(() => {
+      this.vistaActual.set('formulario');
+    });
+
     setTimeout(() => {
       this.montoInputRef?.nativeElement?.focus();
       this.montoInputRef?.nativeElement?.select();
     }, 150);
   }
 
+  cambiarVistaConTransicion(cambio: () => void) {
+    const card = this.modalCardRef?.nativeElement;
+    if (!card) {
+      cambio();
+      return;
+    }
+
+    const alturaInicial = card.offsetHeight;
+    card.style.height = `${alturaInicial}px`;
+    card.style.transition = 'none';
+
+    cambio();
+    this.cd.detectChanges();
+
+    requestAnimationFrame(() => {
+      if (!this.modalCardRef?.nativeElement) return;
+      const targetCard = this.modalCardRef.nativeElement;
+
+      targetCard.style.height = 'auto';
+      const alturaFinal = targetCard.offsetHeight;
+
+      targetCard.style.height = `${alturaInicial}px`;
+      void targetCard.offsetHeight;
+
+      targetCard.style.transition = 'height 0.32s cubic-bezier(0.16, 1, 0.3, 1)';
+      targetCard.style.height = `${alturaFinal}px`;
+
+      if (this.transitionTimer) clearTimeout(this.transitionTimer);
+      this.transitionTimer = setTimeout(() => {
+        if (this.modalCardRef?.nativeElement) {
+          this.modalCardRef.nativeElement.style.height = '';
+          this.modalCardRef.nativeElement.style.transition = '';
+        }
+      }, 340);
+    });
+  }
+
   irAMovimientosRapidos() {
     this.cargarMovimientosRapidos();
-    this.vistaActual.set('rapidos');
+    this.cambiarVistaConTransicion(() => {
+      this.vistaActual.set('rapidos');
+    });
   }
 
   volverAlMenu() {
-    this.vistaActual.set('menu');
+    this.cambiarVistaConTransicion(() => {
+      this.vistaActual.set('menu');
+    });
   }
 
   irACrearFrecuente() {
@@ -264,11 +316,15 @@ export class NuevoMovimientoModal implements OnChanges {
       cuenta: '',
       categoria: null,
     };
-    this.vistaActual.set('crear-frecuente');
+    this.cambiarVistaConTransicion(() => {
+      this.vistaActual.set('crear-frecuente');
+    });
   }
 
   cancelarCrearFrecuente() {
-    this.vistaActual.set('rapidos');
+    this.cambiarVistaConTransicion(() => {
+      this.vistaActual.set('rapidos');
+    });
   }
 
   abrirSelectorCategoriasFrecuente() {
@@ -362,7 +418,9 @@ export class NuevoMovimientoModal implements OnChanges {
         next: () => {
           this.toastService.show('✓ Movimiento frecuente creado', 'success');
           this.cargarMovimientosRapidos();
-          this.vistaActual.set('rapidos');
+          this.cambiarVistaConTransicion(() => {
+            this.vistaActual.set('rapidos');
+          });
         },
         error: (err) => {
           this.toastService.show(err.error?.message || 'Error al guardar movimiento frecuente', 'error');
@@ -371,10 +429,16 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   cerrarModal() {
+    if (this.isClosing) return;
+    this.isClosing = true;
     this.haIntentadoGuardar.set(false);
     this.mostrarSelectorCategorias = false;
     this.mostrarSelectorFecha = false;
-    this.closed.emit();
+
+    setTimeout(() => {
+      this.isClosing = false;
+      this.closed.emit();
+    }, 200);
   }
 
   // ==========================================
