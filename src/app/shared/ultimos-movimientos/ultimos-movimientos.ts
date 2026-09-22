@@ -13,6 +13,8 @@ import { monetraSweetAlertClasses } from '../utils/sweet-alert';
 import { NgIcon } from '@ng-icons/core';
 import { getCategoryIconName } from '../utils/category-icons';
 
+import { CuentasService } from '../../core/services/cuentas.service';
+
 export interface GrupoMovimientosDia {
   fechaKey: string;
   fechaLabel: string;
@@ -38,12 +40,14 @@ export interface GrupoMovimientosDia {
 export class UltimosMovimientos implements OnInit {
   constructor(
     private movimientosService: MovimientosService,
+    private cuentasService: CuentasService,
     private toastService: ToastService,
     private cd: ChangeDetectorRef
   ) {}
 
   todosLosMovimientos: any[] = [];
   movimientos: any[] = [];
+  cuentas: any[] = [];
   gruposMovimientos: GrupoMovimientosDia[] = [];
   private _busqueda = '';
 
@@ -166,10 +170,21 @@ export class UltimosMovimientos implements OnInit {
 
   ngOnInit() {
     this.cargarUltimosMovimientos();
+    this.cargarCuentas();
 
     // escucha cuando se crea un movimiento
     this.movimientosService.refreshBalanceObservable$.subscribe(() => {
       this.cargarUltimosMovimientos();
+      this.cargarCuentas();
+    });
+  }
+
+  cargarCuentas() {
+    this.cuentasService.consultarCuentasActivas().subscribe((res: any) => {
+      if (Array.isArray(res)) {
+        this.cuentas = res;
+        this.cd.markForCheck();
+      }
     });
   }
 

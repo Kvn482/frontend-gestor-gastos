@@ -1,5 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   HostListener,
@@ -34,6 +35,7 @@ export class MovimientoDetalleModal implements OnInit, OnChanges {
   @Output() deleteRequested = new EventEmitter<void>();
 
   private cuentasService = inject(CuentasService, { optional: true });
+  private cd = inject(ChangeDetectorRef);
 
   isClosing = false;
 
@@ -53,6 +55,8 @@ export class MovimientoDetalleModal implements OnInit, OnChanges {
         next: (cuentas: any) => {
           if (Array.isArray(cuentas)) {
             this.cuentas = cuentas;
+            this.cd.markForCheck();
+            this.cd.detectChanges();
           }
         },
         error: () => {},
@@ -129,6 +133,15 @@ export class MovimientoDetalleModal implements OnInit, OnChanges {
     if (!this.esTransferencia) return this.nombreCuenta;
 
     const esEntrada = Number(this.movimiento.id_tipo_movimiento) === 1;
+
+    // Si el movimiento ya trae cuenta_destino directamente del backend
+    if (esEntrada && this.movimiento.cuenta_destino) {
+      return this.movimiento.cuenta_destino;
+    }
+    if (!esEntrada && (this.movimiento.cuenta || this.cuentaFallback?.nombre)) {
+      return this.movimiento.cuenta || this.cuentaFallback?.nombre;
+    }
+
     const idOrigen =
       this.movimiento.id_cuenta_origen ??
       (esEntrada ? this.movimiento.id_cuenta_destino : this.movimiento.id_cuenta);
@@ -138,10 +151,6 @@ export class MovimientoDetalleModal implements OnInit, OnChanges {
       if (cuenta?.nombre) return cuenta.nombre;
     }
 
-    if (!esEntrada && this.movimiento.cuenta) {
-      return this.movimiento.cuenta;
-    }
-
     return this.cuentaFallback?.nombre || this.movimiento.cuenta || 'Origen';
   }
 
@@ -149,6 +158,15 @@ export class MovimientoDetalleModal implements OnInit, OnChanges {
     if (!this.movimiento || !this.esTransferencia) return '';
 
     const esEntrada = Number(this.movimiento.id_tipo_movimiento) === 1;
+
+    // Si el movimiento ya trae cuenta_destino directamente del backend
+    if (!esEntrada && this.movimiento.cuenta_destino) {
+      return this.movimiento.cuenta_destino;
+    }
+    if (esEntrada && (this.movimiento.cuenta || this.cuentaFallback?.nombre)) {
+      return this.movimiento.cuenta || this.cuentaFallback?.nombre;
+    }
+
     const idDestino =
       this.movimiento.cuenta_destino_id ??
       (esEntrada ? this.movimiento.id_cuenta : this.movimiento.id_cuenta_destino);
@@ -156,10 +174,6 @@ export class MovimientoDetalleModal implements OnInit, OnChanges {
     if (idDestino && this.cuentas?.length) {
       const cuenta = this.cuentas.find((c) => String(c.id) === String(idDestino));
       if (cuenta?.nombre) return cuenta.nombre;
-    }
-
-    if (esEntrada && this.movimiento.cuenta) {
-      return this.movimiento.cuenta;
     }
 
     return this.movimiento.cuenta_destino || '';

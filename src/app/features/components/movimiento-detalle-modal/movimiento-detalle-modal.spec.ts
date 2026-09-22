@@ -66,6 +66,33 @@ describe('MovimientoDetalleModal', () => {
     expect(component.cuentaDestinoNombre).toBe('Nu Ahorro');
   });
 
+  it('should resolve origin and destination accounts immediately from movimiento properties without waiting for cuentas', () => {
+    component.cuentas = [];
+    component.movimiento = {
+      id_tipo_movimiento: 2,
+      id_cuenta: 1,
+      id_cuenta_destino: 2,
+      cuenta: 'Santander',
+      cuenta_destino: 'Mercado Pago',
+      monto: -1200,
+    };
+    expect(component.esTransferencia).toBe(true);
+    expect(component.cuentaOrigenNombre).toBe('Santander');
+    expect(component.cuentaDestinoNombre).toBe('Mercado Pago');
+
+    component.movimiento = {
+      id_tipo_movimiento: 1,
+      id_cuenta: 2,
+      id_cuenta_destino: 1,
+      cuenta: 'Mercado Pago',
+      cuenta_destino: 'Santander',
+      monto: 1200,
+    };
+    expect(component.esTransferencia).toBe(true);
+    expect(component.cuentaOrigenNombre).toBe('Santander');
+    expect(component.cuentaDestinoNombre).toBe('Mercado Pago');
+  });
+
   it('should emit editRequested and deleteRequested', () => {
     let editEmitted = false;
     let deleteEmitted = false;

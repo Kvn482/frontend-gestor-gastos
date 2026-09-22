@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Subject, tap } from 'rxjs';
+import { Subject, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AlertaCredito } from '../models/alerta-credito.interface';
 
@@ -10,6 +10,8 @@ import { AlertaCredito } from '../models/alerta-credito.interface';
 export class CuentasService {
 
   private api = `${environment.apiUrl}/api/cuentas`;
+  private cuentasActivasCache: any[] | null = null;
+  private cuentasCache: any[] | null = null;
 
   constructor(private http: HttpClient) { }
 
@@ -21,9 +23,14 @@ export class CuentasService {
 
   // Método para emitir evento
   private notificarCambioBalance() {
+    this.invalidarCache();
     this.refreshBalance$.next();
   }
 
+  invalidarCache(): void {
+    this.cuentasActivasCache = null;
+    this.cuentasCache = null;
+  }
 
   crearCuenta(data: any) {
     return this.http.post(`${this.api}`, data).pipe(
@@ -42,11 +49,25 @@ export class CuentasService {
   }
 
   consultarCuentas() {
-    return this.http.get(`${this.api}`);
+    if (this.cuentasCache) {
+      return of(this.cuentasCache);
+    }
+    return this.http.get<any[]>(`${this.api}`).pipe(
+      tap((res) => {
+        if (Array.isArray(res)) this.cuentasCache = res;
+      })
+    );
   }
 
   consultarCuentasActivas() {
-    return this.http.get(`${this.api}/activas`);
+    if (this.cuentasActivasCache) {
+      return of(this.cuentasActivasCache);
+    }
+    return this.http.get<any[]>(`${this.api}/activas`).pipe(
+      tap((res) => {
+        if (Array.isArray(res)) this.cuentasActivasCache = res;
+      })
+    );
   }
 
   consultarAlertasCreditos() {
