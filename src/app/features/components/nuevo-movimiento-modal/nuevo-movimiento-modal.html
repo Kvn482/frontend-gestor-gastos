@@ -1,7 +1,7 @@
 @if (isOpen) {
   <!-- Backdrop con efecto Blur (optimizado para 60-120 FPS en móviles sin lag de shader) -->
   <div
-    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/80 sm:bg-slate-950/70 sm:backdrop-blur-xs p-0 sm:p-4 overflow-y-auto modal-backdrop-in"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/80 sm:bg-slate-950/70 sm:backdrop-blur-xs p-0 sm:p-4 overflow-hidden modal-backdrop-in"
     [class.modal-backdrop-out]="isClosing"
     (click)="cerrarModal()"
   >

@@ -276,28 +276,27 @@ export class NuevoMovimientoModal implements OnChanges {
     cambio();
     this.cd.detectChanges();
 
+    // Medición instantánea y directa de la nueva vista (sin forzar reflujos en la tarjeta)
+    const vista = card.querySelector('.vista-slide-enter') as HTMLElement | null;
+    const handle = card.querySelector('.shrink-0') as HTMLElement | null;
+    const handleHeight = handle ? handle.offsetHeight : 0;
+    const vistaHeight = vista ? vista.offsetHeight : card.scrollHeight;
+    const paddingBorde = 2;
+    const alturaCalculada = handleHeight + vistaHeight + paddingBorde;
+    const maxAltura = window.innerHeight * 0.9;
+    const alturaFinal = Math.min(alturaCalculada > 0 ? alturaCalculada : card.scrollHeight, maxAltura);
+
     requestAnimationFrame(() => {
-      if (!this.modalCardRef?.nativeElement) return;
-      const targetCard = this.modalCardRef.nativeElement;
-
-      targetCard.style.height = 'auto';
-      const alturaFinal = targetCard.offsetHeight;
-
-      targetCard.style.height = `${alturaInicial}px`;
-      void targetCard.offsetHeight;
-
-      targetCard.style.willChange = 'height';
-      targetCard.style.transition = 'height 0.26s cubic-bezier(0.16, 1, 0.3, 1)';
-      targetCard.style.height = `${alturaFinal}px`;
+      card.style.transition = 'height 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+      card.style.height = `${alturaFinal}px`;
 
       if (this.transitionTimer) clearTimeout(this.transitionTimer);
       this.transitionTimer = setTimeout(() => {
         if (this.modalCardRef?.nativeElement) {
           this.modalCardRef.nativeElement.style.height = '';
           this.modalCardRef.nativeElement.style.transition = '';
-          this.modalCardRef.nativeElement.style.willChange = '';
         }
-      }, 280);
+      }, 300);
     });
   }
 
