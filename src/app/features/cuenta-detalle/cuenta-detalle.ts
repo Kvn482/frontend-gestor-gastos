@@ -83,6 +83,7 @@ interface ResultadoConsulta<T> {
 })
 export class CuentaDetalle implements OnInit {
   cuenta: CuentaDetalleModel | null = null;
+  todasLasCuentas: CuentaDetalleModel[] = [];
   movimientos: MovimientoCuenta[] = [];
   movimientoSeleccionado: MovimientoCuenta | null = null;
   cargando = true;
@@ -484,6 +485,7 @@ export class CuentaDetalle implements OnInit {
       return;
     }
 
+    this.todasLasCuentas = cuentas.data;
     const cuentaEncontrada = cuentas.data.find((cuenta) => String(cuenta.id) === String(idCuenta));
 
     if (!cuentaEncontrada) {
