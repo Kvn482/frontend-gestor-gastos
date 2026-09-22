@@ -1,193 +1,190 @@
-import { ChangeDetectorRef, Component, Input, Output, EventEmitter, ViewChild, ElementRef, OnChanges, SimpleChanges, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  signal,
+} from '@angular/core';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Modal } from '../../../shared/modal/modal';
-import { CommonModule } from '@angular/common';
-import { MovimientosService } from '../../../core/services/movimientos.service';
+import { NgIcon } from '@ng-icons/core';
 import { finalize } from 'rxjs';
+import { MovimientosService } from '../../../core/services/movimientos.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CuentasService } from '../../../core/services/cuentas.service';
+import { getCategoryIconName } from '../../../shared/utils/category-icons';
+
+export interface MovimientoRapido {
+  id: string | number;
+  nombre: string;
+  tipoMovimiento: number; // 1 = ingreso, 2 = gasto
+  monto: number;
+  cuentaId: string | number;
+  cuentaNombre: string;
+  categoriaId: number;
+  categoriaNombre: string;
+  categoriaColor: string;
+  categoriaIcono: string;
+}
 
 @Component({
   selector: 'app-nuevo-movimiento-modal',
   standalone: true,
-  imports: [Modal, FormsModule, CommonModule],
+  imports: [CommonModule, FormsModule, NgIcon, CurrencyPipe],
   templateUrl: './nuevo-movimiento-modal.html',
+  styleUrl: './nuevo-movimiento-modal.css',
 })
 export class NuevoMovimientoModal implements OnChanges {
-  @Input() isOpen: boolean = false;
+  @Input() isOpen = false;
   @Input() movimientoEditar: any | null = null;
   @Input() cuentaInicialId = '';
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
-  @ViewChild('datepicker') datepickerInput!: ElementRef;
+  @ViewChild('montoInputRef') montoInputRef?: ElementRef<HTMLInputElement>;
+
+  // Estado de navegación móvil interna: 'menu' | 'rapidos' | 'formulario' | 'crear-frecuente'
+  vistaActual = signal<'menu' | 'rapidos' | 'formulario' | 'crear-frecuente'>('menu');
+
+  // Movimientos frecuentes
+  movimientosRapidos = signal<MovimientoRapido[]>([]);
+
+  // Estado para creación directa de movimiento frecuente
+  seleccionandoCategoriaParaFrecuente = false;
+  nuevoFrecuente = {
+    nombre: '',
+    tipoMovimiento: 2, // 2 = Gasto, 1 = Ingreso
+    monto: '' as number | string,
+    cuenta: '',
+    categoria: null as any,
+  };
+
+  // Listas del backend
+  etiquetasDisponibles: any[] = [];
+  cuentas: any[] = [];
+  tiposMovimiento: any[] = [];
+
+  // Categoría seleccionada actualmente para el movimiento
+  categoriaSeleccionada: any | null = null;
+
+  // Modales/Hojas secundarias dentro del flujo
+  mostrarSelectorCategorias = false;
+  busquedaCategoria = '';
+  mostrarDetallesExtra = false;
+
+  isloading = signal(false);
+
+  // Modelo del movimiento
+  movimiento = {
+    tipoMovimiento: 2, // 2 = Gasto, 1 = Ingreso
+    cuenta: '',
+    etiquetas: [] as number[],
+    monto: '' as number | string,
+    descripcion: '',
+    notas: '',
+    fecha: '',
+  };
+
+  // Validaciones
+  haIntentadoGuardar = signal(false);
+  erroresValidacion = signal({
+    monto: false,
+    saldoInsuficiente: false,
+    categoria: false,
+    cuenta: false,
+    descripcion: false,
+  });
 
   constructor(
     private movimientosService: MovimientosService,
-    private toastService:ToastService,
+    private toastService: ToastService,
     private cuentasService: CuentasService,
     private cd: ChangeDetectorRef
-  ) { }
+  ) {}
 
-  // Etiquetas
-  etiquetasDisponibles: { id: number; nombre: string; color: string }[] = [];
-
-  etiquetasSeleccionadas: { id: number; nombre: string; color: string }[] = [];
-  busquedaEtiqueta = '';
-  mostrarDropdownEtiquetas = false;
-
-  get etiquetasFiltradas() {
-    return this.etiquetasDisponibles.filter(e =>
-      !this.etiquetasSeleccionadas.find(s => s.id === e.id) &&
-      e.nombre.toLowerCase().includes(this.busquedaEtiqueta.toLowerCase())
-    );
-  }
-
-  agregarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
-    if (!this.etiquetasSeleccionadas.find(e => e.id === etiqueta.id)) {
-      if (
-        this.etiquetasSeleccionadas.length === 1 &&
-        this.esEtiquetaPorDefecto(this.etiquetasSeleccionadas[0]) &&
-        !this.esEtiquetaPorDefecto(etiqueta)
-      ) {
-        this.etiquetasSeleccionadas = [etiqueta];
-      } else {
-        this.etiquetasSeleccionadas = [...this.etiquetasSeleccionadas, etiqueta];
+  @HostListener('document:keydown.escape')
+  onEscKey() {
+    if (this.isOpen) {
+      if (this.mostrarSelectorFecha) {
+        this.mostrarSelectorFecha = false;
+        return;
       }
+      if (this.mostrarSelectorCategorias) {
+        this.mostrarSelectorCategorias = false;
+        return;
+      }
+      if (this.vistaActual() !== 'menu' && !this.editando) {
+        this.vistaActual.set('menu');
+        return;
+      }
+      this.cerrarModal();
     }
-    this.busquedaEtiqueta = '';
   }
 
-  quitarEtiqueta(etiqueta: { id: number; nombre: string; color: string }) {
-    this.etiquetasSeleccionadas = this.etiquetasSeleccionadas.filter(e => e.id !== etiqueta.id);
-  }
-
-  obtenerEtiquetaPorDefecto(tipoMovimiento: number | string): { id: number; nombre: string; color: string } {
-    const esIngreso = Number(tipoMovimiento) === 1;
-    const nombreBuscado = esIngreso ? 'otros ingresos' : 'otros gastos';
-    const idBuscado = esIngreso ? 27 : 26;
-
-    const encontrada = this.etiquetasDisponibles.find(
-      (e) => e.id === idBuscado || e.nombre?.trim().toLowerCase() === nombreBuscado
-    );
-
-    if (encontrada) {
-      return encontrada;
-    }
-
-    return {
-      id: idBuscado,
-      nombre: esIngreso ? 'Otros ingresos' : 'Otros gastos',
-      color: esIngreso ? '#10b981' : '#ec4899',
-    };
-  }
-
-  esEtiquetaPorDefecto(etiqueta: any): boolean {
-    if (!etiqueta) return false;
-    const id = Number(etiqueta.id);
-    const nombre = String(etiqueta.nombre || '').trim().toLowerCase();
-    return id === 26 || id === 27 || nombre === 'otros gastos' || nombre === 'otros ingresos';
-  }
-
-  onTipoMovimientoChange() {
-    this.validarErrores('tipoMovimiento');
-  }
-
-  onBlurEtiqueta() {
-    setTimeout(() => {
-      this.mostrarDropdownEtiquetas = false;
-      this.busquedaEtiqueta = '';
-    }, 150);
-  }
-
-  // Listas para los selects
-  tiposMovimiento: { id: number; movimiento: string }[] = [];
-  cuentas: {
-    id: string;
-    nombre: string;
-    tipo: string;
-    saldo_actual: number;
-    limite_credito?: number | string | null;
-  }[] = [];
-
-  // Objeto único para ngModel
-  movimiento = {
-    tipoMovimiento: 0,
-    cuenta: '0',
-    etiquetas: [],
-    monto: 0,
-    descripcion: '',
-    notas: '',
-    fecha: ''
-  };
-
-  erroresValidacion = signal({
-    tipoMovimiento: false,
-    cuenta: false,
-    monto: false,
-    saldoInsuficiente: false,
-    descripcion: false,
-    fecha: false
-  });
-
-  get cuentaSeleccionada() {
-    return this.cuentas.find(cuenta => cuenta.id === this.movimiento.cuenta);
-  }
-
-  get esEgreso() {
-    return Number(this.movimiento.tipoMovimiento) === 2;
-  }
-
-  get editando() {
+  get editando(): boolean {
     return !!this.movimientoEditar;
   }
 
-  saldoMostradoCuenta(cuenta: {
-    tipo: string;
-    saldo_actual: number;
-    limite_credito?: number | string | null;
-  }): number {
-    const saldoActual = this.toNumber(cuenta.saldo_actual);
-
-    if (cuenta.tipo === 'CREDITO') {
-      const limiteCredito = this.toNumber(cuenta.limite_credito);
-
-      return Math.max(limiteCredito + Math.min(saldoActual, 0), 0);
-    }
-
-    return saldoActual;
+  get esEgreso(): boolean {
+    return Number(this.movimiento.tipoMovimiento) === 2;
   }
 
-  etiquetaSaldoCuenta(cuenta: {
-    tipo: string;
-    saldo_actual: number;
-    limite_credito?: number | string | null;
-  }): string {
-    return cuenta.tipo === 'CREDITO' ? 'Disponible' : 'Saldo';
+  get cuentaSeleccionadaObj() {
+    return this.cuentas.find((c) => String(c.id) === String(this.movimiento.cuenta));
+  }
+
+  getIconName(iconId?: string | null): string {
+    return getCategoryIconName(iconId);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']?.currentValue === true) {
-      this.resetFormulario();
+      this.inicializarModal();
+    }
+  }
 
-      this.movimientosService.consultarEtiquetas().subscribe((res: any) => {
+  private inicializarModal() {
+    this.cargarMovimientosRapidos();
+
+    // Si viene en modo edición, entra directo al formulario
+    if (this.editando) {
+      this.vistaActual.set('formulario');
+    } else {
+      this.vistaActual.set('menu');
+    }
+
+    this.resetFormulario();
+
+    // Cargar catálogos
+    this.movimientosService.consultarEtiquetas().subscribe({
+      next: (res: any) => {
         this.etiquetasDisponibles = Array.isArray(res) ? res : [];
-
         if (this.editando) {
           this.precargarEtiquetasEdicion();
+        } else {
+          this.categoriaSeleccionada = null;
         }
-      });
+        this.cd.detectChanges();
+      },
+    });
 
-      this.movimientosService.consultarTiposMovimiento().subscribe((res: any) => {
-        this.tiposMovimiento = res;
-      });
+    this.movimientosService.consultarTiposMovimiento().subscribe({
+      next: (res: any) => {
+        this.tiposMovimiento = Array.isArray(res) ? res : [];
+      },
+    });
 
-      this.cuentasService.consultarCuentasActivas().subscribe((res: any) => {
+    this.cuentasService.consultarCuentasActivas().subscribe({
+      next: (res: any) => {
         this.cuentas = (Array.isArray(res) ? res : []).map((cuenta) => ({
           ...cuenta,
           saldo_actual: Number(cuenta.saldo_actual),
         }));
-
-        const cuentaEfectivo = this.cuentas.find(c => c.nombre === 'Efectivo');
 
         if (this.editando) {
           this.movimiento.cuenta = String(
@@ -198,74 +195,699 @@ export class NuevoMovimientoModal implements OnChanges {
           );
         } else if (this.cuentaInicialId) {
           this.movimiento.cuenta = this.cuentaInicialId;
-        } else if (cuentaEfectivo) {
-          this.movimiento.cuenta = cuentaEfectivo.id;
+        } else {
+          this.movimiento.cuenta = '';
         }
 
         this.cd.detectChanges();
-      });
-
-      setTimeout(() => this.initDatepicker(), 100);
-
-      if (this.editando) {
-        this.precargarMovimientoEdicion();
-      }
-    }
-  }
-
-  soloNumeros(event: any) {
-    // Obtenemos el valor actual del input
-    const valor = event.target.value;
-
-    // Reemplazamos todo lo que NO sea número (0-9) o punto decimal (.)
-    // Si no quieres decimales, usa: /[^0-9]/g
-    const limpio = valor.replace(/[^0-9.]/g, '');
-
-    // Actualizamos tanto el input visual como el modelo de Angular
-    this.movimiento.monto = Number(limpio);
-    event.target.value = limpio;
-    this.validarErrores('monto');
-  }
-
-  private resetFormulario() {
-    const now = new Date();
-    const hoy = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
-
-    // Reiniciamos el objeto directamente
-    this.movimiento = {
-      tipoMovimiento: 0,
-      cuenta: '',
-      etiquetas: [],
-      monto: 0,
-      descripcion: '',
-      notas: '',
-      fecha: hoy
-    };
-
-    // Reiniciamos los errores visuales
-    this.erroresValidacion.set({
-      tipoMovimiento: false,
-      cuenta: false,
-      monto: false,
-      saldoInsuficiente: false,
-      descripcion: false,
-      fecha: false
+      },
     });
 
-    if (this.datepickerInput) {
-      this.datepickerInput.nativeElement.value = hoy;
+    if (this.editando) {
+      this.precargarMovimientoEdicion();
+    }
+  }
+
+  // ==========================================
+  // NAVEGACIÓN DE VISTAS (MENÚ, RÁPIDOS, FORM)
+  // ==========================================
+  irAFormulario(tipo: 'gasto' | 'ingreso', plantillaPrevia?: MovimientoRapido) {
+    this.movimiento.tipoMovimiento = tipo === 'gasto' ? 2 : 1;
+
+    if (plantillaPrevia) {
+      this.movimiento.monto = Math.abs(plantillaPrevia.monto);
+      this.movimiento.descripcion = plantillaPrevia.nombre;
+      if (plantillaPrevia.cuentaId) {
+        this.movimiento.cuenta = String(plantillaPrevia.cuentaId);
+      }
+      if (plantillaPrevia.categoriaId) {
+        const cat = this.etiquetasDisponibles.find((e) => e.id === plantillaPrevia.categoriaId);
+        if (cat) this.categoriaSeleccionada = cat;
+      }
+    } else {
+      this.categoriaSeleccionada = null;
+      if (!this.cuentaInicialId && !this.editando) {
+        this.movimiento.cuenta = '';
+      }
     }
 
-    this.etiquetasSeleccionadas = [];
-    this.busquedaEtiqueta = '';
-    this.mostrarDropdownEtiquetas = false;
+    this.haIntentadoGuardar.set(false);
+    this.erroresValidacion.set({
+      monto: false,
+      saldoInsuficiente: false,
+      categoria: false,
+      cuenta: false,
+      descripcion: false,
+    });
+
+    this.vistaActual.set('formulario');
+    setTimeout(() => {
+      this.montoInputRef?.nativeElement?.focus();
+      this.montoInputRef?.nativeElement?.select();
+    }, 150);
+  }
+
+  irAMovimientosRapidos() {
+    this.cargarMovimientosRapidos();
+    this.vistaActual.set('rapidos');
+  }
+
+  volverAlMenu() {
+    this.vistaActual.set('menu');
+  }
+
+  irACrearFrecuente() {
+    this.nuevoFrecuente = {
+      nombre: '',
+      tipoMovimiento: 2,
+      monto: '',
+      cuenta: '',
+      categoria: null,
+    };
+    this.vistaActual.set('crear-frecuente');
+  }
+
+  cancelarCrearFrecuente() {
+    this.vistaActual.set('rapidos');
+  }
+
+  abrirSelectorCategoriasFrecuente() {
+    this.seleccionandoCategoriaParaFrecuente = true;
+    this.abrirSelectorCategorias();
+  }
+
+  soloNumerosFrecuente(event: any) {
+    const valor = event.target.value;
+    const limpio = valor.replace(/[^0-9.]/g, '');
+    this.nuevoFrecuente.monto = limpio;
+    event.target.value = limpio;
+  }
+
+  guardarNuevoFrecuente() {
+    const nombre = this.nuevoFrecuente.nombre.trim();
+    const monto = Math.abs(Number(this.nuevoFrecuente.monto));
+
+    if (!nombre) {
+      this.toastService.show('Ingresa un nombre para el movimiento frecuente', 'warning');
+      return;
+    }
+    if (!monto || monto <= 0) {
+      this.toastService.show('Ingresa un monto válido mayor a 0', 'warning');
+      return;
+    }
+    if (!this.nuevoFrecuente.categoria?.id) {
+      this.toastService.show('Selecciona una etiqueta para el movimiento frecuente', 'warning');
+      return;
+    }
+    if (!this.nuevoFrecuente.cuenta) {
+      this.toastService.show('Selecciona una cuenta asociada', 'warning');
+      return;
+    }
+
+    this.isloading.set(true);
+
+    const payload = {
+      nombre,
+      tipoMovimiento: Number(this.nuevoFrecuente.tipoMovimiento),
+      monto,
+      cuentaId: Number(this.nuevoFrecuente.cuenta),
+      categoriaId: Number(this.nuevoFrecuente.categoria.id),
+      icono: this.nuevoFrecuente.categoria?.icono || 'tag',
+      color: this.nuevoFrecuente.categoria?.color || '#6366f1',
+    };
+
+    this.movimientosService
+      .crearMovimientoRapido(payload)
+      .pipe(finalize(() => this.isloading.set(false)))
+      .subscribe({
+        next: () => {
+          this.toastService.show('✓ Movimiento frecuente creado', 'success');
+          this.cargarMovimientosRapidos();
+          this.vistaActual.set('rapidos');
+        },
+        error: (err) => {
+          this.toastService.show(err.error?.message || 'Error al guardar movimiento frecuente', 'error');
+        },
+      });
+  }
+
+  cerrarModal() {
+    this.haIntentadoGuardar.set(false);
+    this.mostrarSelectorCategorias = false;
+    this.mostrarSelectorFecha = false;
+    this.closed.emit();
+  }
+
+  // ==========================================
+  // GESTIÓN DE MOVIMIENTOS RÁPIDOS
+  // ==========================================
+  private readonly STORAGE_KEY = 'monetra_movimientos_rapidos';
+
+  cargarMovimientosRapidos() {
+    // 1. Cargar desde el backend
+    this.movimientosService.consultarMovimientosRapidos().subscribe({
+      next: (res: any[]) => {
+        const lista = Array.isArray(res) ? res : [];
+        // Filtrar cualquier residuo de prueba
+        const limpios = lista.filter((item) => !String(item.id).startsWith('rapido_'));
+        this.movimientosRapidos.set(limpios);
+        this.guardarMovimientosRapidosEnStorage(limpios);
+        this.cd.detectChanges();
+      },
+      error: () => {
+        // Fallback local si el backend aún no responde o está offline
+        this.cargarDesdeLocalStorage();
+        this.cd.detectChanges();
+      },
+    });
+  }
+
+  private cargarDesdeLocalStorage() {
+    try {
+      const guardados = localStorage.getItem(this.STORAGE_KEY);
+      if (guardados) {
+        const parsed = JSON.parse(guardados);
+        if (Array.isArray(parsed)) {
+          // Filtrar cualquier plantilla de prueba previa
+          const limpios = parsed.filter((item) => !String(item.id).startsWith('rapido_'));
+          this.movimientosRapidos.set(limpios);
+          return;
+        }
+      }
+    } catch {
+      // Ignorar error de parsing
+    }
+
+    this.movimientosRapidos.set([]);
+  }
+
+  private guardarMovimientosRapidosEnStorage(lista: MovimientoRapido[]) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(lista));
+    } catch {
+      // Ignorar quota
+    }
+  }
+
+  ejecutarMovimientoRapido(rapido: MovimientoRapido) {
+    if (this.isloading()) return;
+    this.isloading.set(true);
+
+    const cuentaId = rapido.cuentaId || this.movimiento.cuenta || (this.cuentas[0]?.id ?? '1');
+    const tipo = Number(rapido.tipoMovimiento);
+    const montoCalculado = tipo === 2 ? Math.abs(Number(rapido.monto)) * -1 : Math.abs(Number(rapido.monto));
+
+    // Determinar etiqueta válida
+    let etiquetasIds: number[] = [];
+    if (rapido.categoriaId) {
+      etiquetasIds = [rapido.categoriaId];
+    } else {
+      const encontrada = this.etiquetasDisponibles.find(
+        (e) => e.nombre?.toLowerCase() === rapido.categoriaNombre.toLowerCase()
+      );
+      if (encontrada) {
+        etiquetasIds = [encontrada.id];
+      } else {
+        etiquetasIds = tipo === 1 ? [27] : [26];
+      }
+    }
+
+    const payload = {
+      tipoMovimiento: tipo,
+      cuenta: cuentaId,
+      monto: montoCalculado,
+      descripcion: rapido.nombre,
+      notas: '',
+      fecha: this.obtenerFechaHoy(),
+      etiquetas: etiquetasIds,
+    };
+
+    this.movimientosService
+      .crearMovimiento(payload)
+      .pipe(finalize(() => this.isloading.set(false)))
+      .subscribe({
+        next: (res: any) => {
+          const idCreado = res?.id || res?.data?.id;
+          this.saved.emit();
+          this.cerrarModal();
+
+          // Toast con botón "Deshacer"
+          this.toastService.show(
+            `✓ ${rapido.nombre} registrado (${tipo === 2 ? '-' : '+'}$${Math.abs(rapido.monto).toFixed(2)})`,
+            'success',
+            5000,
+            idCreado
+              ? {
+                  label: 'Deshacer',
+                  callback: () => {
+                    this.movimientosService.eliminarMovimiento(idCreado).subscribe({
+                      next: () => {
+                        this.toastService.show('Movimiento deshecho con éxito', 'warning');
+                        this.saved.emit();
+                      },
+                    });
+                  },
+                }
+              : undefined
+          );
+        },
+        error: (err) => {
+          this.toastService.show(err.error?.message || 'Error al registrar movimiento rápido', 'error');
+        },
+      });
+  }
+
+  editarMovimientoRapido(rapido: MovimientoRapido, event: Event) {
+    event.stopPropagation();
+    this.irAFormulario(rapido.tipoMovimiento === 2 ? 'gasto' : 'ingreso', rapido);
+  }
+
+  eliminarMovimientoRapido(id: string | number, event: Event) {
+    event.stopPropagation();
+    const actualizados = this.movimientosRapidos().filter((item) => String(item.id) !== String(id));
+    this.movimientosRapidos.set(actualizados);
+    this.guardarMovimientosRapidosEnStorage(actualizados);
+
+    // Si tiene id numérico o persistido en backend, eliminarlo también de la BD
+    if (typeof id === 'number' || (!isNaN(Number(id)) && !String(id).startsWith('rapido_'))) {
+      this.movimientosService.eliminarMovimientoRapido(id).subscribe({
+        error: (err) => console.warn('Error al eliminar movimiento rápido de BD:', err),
+      });
+    }
+
+    this.toastService.show('Movimiento rápido eliminado', 'warning');
+  }
+
+  // ==========================================
+  // GESTIÓN DE CATEGORÍAS
+  // ==========================================
+  get categoriasFiltradas(): any[] {
+    const esIngreso = Number(this.movimiento.tipoMovimiento) === 1;
+    const query = this.busquedaCategoria.trim().toLowerCase();
+
+    return this.etiquetasDisponibles.filter((cat) => {
+      // Coincidencia con tipo si está presente
+      const coincideTipo = cat.tipo ? (esIngreso ? cat.tipo === 'ingreso' : cat.tipo === 'gasto') : true;
+      if (!coincideTipo) return false;
+
+      if (!query) return true;
+      return (cat.nombre || cat.categoria || '').toLowerCase().includes(query);
+    });
+  }
+
+  abrirSelectorCategorias() {
+    this.busquedaCategoria = '';
+    this.mostrarSelectorCategorias = true;
+  }
+
+  cerrarSelectorCategorias() {
+    this.mostrarSelectorCategorias = false;
+    this.seleccionandoCategoriaParaFrecuente = false;
+  }
+
+  seleccionarCategoria(cat: any) {
+    if (this.seleccionandoCategoriaParaFrecuente) {
+      this.nuevoFrecuente.categoria = cat;
+      this.seleccionandoCategoriaParaFrecuente = false;
+    } else {
+      this.categoriaSeleccionada = cat;
+      this.validarErrores();
+    }
+    this.mostrarSelectorCategorias = false;
+  }
+
+  obtenerIconoCategoria(): string {
+    return this.getIconName(this.categoriaSeleccionada?.icono || 'tag');
+  }
+
+  obtenerColorCategoria(): string {
+    return this.categoriaSeleccionada?.color || (this.esEgreso ? '#f43f5e' : '#10b981');
+  }
+
+  obtenerNombreCategoria(): string {
+    return this.categoriaSeleccionada?.nombre || this.categoriaSeleccionada?.categoria || '';
+  }
+
+  // ==========================================
+  // GESTIÓN DE FECHAS (CALENDARIO PERSONALIZADO MONETRA)
+  // ==========================================
+  mostrarSelectorFecha = false;
+  mesVisual = new Date().getMonth();
+  anioVisual = new Date().getFullYear();
+  fechaTempSeleccionada = '';
+
+  readonly mesesNombres = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  readonly diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+  establecerFechaRapida(opcion: 'hoy' | 'ayer') {
+    const d = new Date();
+    if (opcion === 'ayer') {
+      d.setDate(d.getDate() - 1);
+    }
+    this.movimiento.fecha = this.formatearDateAString(d);
+  }
+
+  abrirSelectorFecha() {
+    this.mostrarSelectorFecha = true;
+    const fechaActual = this.movimiento.fecha || this.obtenerFechaHoy();
+    this.fechaTempSeleccionada = fechaActual;
+    const partes = fechaActual.split('/');
+    if (partes.length === 3) {
+      this.anioVisual = Number(partes[0]);
+      this.mesVisual = Number(partes[1]) - 1;
+    } else {
+      const hoy = new Date();
+      this.anioVisual = hoy.getFullYear();
+      this.mesVisual = hoy.getMonth();
+    }
+  }
+
+  cerrarSelectorFecha() {
+    this.mostrarSelectorFecha = false;
+  }
+
+  get nombreMesVisual(): string {
+    return this.mesesNombres[this.mesVisual] || '';
+  }
+
+  mesAnterior() {
+    if (this.mesVisual === 0) {
+      this.mesVisual = 11;
+      this.anioVisual--;
+    } else {
+      this.mesVisual--;
+    }
+  }
+
+  mesSiguiente() {
+    if (this.mesVisual === 11) {
+      this.mesVisual = 0;
+      this.anioVisual++;
+    } else {
+      this.mesVisual++;
+    }
+  }
+
+  seleccionarDiaCalendario(item: { dia: number; mes: number; anio: number; fechaStr: string; esMesActual: boolean }) {
+    this.fechaTempSeleccionada = item.fechaStr;
+    if (!item.esMesActual) {
+      this.mesVisual = item.mes;
+      this.anioVisual = item.anio;
+    }
+  }
+
+  aplicarFechaCalendario() {
+    if (this.fechaTempSeleccionada) {
+      this.movimiento.fecha = this.fechaTempSeleccionada;
+      this.validarErrores();
+    }
+    this.mostrarSelectorFecha = false;
+  }
+
+  seleccionarFechaRapidaCalendario(opcion: 'hoy' | 'ayer' | 'antier' | 'primero') {
+    const d = new Date();
+    if (opcion === 'ayer') {
+      d.setDate(d.getDate() - 1);
+    } else if (opcion === 'antier') {
+      d.setDate(d.getDate() - 2);
+    } else if (opcion === 'primero') {
+      d.setDate(1);
+    }
+    this.fechaTempSeleccionada = this.formatearDateAString(d);
+    this.mesVisual = d.getMonth();
+    this.anioVisual = d.getFullYear();
+  }
+
+  get fechaAyerDate(): Date {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d;
+  }
+
+  get textoFechaTempFormateada(): string {
+    if (!this.fechaTempSeleccionada) return '';
+    const partes = this.fechaTempSeleccionada.split('/');
+    if (partes.length === 3) {
+      const anio = Number(partes[0]);
+      const mes = Number(partes[1]) - 1;
+      const dia = Number(partes[2]);
+      const fecha = new Date(anio, mes, dia);
+      const diaSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][fecha.getDay()];
+      return `${diaSemana}, ${dia} de ${this.mesesNombres[mes]} de ${anio}`;
+    }
+    return this.fechaTempSeleccionada;
+  }
+
+  get diasMatrizCalendario() {
+    const primerDiaMes = new Date(this.anioVisual, this.mesVisual, 1);
+    let primerDiaSemana = primerDiaMes.getDay() - 1;
+    if (primerDiaSemana === -1) primerDiaSemana = 6;
+
+    const diasEnMesActual = new Date(this.anioVisual, this.mesVisual + 1, 0).getDate();
+    const diasEnMesAnterior = new Date(this.anioVisual, this.mesVisual, 0).getDate();
+
+    const hoyStr = this.obtenerFechaHoy();
+    const seleccionadaStr = this.fechaTempSeleccionada;
+
+    const matriz: Array<{
+      dia: number;
+      mes: number;
+      anio: number;
+      fechaStr: string;
+      esMesActual: boolean;
+      esHoy: boolean;
+      esSeleccionada: boolean;
+    }> = [];
+
+    // Días del mes anterior
+    for (let i = primerDiaSemana - 1; i >= 0; i--) {
+      const dia = diasEnMesAnterior - i;
+      const mes = this.mesVisual === 0 ? 11 : this.mesVisual - 1;
+      const anio = this.mesVisual === 0 ? this.anioVisual - 1 : this.anioVisual;
+      const fechaStr = `${anio}/${String(mes + 1).padStart(2, '0')}/${String(dia).padStart(2, '0')}`;
+      matriz.push({
+        dia,
+        mes,
+        anio,
+        fechaStr,
+        esMesActual: false,
+        esHoy: fechaStr === hoyStr,
+        esSeleccionada: fechaStr === seleccionadaStr,
+      });
+    }
+
+    // Días del mes actual
+    for (let dia = 1; dia <= diasEnMesActual; dia++) {
+      const fechaStr = `${this.anioVisual}/${String(this.mesVisual + 1).padStart(2, '0')}/${String(dia).padStart(2, '0')}`;
+      matriz.push({
+        dia,
+        mes: this.mesVisual,
+        anio: this.anioVisual,
+        fechaStr,
+        esMesActual: true,
+        esHoy: fechaStr === hoyStr,
+        esSeleccionada: fechaStr === seleccionadaStr,
+      });
+    }
+
+    // Días del mes siguiente
+    const resto = matriz.length % 7;
+    const diasFaltantes = resto === 0 ? 0 : 7 - resto;
+    for (let dia = 1; dia <= diasFaltantes; dia++) {
+      const mes = this.mesVisual === 11 ? 0 : this.mesVisual + 1;
+      const anio = this.mesVisual === 11 ? this.anioVisual + 1 : this.anioVisual;
+      const fechaStr = `${anio}/${String(mes + 1).padStart(2, '0')}/${String(dia).padStart(2, '0')}`;
+      matriz.push({
+        dia,
+        mes,
+        anio,
+        fechaStr,
+        esMesActual: false,
+        esHoy: fechaStr === hoyStr,
+        esSeleccionada: fechaStr === seleccionadaStr,
+      });
+    }
+
+    return matriz;
+  }
+
+  get fechaEsHoy(): boolean {
+    return this.movimiento.fecha === this.obtenerFechaHoy();
+  }
+
+  get fechaEsAyer(): boolean {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return this.movimiento.fecha === this.formatearDateAString(d);
+  }
+
+  get textoFechaFormateada(): string {
+    if (this.fechaEsHoy) return 'Hoy';
+    if (this.fechaEsAyer) return 'Ayer';
+    if (!this.movimiento.fecha) return 'Seleccionar';
+
+    const partes = this.movimiento.fecha.split('/');
+    if (partes.length === 3) {
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+    return this.movimiento.fecha;
+  }
+
+  obtenerFechaHoy(): string {
+    return this.formatearDateAString(new Date());
+  }
+
+  formatearDateAString(d: Date): string {
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  // ==========================================
+  // MANEJO DEL MONTO Y CUENTAS
+  // ==========================================
+  soloNumeros(event: any) {
+    const valor = event.target.value;
+    const limpio = valor.replace(/[^0-9.]/g, '');
+    this.movimiento.monto = limpio;
+    event.target.value = limpio;
+    this.validarErrores();
+  }
+
+  saldoMostradoCuenta(cuenta: any): number {
+    const saldoActual = Number(cuenta.saldo_actual ?? 0);
+    if (cuenta.tipo === 'CREDITO') {
+      const limiteCredito = Number(cuenta.limite_credito ?? 0);
+      return Math.max(limiteCredito + Math.min(saldoActual, 0), 0);
+    }
+    return saldoActual;
+  }
+
+  etiquetaSaldoCuenta(cuenta: any): string {
+    return cuenta.tipo === 'CREDITO' ? 'Disponible' : 'Saldo';
+  }
+
+  validarErrores(forzarMostrar: boolean = false): boolean {
+    const montoNum = Number(this.movimiento.monto);
+    const saldoDisponible = this.cuentaSeleccionadaObj ? this.saldoMostradoCuenta(this.cuentaSeleccionadaObj) : 0;
+
+    const montoInvalido = !Number.isFinite(montoNum) || montoNum <= 0;
+    const saldoInsuficiente =
+      !this.editando &&
+      this.esEgreso &&
+      !!this.cuentaSeleccionadaObj &&
+      Number.isFinite(montoNum) &&
+      montoNum > saldoDisponible &&
+      this.cuentaSeleccionadaObj?.tipo !== 'CREDITO';
+
+    const categoriaInvalida = !this.categoriaSeleccionada || !this.categoriaSeleccionada.id;
+    const cuentaInvalida = !this.movimiento.cuenta || String(this.movimiento.cuenta).trim() === '' || String(this.movimiento.cuenta) === '0';
+    const descripcionInvalida = !this.movimiento.descripcion || this.movimiento.descripcion.trim() === '';
+
+    const hayErrores = montoInvalido || saldoInsuficiente || categoriaInvalida || cuentaInvalida || descripcionInvalida;
+
+    if (forzarMostrar) {
+      this.haIntentadoGuardar.set(true);
+    }
+
+    if (this.haIntentadoGuardar()) {
+      this.erroresValidacion.set({
+        monto: montoInvalido,
+        saldoInsuficiente,
+        categoria: categoriaInvalida,
+        cuenta: cuentaInvalida,
+        descripcion: descripcionInvalida,
+      });
+    } else {
+      this.erroresValidacion.set({
+        monto: false,
+        saldoInsuficiente,
+        categoria: false,
+        cuenta: false,
+        descripcion: false,
+      });
+    }
+
+    return hayErrores;
+  }
+
+  // ==========================================
+  // GUARDAR FORMULARIO
+  // ==========================================
+  guardar() {
+    if (this.isloading()) return;
+
+    if (this.validarErrores(true)) {
+      this.toastService.show('Completa los campos obligatorios en rojo', 'error');
+      return;
+    }
+
+    this.isloading.set(true);
+
+    const tipo = Number(this.movimiento.tipoMovimiento);
+    const categoriaId = this.categoriaSeleccionada?.id;
+    const descripcionFinal = this.movimiento.descripcion.trim();
+
+    const payload = {
+      tipoMovimiento: tipo,
+      cuenta: this.movimiento.cuenta,
+      monto: tipo === 2 ? Math.abs(Number(this.movimiento.monto)) * -1 : Math.abs(Number(this.movimiento.monto)),
+      descripcion: descripcionFinal,
+      notas: this.movimiento.notas.trim(),
+      fecha: this.movimiento.fecha || this.obtenerFechaHoy(),
+      etiquetas: categoriaId ? [categoriaId] : [],
+    };
+
+    const req$ = this.editando
+      ? this.movimientosService.actualizarMovimiento(this.movimientoEditar.id, payload)
+      : this.movimientosService.crearMovimiento(payload);
+
+    req$.pipe(finalize(() => this.isloading.set(false))).subscribe({
+      next: (res: any) => {
+        this.toastService.show(res?.message || (this.editando ? 'Movimiento actualizado' : 'Movimiento guardado'), 'success');
+        this.saved.emit();
+        this.cerrarModal();
+      },
+      error: (err) => {
+        this.toastService.show(err.error?.message || 'Error al guardar el movimiento', 'error');
+      },
+    });
+  }
+
+  // ==========================================
+  // RESET Y PRECARGA
+  // ==========================================
+  private resetFormulario() {
+    const hoy = this.obtenerFechaHoy();
+    this.movimiento = {
+      tipoMovimiento: 2,
+      cuenta: this.cuentaInicialId || '',
+      etiquetas: [],
+      monto: '',
+      descripcion: '',
+      notas: '',
+      fecha: hoy,
+    };
+    this.categoriaSeleccionada = null;
+    this.haIntentadoGuardar.set(false);
+
+    this.erroresValidacion.set({
+      monto: false,
+      saldoInsuficiente: false,
+      categoria: false,
+      cuenta: false,
+      descripcion: false,
+    });
+
+    this.mostrarDetallesExtra = false;
   }
 
   private precargarMovimientoEdicion() {
     if (!this.movimientoEditar) return;
 
     this.movimiento = {
-      tipoMovimiento: Number(this.movimientoEditar.id_tipo_movimiento ?? 0),
+      tipoMovimiento: Number(this.movimientoEditar.id_tipo_movimiento ?? 2),
       cuenta: String(
         this.movimientoEditar.id_cuenta ??
         this.movimientoEditar.cuenta_id ??
@@ -276,7 +898,7 @@ export class NuevoMovimientoModal implements OnChanges {
       monto: Math.abs(Number(this.movimientoEditar.monto ?? 0)),
       descripcion: this.movimientoEditar.descripcion ?? '',
       notas: this.movimientoEditar.notas ?? '',
-      fecha: this.formatearFechaFormulario(this.movimientoEditar.fecha)
+      fecha: this.formatearFechaBase(this.movimientoEditar.fecha),
     };
 
     this.precargarEtiquetasEdicion();
@@ -284,128 +906,19 @@ export class NuevoMovimientoModal implements OnChanges {
 
   private precargarEtiquetasEdicion() {
     if (this.movimientoEditar?.etiquetas?.length) {
-      this.etiquetasSeleccionadas = this.movimientoEditar.etiquetas.map((etiqueta: any) => {
-        const etiquetaDisponible = this.etiquetasDisponibles.find(
-          (item) => String(item.id) === String(etiqueta.id)
-        );
-
-        return etiquetaDisponible ?? etiqueta;
-      });
-    }
-  }
-
-  private formatearFechaFormulario(fecha: string | null | undefined): string {
-    if (!fecha) return this.movimiento.fecha;
-
-    const [fechaBase] = fecha.split('T');
-    const partes = fechaBase.includes('-') ? fechaBase.split('-') : fechaBase.split('/');
-
-    if (partes.length !== 3) return fecha;
-
-    return `${partes[0]}/${partes[1].padStart(2, '0')}/${partes[2].padStart(2, '0')}`;
-  }
-
-  private initDatepicker() {
-    if (typeof window !== 'undefined' && this.datepickerInput) {
-      const Datepicker = (window as any).Datepicker;
-      if (Datepicker) {
-        new Datepicker(this.datepickerInput.nativeElement, {
-          autohide: true,
-          format: 'yyyy/mm/dd',
-        });
-
-        this.datepickerInput.nativeElement.addEventListener('changeDate', (e: any) => {
-          // Actualizamos la variable del objeto manualmente
-          this.movimiento.fecha = e.target.value;
-          this.validarErrores('fecha');
-        });
+      const firstTag = this.movimientoEditar.etiquetas[0];
+      const found = this.etiquetasDisponibles.find((item) => String(item.id) === String(firstTag.id ?? firstTag));
+      if (found) {
+        this.categoriaSeleccionada = found;
       }
     }
   }
 
-  validarErrores(campo?: 'tipoMovimiento' | 'monto' | 'descripcion' | 'fecha' | 'cuenta') {
-    const erroresActuales = { ...this.erroresValidacion() }
-    const monto = Number(this.movimiento.monto);
-    const saldoDisponible = this.cuentaSeleccionada ? this.saldoMostradoCuenta(this.cuentaSeleccionada) : 0;
-
-    // Validaciones manuales usando el objeto movimiento
-    const errores = {
-      tipoMovimiento: Number(this.movimiento.tipoMovimiento) === 0,
-      monto: !Number.isFinite(monto) || monto <= 0,
-      saldoInsuficiente: !this.editando && !!this.movimiento.cuenta && this.esEgreso && Number.isFinite(monto) && monto > saldoDisponible,
-      descripcion: this.movimiento.descripcion.trim() === '',
-      fecha: !this.movimiento.fecha,
-      cuenta: !this.movimiento.cuenta
-    }
-
-    if (campo) {
-      // Si mandamos un campo, solo actualizamos ese error específico
-      erroresActuales[campo] = errores[campo]
-      erroresActuales.saldoInsuficiente = errores.saldoInsuficiente
-    } else {
-      // Si no mandamos nada, actualizamos todos los errores (para el botón Guardar)
-      Object.assign(erroresActuales, errores)
-    }
-
-    this.erroresValidacion.set(erroresActuales)
-
-    return Object.values(erroresActuales).some(v => v)
-  }
-
-  private toNumber(valor: number | string | null | undefined): number {
-    const numero = Number(valor ?? 0);
-
-    return Number.isFinite(numero) ? numero : 0;
-  }
-
-  isloading = signal(false);
-
-  guardar() {
-
-    if (this.isloading()) return;
-
-    this.isloading.set(true);
-
-    const tieneErrores = this.validarErrores()
-    if (tieneErrores) this.isloading.set(false);
-
-    if (!tieneErrores) {
-      const tipo = Number(this.movimiento.tipoMovimiento);
-      const idPorDefecto = tipo === 1 ? 27 : 26;
-      const etiquetasPayload = this.etiquetasSeleccionadas.length > 0
-        ? this.etiquetasSeleccionadas.map(e => e.id)
-        : (tipo === 1 || tipo === 2 ? [idPorDefecto] : []);
-
-      const payload = {
-        ...this.movimiento,
-        etiquetas: etiquetasPayload,
-        monto: Number(this.movimiento.tipoMovimiento) === 2 ? Math.abs(Number(this.movimiento.monto)) * -1 : Math.abs(Number(this.movimiento.monto))
-      };
-
-      const request$ = this.editando
-        ? this.movimientosService.actualizarMovimiento(this.movimientoEditar.id, payload)
-        : this.movimientosService.crearMovimiento(payload);
-
-      request$
-      .pipe(
-        finalize(() => {
-          this.isloading.set(false);
-        })
-      ).subscribe({
-        next: (res: any) => {
-
-          this.toastService.show(res.message, 'success');
-          this.saved.emit();
-          this.closed.emit();
-
-        },
-        error: (err) => {
-          this.toastService.show(err.error.message, 'error');
-        }
-      });
-
-    } else {
-      console.log('Faltan campos por llenar');
-    }
+  private formatearFechaBase(fecha: string | null | undefined): string {
+    if (!fecha) return this.obtenerFechaHoy();
+    const [base] = fecha.split('T');
+    const partes = base.includes('-') ? base.split('-') : base.split('/');
+    if (partes.length !== 3) return fecha;
+    return `${partes[0]}/${partes[1].padStart(2, '0')}/${partes[2].padStart(2, '0')}`;
   }
 }

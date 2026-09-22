@@ -1,250 +1,1023 @@
-<app-modal #modal [isOpen]="isOpen" (closed)="closed.emit()" [modalTitle]="editando ? 'Editar Movimiento' : 'Nuevo Movimiento'">
-
-  <form class="w-full">
-
-    <div class="mb-6">
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-            fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z" />
-          </svg>
-        </div>
-        <input #datepicker [(ngModel)]="movimiento.fecha" name="fecha" id="datepicker-autohide" datepicker
-          datepicker-autohide type="text"
-          class="block w-full ps-9 pe-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand px-3 py-2.5 shadow-xs placeholder:text-body dark:text-white dark:border-slate-600 dark:placeholder-slate-400"
-          placeholder="Selecciona una fecha" [ngClass]="{
-            'border-default-medium focus:border-brand text-heading': !erroresValidacion().fecha,
-            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().fecha
-          }">
+@if (isOpen) {
+  <!-- Backdrop con efecto Blur -->
+  <div
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/70 backdrop-blur-xs p-0 sm:p-4 overflow-y-auto"
+    (click)="cerrarModal()"
+  >
+    <!-- Contenedor Bottom Sheet / Modal Tarjeta Nativo -->
+    <div
+      class="relative w-full max-w-[430px] bg-white dark:bg-[#131b2a] border border-slate-200/90 dark:border-slate-800/80 rounded-t-[32px] sm:rounded-[32px] shadow-2xl overflow-hidden flex flex-col transition-all max-h-[90vh]"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Indicador táctil superior estilo iOS -->
+      <div class="pt-2.5 pb-1 flex justify-center sm:hidden shrink-0">
+        <div class="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
       </div>
-      @if (erroresValidacion().fecha) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> Ingresa la fecha del movimiento
-      </p>
-      }
-    </div>
 
-    <div class="mb-6">
-      <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Movimiento</label> -->
-      <select [(ngModel)]="movimiento.tipoMovimiento" name="tipoMovimiento" (change)="onTipoMovimientoChange()"
-        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
-        [ngClass]="{
-          'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().tipoMovimiento,
-          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().tipoMovimiento
-        }">
-
-        <option value="0" disabled>Selecciona el movimiento</option>
-        @for (tipo of tiposMovimiento; track tipo.id) {
-        <option [value]="tipo.id">{{ tipo.movimiento }}</option>
-        }
-      </select>
-      @if (erroresValidacion().tipoMovimiento) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> Ingresa el tipo de movimiento
-      </p>
-      }
-    </div>
-
-    <div class="mb-6">
-      <!-- <label for="countries" class="block mb-2.5 text-sm font-medium text-heading">Movimiento</label> -->
-      <select [(ngModel)]="movimiento.cuenta" name="cuenta" (change)="validarErrores('cuenta')"
-        class="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-default-medium text-heading dark:text-white text-sm rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
-        [ngClass]="{
-          'border-default-medium focus:border-brand text-heading dark:border-slate-600': !erroresValidacion().cuenta,
-          'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().cuenta
-        }">
-
-        <option value="" disabled>Seleccionar cuenta</option>
-        @for (cuenta of cuentas; track cuenta.id) {
-          <option [value]="cuenta.id">
-            {{ cuenta.nombre }} · {{ etiquetaSaldoCuenta(cuenta) }}:
-            {{ saldoMostradoCuenta(cuenta) | currency: 'MXN' : 'symbol-narrow' }}
-          </option>
-        }
-      </select>
-      @if (erroresValidacion().cuenta) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> Ingresa la cuenta
-      </p>
-      }
-    </div>
-
-    <!-- Etiquetas -->
-    <div class="mb-6 relative">
-      <!-- Barra: etiquetas seleccionadas + input -->
-      <div class="flex flex-wrap items-center gap-1.5 min-h-[42px] w-full px-2.5 py-1 rounded-base border bg-white dark:bg-slate-700 border-default-medium dark:border-slate-600 focus-within:border-brand cursor-text"
-        (click)="etiquetaInput.focus()">
-        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.583 8.445h.01M10.86 19.71l-6.573-6.63a.993.993 0 0 1 0-1.4l7.329-7.394A.98.98 0 0 1 12.31 4l5.734.007A1.968 1.968 0 0 1 20 5.983v5.5a.992.992 0 0 1-.316.727l-7.44 7.5a.974.974 0 0 1-1.384.001Z"/>
-        </svg>
-
-        @for (etiqueta of etiquetasSeleccionadas; track etiqueta.id) {
-          <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border"
-            [style.backgroundColor]="etiqueta.color + '33'"
-            [style.color]="etiqueta.color"
-            [style.borderColor]="etiqueta.color">
-            {{ etiqueta.nombre }}
-            <button type="button" (click)="quitarEtiqueta(etiqueta); $event.stopPropagation()"
-              class="hover:opacity-70 cursor-pointer flex items-center">
-              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+      <!-- ========================================================================= -->
+      <!-- VISTA 1: MENÚ INICIAL NATIVO (MODAL CHIQUITO)                             -->
+      <!-- ========================================================================= -->
+      @if (vistaActual() === 'menu') {
+        <div class="vista-slide-enter">
+          <!-- Header Menú -->
+          <div class="px-6 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Nuevo Movimiento</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">¿Qué deseas registrar hoy?</p>
+            </div>
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+              title="Cerrar"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          </span>
-        }
-        <input #etiquetaInput type="text" [(ngModel)]="busquedaEtiqueta" name="busquedaEtiqueta"
-          placeholder="Tags"
-          (focus)="mostrarDropdownEtiquetas = true"
-          (input)="mostrarDropdownEtiquetas = true"
-          (blur)="onBlurEtiqueta()"
-          class="flex-1 min-w-[120px] text-sm bg-transparent outline-none border-none ring-0 focus:ring-0 focus:outline-none text-heading dark:text-white placeholder:text-body" />
-      </div>
+          </div>
 
-      <!-- Dropdown -->
-      @if (mostrarDropdownEtiquetas) {
-        <div class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-default-medium dark:border-slate-600 rounded-base shadow-lg max-h-48 overflow-y-auto">
-          @for (etiqueta of etiquetasFiltradas; track etiqueta.id) {
-            <button type="button" (mousedown)="agregarEtiqueta(etiqueta)"
-              class="flex items-center justify-between w-full px-3 py-2 text-sm text-heading dark:text-white hover:bg-neutral-secondary-medium cursor-pointer">
-              <span class="inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded border"
-                [style.backgroundColor]="etiqueta.color + '33'"
-                [style.color]="etiqueta.color"
-                [style.borderColor]="etiqueta.color">
-                {{ etiqueta.nombre }}
-              </span>
-              <!-- <svg class="w-4 h-4 text-body flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-              </svg> -->
+          <!-- Opciones Principales del Menú -->
+          <div class="p-5 space-y-3">
+            <!-- Registrar Gasto -->
+            <button
+              type="button"
+              (click)="irAFormulario('gasto')"
+              class="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-rose-300 dark:hover:border-rose-500/40 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs"
+            >
+              <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                  </svg>
+                </div>
+                <div>
+                  <span class="text-sm font-bold text-slate-900 dark:text-white block group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                    Registrar Gasto
+                  </span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">Salida de dinero, compras o pagos</span>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
             </button>
-          }
-          <!-- @if (etiquetasFiltradas.length === 0) {
-            <p class="px-3 py-2 text-sm text-body">No se encontraron etiquetas</p>
-          } -->
+
+            <!-- Registrar Ingreso -->
+            <button
+              type="button"
+              (click)="irAFormulario('ingreso')"
+              class="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-500/40 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs"
+            >
+              <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
+                  </svg>
+                </div>
+                <div>
+                  <span class="text-sm font-bold text-slate-900 dark:text-white block group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    Registrar Ingreso
+                  </span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">Sueldo, depósitos o cobranzas</span>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+
+            <!-- Botón Movimientos Frecuentes -->
+            <button
+              type="button"
+              (click)="irAMovimientosRapidos()"
+              class="w-full p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 hover:bg-indigo-100/70 dark:hover:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-500/25 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs mt-1"
+            >
+              <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                  <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+                      Movimientos Frecuentes
+                    </span>
+                    @if (movimientosRapidos().length > 0) {
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-600 dark:text-indigo-300">
+                        {{ movimientosRapidos().length }}
+                      </span>
+                    }
+                  </div>
+                  <span class="text-xs text-slate-500 dark:text-indigo-200/70">Tus registros habituales en 1 toque</span>
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-indigo-500 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- VISTA 2: MOVIMIENTOS FRECUENTES (1-TAP LOGGING + GESTIÓN)                 -->
+      <!-- ========================================================================= -->
+      @if (vistaActual() === 'rapidos') {
+        <div class="vista-slide-enter">
+          <!-- Header Frecuentes -->
+          <div class="px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+            <div class="flex items-center gap-2.5">
+              <button
+                type="button"
+                (click)="volverAlMenu()"
+                class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+                title="Volver"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <div>
+                <h2 class="text-sm font-bold text-slate-900 dark:text-white">Movimientos Frecuentes</h2>
+                <p class="text-[11px] text-slate-400">Toca para registrar en 1 toque</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              (click)="irACrearFrecuente()"
+              class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 flex items-center gap-1 cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span>Crear</span>
+            </button>
+          </div>
+
+          <!-- Lista de Frecuentes -->
+          <div class="p-5 space-y-2.5 max-h-[360px] overflow-y-auto">
+            @if (movimientosRapidos().length === 0) {
+              <div class="p-6 text-center rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800/70">
+                <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-slate-800 dark:text-white">Aún no tienes movimientos frecuentes</p>
+                <p class="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">
+                  Crea atajos para tus gastos o ingresos habituales (café, transporte, comida) y regístralos en 1 solo toque.
+                </p>
+                <button
+                  type="button"
+                  (click)="irACrearFrecuente()"
+                  class="mt-3 px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-500 transition cursor-pointer"
+                >
+                  + Crear mi primer atajo
+                </button>
+              </div>
+            } @else {
+              @for (rapido of movimientosRapidos(); track rapido.id) {
+                <div
+                  (click)="ejecutarMovimientoRapido(rapido)"
+                  class="w-full p-3 rounded-2xl bg-slate-50/90 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer shadow-xs"
+                >
+                  <!-- Área táctil izquierda -->
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      class="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0 transition-transform group-hover:scale-105"
+                      [style.backgroundColor]="(rapido.categoriaColor || '#6366f1') + '1A'"
+                      [style.color]="rapido.categoriaColor || '#6366f1'"
+                    >
+                      <ng-icon [name]="getIconName(rapido.categoriaIcono)" class="text-xl" />
+                    </div>
+                    <div class="min-w-0 flex flex-col">
+                      <span class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        {{ rapido.nombre }}
+                      </span>
+                      <span class="text-[10px] text-slate-500 dark:text-slate-400">
+                        {{ rapido.cuentaNombre || 'Efectivo' }} · {{ rapido.categoriaNombre }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Monto y Acciones -->
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span
+                      class="text-xs font-black"
+                      [class.text-rose-600]="rapido.tipoMovimiento === 2"
+                      [class.dark:text-rose-400]="rapido.tipoMovimiento === 2"
+                      [class.text-emerald-600]="rapido.tipoMovimiento === 1"
+                      [class.dark:text-emerald-400]="rapido.tipoMovimiento === 1"
+                    >
+                      {{ rapido.tipoMovimiento === 2 ? '-' : '+' }}{{ rapido.monto | currency: 'MXN' : 'symbol-narrow' }}
+                    </span>
+
+                    <!-- Botón Lápiz para editar antes de guardar -->
+                    <button
+                      type="button"
+                      (click)="editarMovimientoRapido(rapido, $event)"
+                      class="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-slate-700 flex items-center justify-center transition cursor-pointer"
+                      title="Modificar antes de guardar"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                      </svg>
+                    </button>
+
+                    <!-- Botón Eliminar Plantilla -->
+                    <button
+                      type="button"
+                      (click)="eliminarMovimientoRapido(rapido.id, $event)"
+                      class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-500 flex items-center justify-center transition cursor-pointer opacity-40 hover:opacity-100"
+                      title="Eliminar acceso directo"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- VISTA 3: FORMULARIO ESTILO LUKAS                                          -->
+      <!-- ========================================================================= -->
+      @if (vistaActual() === 'formulario') {
+        <div class="vista-slide-enter">
+          <!-- Header Formulario -->
+          <div class="px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+            <div class="flex items-center gap-2">
+              @if (!editando) {
+                <button
+                  type="button"
+                  (click)="volverAlMenu()"
+                  class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+                  title="Volver"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
+              }
+
+              <h2 class="text-sm font-bold text-slate-900 dark:text-white">
+                {{ editando ? 'Editar Movimiento' : (esEgreso ? 'Nuevo Gasto' : 'Nuevo Ingreso') }}
+              </h2>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span
+                class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                [class.bg-rose-500/10]="esEgreso"
+                [class.text-rose-600]="esEgreso"
+                [class.dark:text-rose-400]="esEgreso"
+                [class.bg-emerald-500/10]="!esEgreso"
+                [class.text-emerald-600]="!esEgreso"
+                [class.dark:text-emerald-400]="!esEgreso"
+              >
+                {{ esEgreso ? 'Gasto' : 'Ingreso' }}
+              </span>
+
+              <button
+                type="button"
+                (click)="cerrarModal()"
+                class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Body Formulario -->
+          <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+            <!-- DISPLAY DEL MONTO HÉROE -->
+            <div
+              class="py-3 px-4 text-center rounded-2xl border transition-all"
+              [class.border-transparent]="!erroresValidacion().monto && !erroresValidacion().saldoInsuficiente"
+              [class.border-rose-500]="erroresValidacion().monto || erroresValidacion().saldoInsuficiente"
+              [class.dark:border-rose-500]="erroresValidacion().monto || erroresValidacion().saldoInsuficiente"
+              [class.bg-rose-50/25]="erroresValidacion().monto || erroresValidacion().saldoInsuficiente"
+              [class.dark:bg-rose-950/20]="erroresValidacion().monto || erroresValidacion().saldoInsuficiente"
+            >
+              <div class="flex items-center justify-center gap-1.5 mb-0.5">
+                <span class="text-[10px] font-bold tracking-widest uppercase text-slate-400 block">
+                  Monto <span class="text-rose-500">*</span>
+                </span>
+                @if (erroresValidacion().monto) {
+                  <span class="text-[10px] font-semibold text-rose-500">
+                    Obligatorio
+                  </span>
+                }
+              </div>
+              <div class="flex items-center justify-center gap-1.5">
+                <span
+                  class="text-3xl font-black transition-colors"
+                  [class.text-rose-500]="esEgreso"
+                  [class.text-emerald-500]="!esEgreso"
+                >
+                  {{ esEgreso ? '-$' : '+$' }}
+                </span>
+                <input
+                  #montoInputRef
+                  type="text"
+                  [value]="movimiento.monto"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  maxlength="12"
+                  (input)="soloNumeros($event)"
+                  class="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 text-center w-52 placeholder-slate-300 dark:placeholder-slate-700"
+                />
+              </div>
+
+              @if (erroresValidacion().monto) {
+                <p class="mt-2 text-xs text-rose-500 font-semibold flex items-center justify-center gap-1.5 animate-pulse">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                  <span>Ingresa un monto mayor a 0</span>
+                </p>
+              }
+
+              @if (erroresValidacion().saldoInsuficiente) {
+                <p class="mt-2 text-xs text-rose-500 font-semibold flex items-center justify-center gap-1.5 animate-pulse">
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                  </svg>
+                  <span>El egreso supera el saldo disponible de la cuenta</span>
+                </p>
+              }
+            </div>
+
+            <!-- FILAS DE CONFIGURACIÓN ESTILO NATIVO -->
+            <div class="space-y-2.5">
+              <!-- Fila 1: Categoría -->
+              <button
+                type="button"
+                (click)="abrirSelectorCategorias()"
+                class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border flex items-center justify-between text-left transition-all active:scale-[0.99] group cursor-pointer shadow-xs"
+                [class.border-slate-200/80]="!erroresValidacion().categoria"
+                [class.dark:border-slate-800/80]="!erroresValidacion().categoria"
+                [class.border-rose-500]="erroresValidacion().categoria"
+                [class.dark:border-rose-500]="erroresValidacion().categoria"
+                [class.bg-rose-50/20]="erroresValidacion().categoria"
+                [class.dark:bg-rose-950/20]="erroresValidacion().categoria"
+              >
+                <div class="flex items-center gap-3 min-w-0">
+                  <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs transition-colors"
+                    [style.backgroundColor]="categoriaSeleccionada ? (obtenerColorCategoria() + '1A') : 'rgba(148, 163, 184, 0.15)'"
+                    [style.color]="categoriaSeleccionada ? obtenerColorCategoria() : '#94a3b8'"
+                  >
+                    <ng-icon [name]="categoriaSeleccionada ? obtenerIconoCategoria() : 'lucideTag'" class="text-xl" />
+                  </div>
+                  <div class="min-w-0 flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Etiqueta <span class="text-rose-500">*</span></span>
+                      @if (erroresValidacion().categoria) {
+                        <span class="text-[10px] font-semibold text-rose-500">Obligatoria</span>
+                      }
+                    </div>
+                    @if (categoriaSeleccionada) {
+                      <span class="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        {{ categoriaSeleccionada.nombre }}
+                      </span>
+                    } @else {
+                      <span class="text-sm font-medium text-slate-400 dark:text-slate-500 italic">
+                        Selecciona una etiqueta...
+                      </span>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-colors pl-2">
+                  <span class="text-xs font-semibold hidden xs:inline">{{ categoriaSeleccionada ? 'Cambiar' : 'Elegir' }}</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </div>
+              </button>
+
+              <!-- Fila 2: Cuenta -->
+              <div
+                class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border flex items-center justify-between shadow-xs transition-colors"
+                [class.border-slate-200/80]="!erroresValidacion().cuenta"
+                [class.dark:border-slate-800/80]="!erroresValidacion().cuenta"
+                [class.border-rose-500]="erroresValidacion().cuenta"
+                [class.dark:border-rose-500]="erroresValidacion().cuenta"
+                [class.bg-rose-50/20]="erroresValidacion().cuenta"
+                [class.dark:bg-rose-950/20]="erroresValidacion().cuenta"
+              >
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                    [class.bg-emerald-500/10]="movimiento.cuenta"
+                    [class.text-emerald-600]="movimiento.cuenta"
+                    [class.dark:text-emerald-400]="movimiento.cuenta"
+                    [class.bg-slate-200/50]="!movimiento.cuenta"
+                    [class.dark:bg-slate-800]="!movimiento.cuenta"
+                    [class.text-slate-400]="!movimiento.cuenta"
+                  >
+                    <ng-icon name="lucideCreditCard" class="text-xl" />
+                  </div>
+                  <div class="min-w-0 flex flex-col flex-1 pr-2">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Cuenta <span class="text-rose-500">*</span></span>
+                      @if (erroresValidacion().cuenta) {
+                        <span class="text-[10px] font-semibold text-rose-500">Obligatoria</span>
+                      }
+                    </div>
+                    <select
+                      [(ngModel)]="movimiento.cuenta"
+                      (change)="validarErrores()"
+                      class="bg-transparent text-sm font-bold border-none outline-none p-0 cursor-pointer w-full truncate focus:ring-0"
+                      [class.text-slate-900]="movimiento.cuenta"
+                      [class.dark:text-white]="movimiento.cuenta"
+                      [class.text-slate-400]="!movimiento.cuenta"
+                      [class.italic]="!movimiento.cuenta"
+                    >
+                      <option value="" disabled selected class="text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900">
+                        Selecciona una cuenta...
+                      </option>
+                      @for (cuenta of cuentas; track cuenta.id) {
+                        <option [value]="cuenta.id" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-medium not-italic">
+                          {{ cuenta.nombre }}
+                        </option>
+                      }
+                    </select>
+                  </div>
+                </div>
+
+                @if (cuentaSeleccionadaObj) {
+                  <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full whitespace-nowrap">
+                    {{ etiquetaSaldoCuenta(cuentaSeleccionadaObj) }}: {{ saldoMostradoCuenta(cuentaSeleccionadaObj) | currency: 'MXN' : 'symbol-narrow' }}
+                  </span>
+                }
+              </div>
+
+              <!-- Fila 3: Fecha -->
+              <div class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between shadow-xs">
+                <div class="flex items-center gap-3 min-w-0 cursor-pointer" (click)="abrirSelectorFecha()">
+                  <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                    <ng-icon name="lucideCalendarDays" class="text-xl" />
+                  </div>
+                  <div class="min-w-0 flex flex-col">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fecha</span>
+                    <span class="text-sm font-bold text-slate-900 dark:text-white">
+                      {{ textoFechaFormateada }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    (click)="establecerFechaRapida('hoy')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer"
+                    [class.bg-indigo-600]="fechaEsHoy"
+                    [class.text-white]="fechaEsHoy"
+                    [class.bg-slate-200]="!fechaEsHoy"
+                    [class.dark:bg-slate-800]="!fechaEsHoy"
+                    [class.text-slate-600]="!fechaEsHoy"
+                    [class.dark:text-slate-300]="!fechaEsHoy"
+                  >
+                    Hoy
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="establecerFechaRapida('ayer')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer"
+                    [class.bg-indigo-600]="fechaEsAyer"
+                    [class.text-white]="fechaEsAyer"
+                    [class.bg-slate-200]="!fechaEsAyer"
+                    [class.dark:bg-slate-800]="!fechaEsAyer"
+                    [class.text-slate-600]="!fechaEsAyer"
+                    [class.dark:text-slate-300]="!fechaEsAyer"
+                  >
+                    Ayer
+                  </button>
+
+                  <!-- Botón para abrir el selector de calendario personalizado -->
+                  <button
+                    type="button"
+                    (click)="abrirSelectorFecha()"
+                    class="p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
+                    title="Elegir otra fecha en calendario"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Fila 4: Concepto / Detalle -->
+              <div
+                class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border transition-colors shadow-xs"
+                [class.border-slate-200/80]="!erroresValidacion().descripcion"
+                [class.dark:border-slate-800/80]="!erroresValidacion().descripcion"
+                [class.border-rose-500]="erroresValidacion().descripcion"
+                [class.dark:border-rose-500]="erroresValidacion().descripcion"
+                [class.bg-rose-50/20]="erroresValidacion().descripcion"
+                [class.dark:bg-rose-950/20]="erroresValidacion().descripcion"
+              >
+                <div class="flex items-center justify-between mb-0.5">
+                  <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                    Concepto / Detalle <span class="text-rose-500">*</span>
+                  </span>
+                  @if (erroresValidacion().descripcion) {
+                    <span class="text-[10px] font-semibold text-rose-500">
+                      El concepto es obligatorio
+                    </span>
+                  }
+                </div>
+                <input
+                  type="text"
+                  [(ngModel)]="movimiento.descripcion"
+                  (input)="validarErrores()"
+                  maxlength="100"
+                  placeholder="Ej. Despensa, Uber, Carga de Gasolina..."
+                  class="w-full bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none border-none p-0 focus:ring-0"
+                />
+              </div>
+
+              <!-- Sección Notas Adicionales Plegada -->
+              <div>
+                <button
+                  type="button"
+                  (click)="mostrarDetallesExtra = !mostrarDetallesExtra"
+                  class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1.5 cursor-pointer py-1"
+                >
+                  <svg
+                    class="w-3.5 h-3.5 transition-transform duration-200"
+                    [class.rotate-45]="mostrarDetallesExtra"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
+                  <span>{{ mostrarDetallesExtra ? 'Ocultar notas' : 'Agregar nota adicional' }}</span>
+                </button>
+
+                @if (mostrarDetallesExtra) {
+                  <div class="mt-2 p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+                    <textarea
+                      [(ngModel)]="movimiento.notas"
+                      rows="2"
+                      maxlength="1000"
+                      placeholder="Escribe algún comprobante o recordatorio..."
+                      class="w-full bg-transparent text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 outline-none border-none p-0 resize-none focus:ring-0"
+                    ></textarea>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Botones -->
+          <div class="p-5 pt-3 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800/60 flex items-center gap-3">
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="py-3 px-4 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 font-bold text-xs transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              (click)="guardar()"
+              [disabled]="isloading()"
+              class="flex-1 py-3 px-4 rounded-2xl text-white font-bold text-xs shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              [class.bg-indigo-600]="!isloading()"
+              [class.hover:bg-indigo-500]="!isloading()"
+              [class.shadow-indigo-600/25]="!isloading()"
+            >
+              @if (isloading()) {
+                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Guardando...</span>
+              } @else {
+                <span>
+                  {{ editando ? 'Actualizar Movimiento' : (esEgreso ? 'Guardar Gasto' : 'Guardar Ingreso') }}
+                </span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- VISTA 4: CREAR MOVIMIENTO FRECUENTE                                       -->
+      <!-- ========================================================================= -->
+      @if (vistaActual() === 'crear-frecuente') {
+        <div class="vista-slide-enter">
+          <!-- Header Crear Frecuente -->
+          <div class="px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                (click)="cancelarCrearFrecuente()"
+                class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+                title="Volver"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+              <h2 class="text-sm font-bold text-slate-900 dark:text-white">Nuevo Movimiento Frecuente</h2>
+            </div>
+
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Formulario Crear Frecuente -->
+          <div class="p-5 space-y-3.5 max-h-[70vh] overflow-y-auto">
+            <!-- Selector Tipo (Gasto / Ingreso) -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
+              <button
+                type="button"
+                (click)="nuevoFrecuente.tipoMovimiento = 2"
+                class="py-2 text-xs font-bold rounded-xl transition cursor-pointer"
+                [class.bg-white]="nuevoFrecuente.tipoMovimiento === 2"
+                [class.dark:bg-slate-800]="nuevoFrecuente.tipoMovimiento === 2"
+                [class.text-rose-600]="nuevoFrecuente.tipoMovimiento === 2"
+                [class.dark:text-rose-400]="nuevoFrecuente.tipoMovimiento === 2"
+                [class.shadow-xs]="nuevoFrecuente.tipoMovimiento === 2"
+                [class.text-slate-500]="nuevoFrecuente.tipoMovimiento !== 2"
+              >
+                Gasto Habitual
+              </button>
+              <button
+                type="button"
+                (click)="nuevoFrecuente.tipoMovimiento = 1"
+                class="py-2 text-xs font-bold rounded-xl transition cursor-pointer"
+                [class.bg-white]="nuevoFrecuente.tipoMovimiento === 1"
+                [class.dark:bg-slate-800]="nuevoFrecuente.tipoMovimiento === 1"
+                [class.text-emerald-600]="nuevoFrecuente.tipoMovimiento === 1"
+                [class.dark:text-emerald-400]="nuevoFrecuente.tipoMovimiento === 1"
+                [class.shadow-xs]="nuevoFrecuente.tipoMovimiento === 1"
+                [class.text-slate-500]="nuevoFrecuente.tipoMovimiento !== 1"
+              >
+                Ingreso Habitual
+              </button>
+            </div>
+
+            <!-- Nombre / Concepto -->
+            <div class="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                Nombre del Atajo
+              </span>
+              <input
+                type="text"
+                [(ngModel)]="nuevoFrecuente.nombre"
+                placeholder="Ej. Café matutino, Transporte, Almuerzo..."
+                maxlength="50"
+                class="w-full bg-transparent text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none border-none p-0 focus:ring-0"
+              />
+            </div>
+
+            <!-- Monto Habitual -->
+            <div class="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                Monto Habitual
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-lg font-bold text-slate-400">$</span>
+                <input
+                  type="text"
+                  [(ngModel)]="nuevoFrecuente.monto"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  (input)="soloNumerosFrecuente($event)"
+                  class="w-full bg-transparent text-lg font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none border-none p-0 focus:ring-0"
+                />
+              </div>
+            </div>
+
+            <!-- Etiqueta -->
+            <button
+              type="button"
+              (click)="abrirSelectorCategoriasFrecuente()"
+              class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-left transition cursor-pointer"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  [style.backgroundColor]="nuevoFrecuente.categoria ? (nuevoFrecuente.categoria?.color || '#6366f1') + '1A' : '#64748b1A'"
+                  [style.color]="nuevoFrecuente.categoria ? (nuevoFrecuente.categoria?.color || '#6366f1') : '#94a3b8'"
+                >
+                  <ng-icon [name]="getIconName(nuevoFrecuente.categoria?.icono || 'tag')" class="text-xl" />
+                </div>
+                <div>
+                  <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Etiqueta</span>
+                  <span
+                    class="text-sm font-bold"
+                    [class.text-slate-900]="nuevoFrecuente.categoria"
+                    [class.dark:text-white]="nuevoFrecuente.categoria"
+                    [class.text-slate-400]="!nuevoFrecuente.categoria"
+                  >
+                    {{ nuevoFrecuente.categoria ? (nuevoFrecuente.categoria?.nombre || nuevoFrecuente.categoria?.categoria) : 'Seleccionar etiqueta *' }}
+                  </span>
+                </div>
+              </div>
+              <span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold">
+                {{ nuevoFrecuente.categoria ? 'Cambiar' : 'Elegir' }}
+              </span>
+            </button>
+
+            <!-- Cuenta Habitual -->
+            <div class="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                Cuenta Habitual
+              </span>
+              <select
+                [(ngModel)]="nuevoFrecuente.cuenta"
+                class="w-full bg-transparent text-sm font-bold outline-none border-none p-0 cursor-pointer focus:ring-0"
+                [class.text-slate-900]="nuevoFrecuente.cuenta"
+                [class.dark:text-white]="nuevoFrecuente.cuenta"
+                [class.text-slate-400]="!nuevoFrecuente.cuenta"
+              >
+                <option [value]="''" disabled selected class="bg-white dark:bg-slate-900 text-slate-400">
+                  Seleccionar una cuenta *
+                </option>
+                @for (cuenta of cuentas; track cuenta.id) {
+                  <option [value]="cuenta.id" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                    {{ cuenta.nombre }}
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Footer Guardar Atajo -->
+          <div class="p-5 pt-3 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800/60 flex items-center gap-3">
+            <button
+              type="button"
+              (click)="cancelarCrearFrecuente()"
+              class="py-3 px-4 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 font-bold text-xs transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="guardarNuevoFrecuente()"
+              [disabled]="isloading() || !nuevoFrecuente.nombre.trim() || !nuevoFrecuente.monto || !nuevoFrecuente.categoria?.id || !nuevoFrecuente.cuenta"
+              class="flex-1 py-3 px-4 rounded-2xl text-white font-bold text-xs bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/25 active:scale-[0.99] transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              @if (isloading()) {
+                Guardando...
+              } @else {
+                Guardar Movimiento Frecuente
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- OVERLAY SELECTOR DE ETIQUETAS (HOJA LIMPIA CON ICONOS LUCIDE)            -->
+      <!-- ========================================================================= -->
+      @if (mostrarSelectorCategorias) {
+        <div class="absolute inset-0 z-50 bg-white dark:bg-[#131b2a] flex flex-col vista-slide-enter">
+          <!-- Header Selector -->
+          <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Selecciona una etiqueta</h3>
+            <button
+              type="button"
+              (click)="cerrarSelectorCategorias()"
+              class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Buscador de Etiqueta -->
+          <div class="p-4 border-b border-slate-100 dark:border-slate-800/60">
+            <div class="relative">
+              <input
+                type="text"
+                [(ngModel)]="busquedaCategoria"
+                placeholder="Buscar etiqueta por nombre..."
+                class="w-full py-2.5 pl-9 pr-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-500"
+              />
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Cuadrícula de Etiquetas -->
+          <div class="p-4 grid grid-cols-3 gap-2.5 overflow-y-auto flex-1 content-start auto-rows-max">
+            @for (cat of categoriasFiltradas; track cat.id) {
+              <button
+                type="button"
+                (click)="seleccionarCategoria(cat)"
+                class="p-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer active:scale-95 border min-h-[88px]"
+                [class.bg-indigo-50]="categoriaSeleccionada?.id === cat.id"
+                [class.dark:bg-indigo-950/30]="categoriaSeleccionada?.id === cat.id"
+                [class.border-indigo-500]="categoriaSeleccionada?.id === cat.id"
+                [class.bg-slate-50]="categoriaSeleccionada?.id !== cat.id"
+                [class.dark:bg-slate-900/50]="categoriaSeleccionada?.id !== cat.id"
+                [class.hover:bg-slate-100]="categoriaSeleccionada?.id !== cat.id"
+                [class.dark:hover:bg-slate-800]="categoriaSeleccionada?.id !== cat.id"
+                [class.border-slate-200/80]="categoriaSeleccionada?.id !== cat.id"
+                [class.dark:border-slate-800/80]="categoriaSeleccionada?.id !== cat.id"
+              >
+                <div
+                  class="w-10 h-10 rounded-xl flex items-center justify-center shadow-xs"
+                  [style.backgroundColor]="(cat.color || '#6366f1') + '1A'"
+                  [style.color]="cat.color || '#6366f1'"
+                >
+                  <ng-icon [name]="getIconName(cat.icono)" class="text-xl" />
+                </div>
+                <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate w-full">
+                  {{ cat.nombre || cat.categoria }}
+                </span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ========================================================================= -->
+      <!-- OVERLAY SELECTOR DE FECHA PERSONALIZADO (CALENDARIO NATIVO MONETRA)       -->
+      <!-- ========================================================================= -->
+      @if (mostrarSelectorFecha) {
+        <div class="absolute inset-0 z-50 bg-white dark:bg-[#131b2a] flex flex-col vista-slide-enter">
+          <!-- Header Selector Fecha -->
+          <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Seleccionar Fecha</h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                {{ textoFechaTempFormateada || 'Elige un día en el calendario' }}
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="cerrarSelectorFecha()"
+              class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Atajos Rápidos de Fecha -->
+          <div class="px-5 py-2.5 flex items-center gap-1.5 overflow-x-auto border-b border-slate-100 dark:border-slate-800/60 shrink-0">
+            <button
+              type="button"
+              (click)="seleccionarFechaRapidaCalendario('hoy')"
+              class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer"
+              [class.bg-indigo-600]="fechaTempSeleccionada === obtenerFechaHoy()"
+              [class.text-white]="fechaTempSeleccionada === obtenerFechaHoy()"
+              [class.bg-slate-100]="fechaTempSeleccionada !== obtenerFechaHoy()"
+              [class.dark:bg-slate-800]="fechaTempSeleccionada !== obtenerFechaHoy()"
+              [class.text-slate-600]="fechaTempSeleccionada !== obtenerFechaHoy()"
+              [class.dark:text-slate-300]="fechaTempSeleccionada !== obtenerFechaHoy()"
+            >
+              Hoy
+            </button>
+            <button
+              type="button"
+              (click)="seleccionarFechaRapidaCalendario('ayer')"
+              class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer"
+              [class.bg-indigo-600]="fechaTempSeleccionada === formatearDateAString(fechaAyerDate)"
+              [class.text-white]="fechaTempSeleccionada === formatearDateAString(fechaAyerDate)"
+              [class.bg-slate-100]="fechaTempSeleccionada !== formatearDateAString(fechaAyerDate)"
+              [class.dark:bg-slate-800]="fechaTempSeleccionada !== formatearDateAString(fechaAyerDate)"
+              [class.text-slate-600]="fechaTempSeleccionada !== formatearDateAString(fechaAyerDate)"
+              [class.dark:text-slate-300]="fechaTempSeleccionada !== formatearDateAString(fechaAyerDate)"
+            >
+              Ayer
+            </button>
+            <button
+              type="button"
+              (click)="seleccionarFechaRapidaCalendario('antier')"
+              class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            >
+              Antier
+            </button>
+            <button
+              type="button"
+              (click)="seleccionarFechaRapidaCalendario('primero')"
+              class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition shrink-0 cursor-pointer bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            >
+              1° del mes
+            </button>
+          </div>
+
+          <!-- Navegador de Mes y Año -->
+          <div class="px-5 py-3 flex items-center justify-between shrink-0">
+            <button
+              type="button"
+              (click)="mesAnterior()"
+              class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer"
+              title="Mes anterior"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+
+            <span class="text-sm font-bold text-slate-900 dark:text-white">
+              {{ nombreMesVisual }} {{ anioVisual }}
+            </span>
+
+            <button
+              type="button"
+              (click)="mesSiguiente()"
+              class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer"
+              title="Mes siguiente"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Cuadrícula de Calendario -->
+          <div class="px-4 pb-2 flex-1 flex flex-col justify-start overflow-y-auto">
+            <!-- Nombres de Días de la Semana -->
+            <div class="grid grid-cols-7 gap-1 text-center mb-1">
+              @for (diaNom of diasSemana; track diaNom) {
+                <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 py-1">
+                  {{ diaNom }}
+                </span>
+              }
+            </div>
+
+            <!-- Celdas de los Días -->
+            <div class="grid grid-cols-7 gap-1 text-center">
+              @for (item of diasMatrizCalendario; track item.fechaStr) {
+                <button
+                  type="button"
+                  (click)="seleccionarDiaCalendario(item)"
+                  class="h-9 rounded-xl text-xs font-semibold flex items-center justify-center transition-all cursor-pointer relative"
+                  [class.text-slate-900]="item.esMesActual && !item.esSeleccionada"
+                  [class.dark:text-slate-100]="item.esMesActual && !item.esSeleccionada"
+                  [class.text-slate-400]="!item.esMesActual && !item.esSeleccionada"
+                  [class.dark:text-slate-600]="!item.esMesActual && !item.esSeleccionada"
+                  [class.bg-indigo-600]="item.esSeleccionada"
+                  [class.text-white]="item.esSeleccionada"
+                  [class.font-bold]="item.esSeleccionada"
+                  [class.shadow-md]="item.esSeleccionada"
+                  [class.shadow-indigo-600/30]="item.esSeleccionada"
+                  [class.hover:bg-slate-100]="!item.esSeleccionada"
+                  [class.dark:hover:bg-slate-800]="!item.esSeleccionada"
+                >
+                  {{ item.dia }}
+                  @if (item.esHoy && !item.esSeleccionada) {
+                    <span class="absolute bottom-1 w-1 h-1 rounded-full bg-indigo-500"></span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Footer con Confirmación -->
+          <div class="p-4 pt-3 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800/60 flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              (click)="cerrarSelectorFecha()"
+              class="py-2.5 px-4 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 font-bold text-xs transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="aplicarFechaCalendario()"
+              class="flex-1 py-2.5 px-4 rounded-xl text-white font-bold text-xs bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/25 active:scale-[0.99] transition cursor-pointer text-center"
+            >
+              Confirmar Fecha
+            </button>
+          </div>
         </div>
       }
     </div>
-
-    <div class="mb-6">
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 mt-1.5 pointer-events-none">
-          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-            fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 17.345a4.76 4.76 0 0 0 2.558 1.618c2.274.589 4.512-.446 4.999-2.31.487-1.866-1.273-3.9-3.546-4.49-2.273-.59-4.034-2.623-3.547-4.488.486-1.865 2.724-2.899 4.998-2.31.982.236 1.87.793 2.538 1.592m-3.879 12.171V21m0-18v2.2"/>
-          </svg>
-        </div>
-        <input type="text" id="monto" [(ngModel)]="movimiento.monto" name="monto" placeholder="0.00" maxlength="12"
-          (input)="soloNumeros($event)"
-          (blur)="validarErrores('monto')"
-          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
-          [ngClass]="{
-            'border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white': !erroresValidacion().monto && !erroresValidacion().saldoInsuficiente,
-            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().monto || erroresValidacion().saldoInsuficiente
-          }" />
-
-        <label for="monto" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
-          peer-placeholder-shown:scale-100
-          peer-placeholder-shown:-translate-y-1/2
-          peer-placeholder-shown:top-1/2
-          peer-focus:top-2
-          peer-focus:scale-75
-          peer-focus:-translate-y-4
-          start-1" 
-          [ngClass]="{
-            'text-body dark:text-slate-400 peer-focus:text-fg-brand': !erroresValidacion().monto && !erroresValidacion().saldoInsuficiente,
-            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().monto || erroresValidacion().saldoInsuficiente
-          }">
-          Monto
-        </label>
-      </div>
-
-      @if (erroresValidacion().monto) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> El monto no puede estar vacio o ser 0
-      </p>
-      }
-      @if (erroresValidacion().saldoInsuficiente) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> El egreso no puede ser mayor al saldo disponible de la cuenta
-      </p>
-      }
-    </div>
-
-    <div class="mb-6">
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 mt-1.5 pointer-events-none">
-          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-            fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6h8m-8 4h12M6 14h8m-8 4h12"/>
-          </svg>
-        </div>
-        <input type="text" id="descripcion" [(ngModel)]="movimiento.descripcion" name="descripcion" placeholder="" 
-          (change)="validarErrores('descripcion')"
-          maxlength="100"
-          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0"
-          [ngClass]="{
-            'border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white': !erroresValidacion().descripcion,
-            'border-danger focus:border-danger text-fg-danger-strong': erroresValidacion().descripcion
-          }" />
-
-        <label for="descripcion" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
-          peer-placeholder-shown:scale-100
-          peer-placeholder-shown:-translate-y-1/2
-          peer-placeholder-shown:top-1/2
-          peer-focus:top-2
-          peer-focus:scale-75
-          peer-focus:-translate-y-4
-          start-1" [ngClass]="{
-            'text-body dark:text-slate-400 peer-focus:text-fg-brand': !erroresValidacion().descripcion,
-            'text-fg-danger-strong peer-focus:text-danger': erroresValidacion().descripcion
-          }">
-          Descripcion
-        </label>
-      </div>
-
-      @if (erroresValidacion().descripcion) {
-      <p class="mt-2 text-sm text-fg-danger-strong">
-        <span class="font-medium">¡Error!</span> La descripcion no debe estar vacia
-      </p>
-      }
-    </div>
-
-    <div class="mb-6">
-      <div class="relative">
-        <div class="absolute top-3 start-0 flex items-start ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-            fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3-4v4m-6 8h6m-6 4h6"/>
-          </svg>
-        </div>
-        <textarea id="notas" [(ngModel)]="movimiento.notas" name="notas" placeholder=""
-          rows="3" maxlength="1000"
-          class="peer block w-full ps-8 px-2.5 pb-2.5 pt-4 text-sm rounded-base appearance-none border bg-white dark:bg-slate-700 focus:outline-none focus:ring-0 border-default-medium dark:border-slate-600 focus:border-brand text-heading dark:text-white resize-none"></textarea>
-        <label for="notas" class="absolute text-sm duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white dark:bg-slate-700 px-2
-          peer-placeholder-shown:scale-100
-          peer-placeholder-shown:top-6
-          peer-focus:top-2
-          peer-focus:scale-75
-          peer-focus:-translate-y-4
-          start-1 text-body dark:text-slate-400 peer-focus:text-fg-brand">
-          Notas
-        </label>
-      </div>
-    </div>
-  </form>
-
-  <div class="flex justify-end mt-6 space-x-4">
-    <button (click)="modal.close()" class="text-body bg-neutral-secondary-medium border border-default-medium
-      hover:bg-neutral-tertiary-medium hover:text-heading cursor-pointer
-      rounded-base text-sm px-4 py-2.5">
-      Cancelar
-    </button>
-
-    <button (click)="guardar()" class="text-white bg-brand hover:bg-brand-strong cursor-pointer
-      rounded-base text-sm px-4 py-2.5">
-      {{ editando ? 'Actualizar' : 'Guardar' }}
-    </button>
   </div>
-
-</app-modal>
+}

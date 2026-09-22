@@ -85,4 +85,21 @@ export class MovimientosService {
   eliminarEtiqueta(id: number) {
     return this.http.delete(`${this.api}/movimientos/etiquetas/${id}`);
   }
+
+  // Movimientos Rápidos
+  consultarMovimientosRapidos() {
+    return this.http.get<any[]>(`${this.api}/movimientos-rapidos`);
+  }
+
+  crearMovimientoRapido(data: any) {
+    return this.http.post<any>(`${this.api}/movimientos-rapidos`, data);
+  }
+
+  actualizarMovimientoRapido(id: number | string, data: any) {
+    return this.http.put<any>(`${this.api}/movimientos-rapidos/${id}`, data);
+  }
+
+  eliminarMovimientoRapido(id: number | string) {
+    return this.http.delete<any>(`${this.api}/movimientos-rapidos/${id}`);
+  }
 }
