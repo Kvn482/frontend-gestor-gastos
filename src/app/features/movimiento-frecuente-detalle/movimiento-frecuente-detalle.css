@@ -1,0 +1,6 @@
+/* Estilos complementarios para movimiento frecuente detalle */
+:host {
+  display: block;
+  width: 100%;
+}
+

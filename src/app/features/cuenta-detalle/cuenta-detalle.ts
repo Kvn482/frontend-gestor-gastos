@@ -128,6 +128,10 @@ export class CuentaDetalle implements OnInit {
       .subscribe(({ idCuenta, cuentas, movimientos }) => {
         this.aplicarDetalle(idCuenta, cuentas, movimientos);
       });
+
+    this.cuentasService.refreshBalanceObservable$.subscribe(() => {
+      this.recargarDetalle();
+    });
   }
 
   get esCredito(): boolean {

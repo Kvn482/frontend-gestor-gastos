@@ -218,12 +218,12 @@
                       {{ rapido.tipoMovimiento === 2 ? '-' : '+' }}{{ rapido.monto | currency: 'MXN' : 'symbol-narrow' }}
                     </span>
 
-                    <!-- Botón Lápiz para editar antes de guardar -->
+                    <!-- Botón Lápiz para editar atajo frecuente -->
                     <button
                       type="button"
                       (click)="editarMovimientoRapido(rapido, $event)"
                       class="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white border border-slate-200 dark:border-slate-700 flex items-center justify-center transition cursor-pointer"
-                      title="Modificar antes de guardar"
+                      title="Editar atajo frecuente"
                     >
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
@@ -642,7 +642,9 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                 </svg>
               </button>
-              <h2 class="text-sm font-bold text-slate-900 dark:text-white">Nuevo Movimiento Frecuente</h2>
+              <h2 class="text-sm font-bold text-slate-900 dark:text-white">
+                {{ frecuenteEditandoId ? 'Editar Movimiento Frecuente' : 'Nuevo Movimiento Frecuente' }}
+              </h2>
             </div>
 
             <button
@@ -794,7 +796,7 @@
               @if (isloading()) {
                 Guardando...
               } @else {
-                Guardar Movimiento Frecuente
+                {{ frecuenteEditandoId ? 'Guardar Cambios' : 'Guardar Movimiento Frecuente' }}
               }
             </button>
           </div>

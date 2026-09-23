@@ -1,0 +1,393 @@
+<div class="max-w-xl mx-auto space-y-5 pt-2 pb-12 transition-colors duration-200">
+
+  <!-- ==================== HEADER NATIVO MÓVIL ==================== -->
+  <div class="flex items-center justify-between px-1">
+    <!-- Botón Volver -->
+    <button
+      type="button"
+      (click)="volver()"
+      class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-xs"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+      <span>Movimientos Frecuentes</span>
+    </button>
+
+    <!-- Acciones en el Header (Eliminar + Guardar) -->
+    @if (cargando) {
+      <div class="h-8 w-20 bg-slate-200/60 dark:bg-slate-800/60 rounded-xl animate-pulse"></div>
+    } @else {
+      <div class="flex items-center gap-2">
+        @if (!esNuevo) {
+          <button
+            type="button"
+            (click)="eliminar()"
+            [disabled]="eliminando || guardando"
+            class="w-8 h-8 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+            title="Eliminar atajo frecuente"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        }
+
+        <button
+          type="button"
+          (click)="guardar()"
+          [disabled]="!formValido || !hayCambios || guardando"
+          class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs"
+          [class.bg-indigo-600]="formValido && hayCambios && !guardando"
+          [class.hover:bg-indigo-500]="formValido && hayCambios && !guardando"
+          [class.text-white]="formValido && hayCambios && !guardando"
+          [class.shadow-indigo-600/30]="formValido && hayCambios && !guardando"
+          [class.active:scale-95]="formValido && hayCambios && !guardando"
+          [class.cursor-pointer]="formValido && hayCambios && !guardando"
+          [class.bg-slate-200/70]="!formValido || !hayCambios || guardando"
+          [class.dark:bg-slate-800/70]="!formValido || !hayCambios || guardando"
+          [class.text-slate-400]="!formValido || !hayCambios || guardando"
+          [class.dark:text-slate-500]="!formValido || !hayCambios || guardando"
+          [class.cursor-not-allowed]="!formValido || !hayCambios || guardando"
+        >
+          @if (guardando) {
+            <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>Guardando...</span>
+          } @else {
+            <span>{{ esNuevo ? 'Crear Atajo' : 'Guardar' }}</span>
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (cargando) {
+    <!-- ==================== SKELETON LOADER UX ==================== -->
+    <div class="space-y-5 animate-pulse">
+      <div class="px-1 space-y-2">
+        <div class="h-7 w-52 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+        <div class="h-3.5 w-72 bg-slate-200/70 dark:bg-slate-800/70 rounded-lg"></div>
+      </div>
+
+      <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center">
+        <div class="w-16 h-16 rounded-2xl bg-slate-200 dark:bg-slate-800 mb-3"></div>
+        <div class="h-5 w-40 bg-slate-200 dark:bg-slate-800 rounded-lg mb-2"></div>
+        <div class="h-4 w-24 bg-slate-200/70 dark:bg-slate-800/70 rounded-full"></div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 h-16"></div>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 h-20"></div>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 h-20"></div>
+      </div>
+    </div>
+  } @else {
+
+    <!-- ==================== ENCABEZADO DE PANTALLA ==================== -->
+    <div class="px-1">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+        {{ esNuevo ? 'Nuevo Movimiento Frecuente' : 'Editar Movimiento Frecuente' }}
+      </h1>
+      <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+        {{ esNuevo ? 'Crea un atajo para registrar tus gastos o ingresos habituales en un solo toque' : 'Modifica los valores del atajo preconfigurado' }}
+      </p>
+    </div>
+
+    <!-- ==================== HERO PREVIEW (VISTA PREVIA EN VIVO) ==================== -->
+    <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+      <!-- Glow dinámico basado en el color de la categoría -->
+      <div
+        class="absolute -top-10 left-1/2 -translate-x-1/2 w-48 h-24 rounded-full blur-2xl pointer-events-none opacity-25 transition-colors"
+        [style.background-color]="form.categoria?.color || '#6366f1'"
+      ></div>
+
+      <!-- Icono de categoría -->
+      <div class="relative mb-3">
+        <div
+          class="w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform"
+          [style.background-color]="form.categoria?.color || '#6366f1'"
+          [style.box-shadow]="'0 8px 20px -4px ' + (form.categoria?.color || '#6366f1') + '66'"
+        >
+          <ng-icon [name]="getIconName(form.categoria?.icono || 'tag')" class="text-3xl" />
+        </div>
+      </div>
+
+      <!-- Nombre del atajo -->
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white truncate max-w-sm">
+        {{ form.nombre.trim() || 'Nombre del atajo' }}
+      </h2>
+
+      <!-- Monto en vivo -->
+      <div class="mt-1">
+        <span
+          class="text-xl font-black tracking-tight"
+          [class.text-rose-600]="form.tipoMovimiento === 2"
+          [class.dark:text-rose-400]="form.tipoMovimiento === 2"
+          [class.text-emerald-600]="form.tipoMovimiento === 1"
+          [class.dark:text-emerald-400]="form.tipoMovimiento === 1"
+        >
+          {{ form.tipoMovimiento === 2 ? '-' : '+' }}${{ (form.monto ? (form.monto | number:'1.2-2') : '0.00') }}
+        </span>
+      </div>
+
+      <!-- Detalles: Tipo + Cuenta + Etiqueta -->
+      <div class="flex items-center gap-2 mt-2.5 flex-wrap justify-center">
+        <span
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase"
+          [class.bg-rose-500/15]="form.tipoMovimiento === 2"
+          [class.text-rose-600]="form.tipoMovimiento === 2"
+          [class.dark:text-rose-400]="form.tipoMovimiento === 2"
+          [class.bg-emerald-500/15]="form.tipoMovimiento === 1"
+          [class.text-emerald-600]="form.tipoMovimiento === 1"
+          [class.dark:text-emerald-400]="form.tipoMovimiento === 1"
+        >
+          {{ form.tipoMovimiento === 2 ? 'Gasto' : 'Ingreso' }}
+        </span>
+
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+          {{ cuentaSeleccionadaNombre }}
+        </span>
+
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+          {{ form.categoria?.nombre || form.categoria?.categoria || 'Sin etiqueta' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ==================== FORMULARIO ==================== -->
+    <div class="space-y-4">
+
+      <!-- 1. TIPO DE MOVIMIENTO -->
+      <div>
+        <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+          TIPO DE MOVIMIENTO
+        </h3>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-2 shadow-sm grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            (click)="cambiarTipoMovimiento(2)"
+            class="flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer select-none"
+            [class.bg-rose-500]="form.tipoMovimiento === 2"
+            [class.text-white]="form.tipoMovimiento === 2"
+            [class.shadow-md]="form.tipoMovimiento === 2"
+            [class.shadow-rose-500/25]="form.tipoMovimiento === 2"
+            [class.text-slate-600]="form.tipoMovimiento !== 2"
+            [class.dark:text-slate-400]="form.tipoMovimiento !== 2"
+            [class.hover:bg-slate-100]="form.tipoMovimiento !== 2"
+            [class.dark:hover:bg-slate-800/50]="form.tipoMovimiento !== 2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" />
+            </svg>
+            <span>Gasto</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="cambiarTipoMovimiento(1)"
+            class="flex items-center justify-center gap-2 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer select-none"
+            [class.bg-emerald-600]="form.tipoMovimiento === 1"
+            [class.text-white]="form.tipoMovimiento === 1"
+            [class.shadow-md]="form.tipoMovimiento === 1"
+            [class.shadow-emerald-600/25]="form.tipoMovimiento === 1"
+            [class.text-slate-600]="form.tipoMovimiento !== 1"
+            [class.dark:text-slate-400]="form.tipoMovimiento !== 1"
+            [class.hover:bg-slate-100]="form.tipoMovimiento !== 1"
+            [class.dark:hover:bg-slate-800/50]="form.tipoMovimiento !== 1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+            </svg>
+            <span>Ingreso</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. NOMBRE DEL ATAJO -->
+      <div>
+        <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+          NOMBRE DEL ATAJO
+        </h3>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Nombre identificador *
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="form.nombre"
+            name="nombre"
+            maxlength="50"
+            required
+            placeholder="ej. Café matutino, Gasolina, Almuerzo, Uber..."
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors placeholder:text-slate-400 placeholder:font-normal"
+          />
+        </div>
+      </div>
+
+      <!-- 3. MONTO HABITUAL -->
+      <div>
+        <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+          MONTO HABITUAL
+        </h3>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Importe sugerido ($ MXN) *
+          </label>
+          <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+            <span class="text-base font-bold text-slate-400 select-none">$</span>
+            <input
+              type="text"
+              [(ngModel)]="form.monto"
+              name="monto"
+              inputmode="decimal"
+              placeholder="0.00"
+              (keydown)="permitirSoloDigitosYPunto($event)"
+              (input)="soloNumeros($event)"
+              class="w-full bg-transparent text-base font-bold text-gray-900 dark:text-white placeholder:text-slate-400 outline-none border-none p-0 focus:ring-0"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. ETIQUETA / CATEGORÍA -->
+      <div>
+        <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+          ETIQUETA
+        </h3>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <button
+            type="button"
+            (click)="abrirModalCategoria()"
+            class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between text-left transition cursor-pointer group"
+          >
+            <div class="flex items-center gap-3.5 min-w-0">
+              <div
+                class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
+                [style.backgroundColor]="form.categoria ? (form.categoria?.color || '#6366f1') + '1A' : '#64748b1A'"
+                [style.color]="form.categoria ? (form.categoria?.color || '#6366f1') : '#94a3b8'"
+              >
+                <ng-icon [name]="getIconName(form.categoria?.icono || 'tag')" class="text-2xl" />
+              </div>
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Categoría seleccionada</span>
+                <span
+                  class="text-sm font-bold truncate block"
+                  [class.text-slate-900]="form.categoria"
+                  [class.dark:text-white]="form.categoria"
+                  [class.text-slate-400]="!form.categoria"
+                >
+                  {{ form.categoria ? (form.categoria?.nombre || form.categoria?.categoria) : 'Seleccionar etiqueta *' }}
+                </span>
+              </div>
+            </div>
+
+            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 shrink-0 ml-2">
+              {{ form.categoria ? 'Cambiar' : 'Elegir' }} →
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. CUENTA ASOCIADA -->
+      <div>
+        <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
+          CUENTA ASOCIADA
+        </h3>
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Cuenta de donde se debitará / abonará *
+          </label>
+          <select
+            [(ngModel)]="form.cuentaId"
+            name="cuentaId"
+            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-indigo-500 transition-colors"
+            [class.text-gray-900]="form.cuentaId"
+            [class.dark:text-white]="form.cuentaId"
+            [class.text-slate-400]="!form.cuentaId"
+          >
+            <option value="" disabled selected class="bg-white dark:bg-slate-900 text-slate-400">
+              Seleccionar una cuenta *
+            </option>
+            @for (cuenta of cuentas; track cuenta.id) {
+              <option [value]="cuenta.id" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                {{ cuenta.nombre }} ({{ cuenta.tipo }})
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+  <!-- ==================== MODAL SELECTOR DE CATEGORÍA ==================== -->
+  <app-modal
+    [isOpen]="modalCategoriaAbierto"
+    (closed)="cerrarModalCategoria()"
+    modalTitle="Seleccionar Etiqueta"
+  >
+    <div class="space-y-4">
+      <!-- Buscador -->
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [(ngModel)]="busquedaCategoria"
+          placeholder="Buscar etiqueta por nombre..."
+          class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-gray-900 dark:text-white rounded-xl ps-9 pe-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+        />
+        @if (busquedaCategoria.trim()) {
+          <button
+            type="button"
+            (click)="busquedaCategoria = ''"
+            class="absolute inset-y-0 end-0 pe-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+
+      <!-- Lista de Categorías en Cuadrícula -->
+      <div class="max-h-72 overflow-y-auto pr-1 grid grid-cols-2 gap-2">
+        @for (cat of etiquetasFiltradas; track cat.id) {
+          <button
+            type="button"
+            (click)="seleccionarCategoria(cat)"
+            class="p-2.5 rounded-xl border flex items-center gap-2.5 text-left transition-all cursor-pointer"
+            [class.bg-indigo-50]="form.categoria?.id === cat.id"
+            [class.dark:bg-indigo-950/30]="form.categoria?.id === cat.id"
+            [class.border-indigo-500]="form.categoria?.id === cat.id"
+            [class.bg-slate-50]="form.categoria?.id !== cat.id"
+            [class.dark:bg-slate-900/50]="form.categoria?.id !== cat.id"
+            [class.border-slate-200]="form.categoria?.id !== cat.id"
+            [class.dark:border-slate-800]="form.categoria?.id !== cat.id"
+            [class.hover:border-indigo-300]="form.categoria?.id !== cat.id"
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              [style.backgroundColor]="(cat.color || '#6366f1') + '1A'"
+              [style.color]="cat.color || '#6366f1'"
+            >
+              <ng-icon [name]="getIconName(cat.icono)" class="text-lg" />
+            </div>
+            <span class="text-xs font-bold text-slate-900 dark:text-white truncate">
+              {{ cat.nombre || cat.categoria }}
+            </span>
+          </button>
+        } @empty {
+          <div class="col-span-2 py-8 text-center text-slate-400 text-xs font-medium">
+            No se encontraron etiquetas para "{{ busquedaCategoria }}"
+          </div>
+        }
+      </div>
+    </div>
+  </app-modal>
+
+</div>

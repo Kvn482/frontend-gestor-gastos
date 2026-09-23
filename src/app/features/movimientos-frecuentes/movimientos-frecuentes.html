@@ -22,7 +22,7 @@
 
       <button
         type="button"
-        (click)="abrirCrear()"
+        (click)="irACrear()"
         class="w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xs shadow-indigo-600/30"
         title="Crear nuevo atajo frecuente"
         aria-label="Crear nuevo atajo frecuente"
@@ -158,7 +158,7 @@
         } @else if (movimientosFrecuentes.length === 0) {
           <button
             type="button"
-            (click)="abrirCrear()"
+            (click)="irACrear()"
             class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-xs shadow-indigo-600/30"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@
       <div class="space-y-2.5">
         @for (item of frecuentesFiltrados; track item.id) {
           <div
-            (click)="abrirEditar(item)"
+            (click)="irADetalle(item)"
             class="w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-indigo-300 dark:hover:border-slate-700 transition-all cursor-pointer group"
           >
             <!-- Lado izquierdo: Icono + Detalles -->
@@ -209,8 +209,8 @@
               </div>
             </div>
 
-            <!-- Lado derecho: Monto + Botón rápido eliminar -->
-            <div class="flex items-center gap-3 shrink-0 ml-3">
+            <!-- Lado derecho: Monto + Indicador 'Editar' igual que en etiquetas -->
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-3">
               <span
                 class="text-sm sm:text-base font-black tracking-tight"
                 [class.text-rose-600]="item.tipoMovimiento === 2"
@@ -221,18 +221,15 @@
                 {{ item.tipoMovimiento === 2 ? '-' : '+' }}${{ item.monto | number:'1.2-2' }}
               </span>
 
-              <!-- Botón rápido eliminar -->
-              <button
-                type="button"
-                (click)="eliminar(item.id, $event)"
-                class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition cursor-pointer"
-                title="Eliminar atajo"
-                aria-label="Eliminar atajo"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              <!-- Flecha Chevron e indicador 'Editar' igual que en etiquetas -->
+              <div class="flex items-center gap-1 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pl-1 shrink-0">
+                <span class="text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
+                  Editar
+                </span>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
-              </button>
+              </div>
             </div>
           </div>
         }
@@ -241,259 +238,3 @@
   }
 
 </div>
-
-<!-- ========================================================================= -->
-<!-- MODAL: CREAR / EDITAR MOVIMIENTO FRECUENTE                               -->
-<!-- ========================================================================= -->
-@if (modalFormularioAbierto) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" (click)="cerrarFormulario()">
-    <div
-      class="bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="p-6 space-y-4">
-        <!-- Header Form -->
-        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3">
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              (click)="cerrarFormulario()"
-              class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition cursor-pointer"
-              title="Volver"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
-            </button>
-            <div>
-              <h3 class="text-base font-bold text-gray-900 dark:text-white">
-                {{ editandoId ? 'Editar Frecuente' : 'Nuevo Frecuente' }}
-              </h3>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                {{ editandoId ? 'Modifica los valores del atajo' : 'Crea una plantilla rápida' }}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            (click)="cerrarFormulario()"
-            class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
-
-        <!-- Campos Formulario -->
-        <div class="space-y-3.5 max-h-[60vh] overflow-y-auto pr-0.5">
-          <!-- Selector Tipo (Gasto / Ingreso) -->
-          <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
-            <button
-              type="button"
-              (click)="cambiarTipoMovimiento(2)"
-              class="py-2 text-xs font-bold rounded-xl transition cursor-pointer"
-              [class.bg-white]="form.tipoMovimiento === 2"
-              [class.dark:bg-slate-800]="form.tipoMovimiento === 2"
-              [class.text-rose-600]="form.tipoMovimiento === 2"
-              [class.dark:text-rose-400]="form.tipoMovimiento === 2"
-              [class.shadow-xs]="form.tipoMovimiento === 2"
-              [class.text-slate-500]="form.tipoMovimiento !== 2"
-            >
-              Gasto
-            </button>
-            <button
-              type="button"
-              (click)="cambiarTipoMovimiento(1)"
-              class="py-2 text-xs font-bold rounded-xl transition cursor-pointer"
-              [class.bg-white]="form.tipoMovimiento === 1"
-              [class.dark:bg-slate-800]="form.tipoMovimiento === 1"
-              [class.text-emerald-600]="form.tipoMovimiento === 1"
-              [class.dark:text-emerald-400]="form.tipoMovimiento === 1"
-              [class.shadow-xs]="form.tipoMovimiento === 1"
-              [class.text-slate-500]="form.tipoMovimiento !== 1"
-            >
-              Ingreso
-            </button>
-          </div>
-
-          <!-- Nombre -->
-          <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-              Nombre del atajo
-            </span>
-            <input
-              type="text"
-              [(ngModel)]="form.nombre"
-              placeholder="Ej. Café matutino, Gasolina, Almuerzo"
-              maxlength="50"
-              class="w-full bg-transparent text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none border-none p-0 focus:ring-0"
-            />
-          </div>
-
-          <!-- Monto -->
-          <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-              Monto habitual
-            </span>
-            <div class="flex items-center gap-1.5">
-              <span class="text-base font-bold text-slate-400">$</span>
-              <input
-                type="text"
-                [(ngModel)]="form.monto"
-                inputmode="decimal"
-                placeholder="0.00"
-                (keydown)="permitirSoloDigitosYPunto($event)"
-                (input)="soloNumeros($event)"
-                class="w-full bg-transparent text-base font-bold text-slate-900 dark:text-white placeholder-slate-400 outline-none border-none p-0 focus:ring-0"
-              />
-            </div>
-          </div>
-
-          <!-- Etiqueta -->
-          <button
-            type="button"
-            (click)="abrirSelectorCategorias()"
-            class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-left transition cursor-pointer"
-          >
-            <div class="flex items-center gap-3">
-              <div
-                class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                [style.backgroundColor]="form.categoria ? (form.categoria?.color || '#6366f1') + '1A' : '#64748b1A'"
-                [style.color]="form.categoria ? (form.categoria?.color || '#6366f1') : '#94a3b8'"
-              >
-                <ng-icon [name]="getIconName(form.categoria?.icono || 'tag')" class="text-xl" />
-              </div>
-              <div>
-                <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Etiqueta</span>
-                <span
-                  class="text-xs font-bold"
-                  [class.text-slate-900]="form.categoria"
-                  [class.dark:text-white]="form.categoria"
-                  [class.text-slate-400]="!form.categoria"
-                >
-                  {{ form.categoria ? (form.categoria?.nombre || form.categoria?.categoria) : 'Seleccionar etiqueta *' }}
-                </span>
-              </div>
-            </div>
-            <span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold">
-              {{ form.categoria ? 'Cambiar' : 'Elegir' }}
-            </span>
-          </button>
-
-          <!-- Cuenta -->
-          <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-            <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-              Cuenta asociada
-            </span>
-            <select
-              [(ngModel)]="form.cuentaId"
-              class="w-full bg-transparent text-xs font-bold outline-none border-none p-0 cursor-pointer focus:ring-0"
-              [class.text-slate-900]="form.cuentaId"
-              [class.dark:text-white]="form.cuentaId"
-              [class.text-slate-400]="!form.cuentaId"
-            >
-              <option [value]="''" disabled selected class="bg-white dark:bg-slate-900 text-slate-400">
-                Seleccionar una cuenta *
-              </option>
-              @for (cuenta of cuentas; track cuenta.id) {
-                <option [value]="cuenta.id" class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                  {{ cuenta.nombre }}
-                </option>
-              }
-            </select>
-          </div>
-        </div>
-
-        <!-- Footer Form -->
-        <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2.5">
-          <button
-            type="button"
-            (click)="cerrarFormulario()"
-            class="py-2.5 px-4 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold text-xs transition cursor-pointer"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            (click)="guardar()"
-            [disabled]="guardando || !form.nombre.trim() || !form.monto || !form.categoria?.id || !form.cuentaId"
-            class="flex-1 py-2.5 px-4 rounded-xl text-white font-bold text-xs bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/25 active:scale-[0.99] transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center"
-          >
-            @if (guardando) {
-              Guardando...
-            } @else {
-              {{ editandoId ? 'Guardar Cambios' : 'Crear Atajo' }}
-            }
-          </button>
-        </div>
-      </div>
-
-      <!-- ========================================================================= -->
-      <!-- OVERLAY SELECTOR DE ETIQUETAS PARA FRECUENTES                            -->
-      <!-- ========================================================================= -->
-      @if (mostrarSelectorCategorias) {
-        <div class="absolute inset-0 z-50 bg-white dark:bg-[#131b2a] flex flex-col">
-          <!-- Header Selector -->
-          <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Selecciona una etiqueta</h3>
-            <button
-              type="button"
-              (click)="cerrarSelectorCategorias()"
-              class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Buscador de Etiqueta -->
-          <div class="p-4 border-b border-slate-100 dark:border-slate-800/60">
-            <div class="relative">
-              <input
-                type="text"
-                [(ngModel)]="busquedaCategoria"
-                placeholder="Buscar etiqueta..."
-                class="w-full py-2 pl-9 pr-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-500"
-              />
-              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Cuadrícula de Etiquetas -->
-          <div class="p-4 grid grid-cols-3 gap-2.5 overflow-y-auto flex-1 content-start auto-rows-max">
-            @for (cat of categoriasFiltradas; track cat.id) {
-              <button
-                type="button"
-                (click)="seleccionarCategoria(cat)"
-                class="p-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer active:scale-95 border min-h-[88px]"
-                [class.bg-indigo-50]="form.categoria?.id === cat.id"
-                [class.dark:bg-indigo-950/30]="form.categoria?.id === cat.id"
-                [class.border-indigo-500]="form.categoria?.id === cat.id"
-                [class.bg-slate-50]="form.categoria?.id !== cat.id"
-                [class.dark:bg-slate-900/50]="form.categoria?.id !== cat.id"
-                [class.hover:bg-slate-100]="form.categoria?.id !== cat.id"
-                [class.dark:hover:bg-slate-800]="form.categoria?.id !== cat.id"
-                [class.border-slate-200/80]="form.categoria?.id !== cat.id"
-                [class.dark:border-slate-800/80]="form.categoria?.id !== cat.id"
-              >
-                <div
-                  class="w-10 h-10 rounded-xl flex items-center justify-center shadow-xs"
-                  [style.backgroundColor]="(cat.color || '#6366f1') + '1A'"
-                  [style.color]="cat.color || '#6366f1'"
-                >
-                  <ng-icon [name]="getIconName(cat.icono)" class="text-xl" />
-                </div>
-                <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-200 truncate w-full">
-                  {{ cat.nombre || cat.categoria }}
-                </span>
-              </button>
-            }
-          </div>
-        </div>
-      }
-    </div>
-  </div>
-}
-

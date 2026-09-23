@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Subject, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AlertaCredito } from '../models/alerta-credito.interface';
+import { MovimientosService } from './movimientos.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +13,13 @@ export class CuentasService {
   private api = `${environment.apiUrl}/api/cuentas`;
   private cuentasActivasCache: any[] | null = null;
   private cuentasCache: any[] | null = null;
+  private movimientosService = inject(MovimientosService);
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.movimientosService.refreshBalanceObservable$.subscribe(() => {
+      this.notificarCambioBalance();
+    });
+  }
 
   // Subject para notificar cambios
   private refreshBalance$ = new Subject<void>();
@@ -22,7 +28,7 @@ export class CuentasService {
   refreshBalanceObservable$ = this.refreshBalance$.asObservable();
 
   // Método para emitir evento
-  private notificarCambioBalance() {
+  notificarCambioBalance() {
     this.invalidarCache();
     this.refreshBalance$.next();
   }

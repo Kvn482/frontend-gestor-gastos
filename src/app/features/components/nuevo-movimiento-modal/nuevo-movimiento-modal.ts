@@ -59,6 +59,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
   // Estado para creación directa de movimiento frecuente
   seleccionandoCategoriaParaFrecuente = false;
+  frecuenteEditandoId: string | number | null = null;
   nuevoFrecuente = {
     nombre: '',
     tipoMovimiento: 2, // 2 = Gasto, 1 = Ingreso
@@ -248,6 +249,10 @@ export class NuevoMovimientoModal implements OnChanges {
       descripcion: false,
     });
 
+    if (plantillaPrevia) {
+      this.validarErrores();
+    }
+
     this.cambiarVistaConTransicion(() => {
       this.vistaActual.set('formulario');
     });
@@ -281,6 +286,7 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   irACrearFrecuente() {
+    this.frecuenteEditandoId = null;
     this.nuevoFrecuente = {
       nombre: '',
       tipoMovimiento: 2,
@@ -294,6 +300,7 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   cancelarCrearFrecuente() {
+    this.frecuenteEditandoId = null;
     this.cambiarVistaConTransicion(() => {
       this.vistaActual.set('rapidos');
     });
@@ -377,18 +384,25 @@ export class NuevoMovimientoModal implements OnChanges {
       nombre,
       tipoMovimiento: Number(this.nuevoFrecuente.tipoMovimiento),
       monto,
-      cuentaId: Number(this.nuevoFrecuente.cuenta),
+      cuentaId: this.nuevoFrecuente.cuenta ? String(this.nuevoFrecuente.cuenta) : null,
       categoriaId: Number(this.nuevoFrecuente.categoria.id),
       icono: this.nuevoFrecuente.categoria?.icono || 'tag',
       color: this.nuevoFrecuente.categoria?.color || '#6366f1',
     };
 
-    this.movimientosService
-      .crearMovimientoRapido(payload)
+    const peticion$ = this.frecuenteEditandoId
+      ? this.movimientosService.actualizarMovimientoRapido(this.frecuenteEditandoId, payload)
+      : this.movimientosService.crearMovimientoRapido(payload);
+
+    peticion$
       .pipe(finalize(() => this.isloading.set(false)))
       .subscribe({
         next: () => {
-          this.toastService.show('✓ Movimiento frecuente creado', 'success');
+          this.toastService.show(
+            this.frecuenteEditandoId ? '✓ Movimiento frecuente actualizado' : '✓ Movimiento frecuente creado',
+            'success'
+          );
+          this.frecuenteEditandoId = null;
           this.cargarMovimientosRapidos();
           this.cambiarVistaConTransicion(() => {
             this.vistaActual.set('rapidos');
@@ -406,6 +420,7 @@ export class NuevoMovimientoModal implements OnChanges {
     this.haIntentadoGuardar.set(false);
     this.mostrarSelectorCategorias = false;
     this.mostrarSelectorFecha = false;
+    this.frecuenteEditandoId = null;
 
     setTimeout(() => {
       this.isClosing = false;
@@ -466,11 +481,28 @@ export class NuevoMovimientoModal implements OnChanges {
 
   ejecutarMovimientoRapido(rapido: MovimientoRapido) {
     if (this.isloading()) return;
-    this.isloading.set(true);
 
     const cuentaId = rapido.cuentaId || this.movimiento.cuenta || (this.cuentas[0]?.id ?? '1');
     const tipo = Number(rapido.tipoMovimiento);
     const montoCalculado = tipo === 2 ? Math.abs(Number(rapido.monto)) * -1 : Math.abs(Number(rapido.monto));
+
+    // Validar saldo suficiente para egresos
+    if (tipo === 2) {
+      const cuentaObj = this.cuentas.find((c) => String(c.id) === String(cuentaId));
+      if (cuentaObj && cuentaObj.tipo !== 'CREDITO') {
+        const saldoDisponible = this.saldoMostradoCuenta(cuentaObj);
+        const montoGasto = Math.abs(Number(rapido.monto));
+        if (montoGasto > saldoDisponible) {
+          this.toastService.show(
+            `Saldo insuficiente en ${cuentaObj.nombre} (Disponible: $${saldoDisponible.toFixed(2)})`,
+            'error'
+          );
+          return;
+        }
+      }
+    }
+
+    this.isloading.set(true);
 
     // Determinar etiqueta válida
     let etiquetasIds: number[] = [];
@@ -534,7 +566,27 @@ export class NuevoMovimientoModal implements OnChanges {
 
   editarMovimientoRapido(rapido: MovimientoRapido, event: Event) {
     event.stopPropagation();
-    this.irAFormulario(rapido.tipoMovimiento === 2 ? 'gasto' : 'ingreso', rapido);
+    this.frecuenteEditandoId = rapido.id;
+
+    const cat = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(rapido.categoriaId)) || {
+      id: rapido.categoriaId,
+      nombre: rapido.categoriaNombre || 'General',
+      color: rapido.categoriaColor || '#6366f1',
+      icono: rapido.categoriaIcono || 'tag',
+      tipo: Number(rapido.tipoMovimiento) === 1 ? 'ingreso' : 'gasto',
+    };
+
+    this.nuevoFrecuente = {
+      nombre: rapido.nombre,
+      tipoMovimiento: Number(rapido.tipoMovimiento),
+      monto: String(Math.abs(rapido.monto)),
+      cuenta: rapido.cuentaId ? String(rapido.cuentaId) : '',
+      categoria: cat,
+    };
+
+    this.cambiarVistaConTransicion(() => {
+      this.vistaActual.set('crear-frecuente');
+    });
   }
 
   eliminarMovimientoRapido(id: string | number, event: Event) {
