@@ -21,6 +21,9 @@ export interface MovimientoFrecuenteItem {
   categoriaNombre?: string;
   categoriaColor?: string;
   categoriaIcono?: string;
+  color?: string;
+  icono?: string;
+  etiquetas?: any[];
 }
 
 @Component({
@@ -110,8 +113,14 @@ export class MovimientosFrecuentes implements OnInit {
 
       // Filtro de búsqueda
       if (q) {
+        const nombresEtiquetas = Array.isArray(m.etiquetas)
+          ? m.etiquetas
+              .map((e: any) => (typeof e === 'object' && e !== null ? (e.nombre || e.categoria) : ''))
+              .filter(Boolean)
+              .join(' ')
+          : '';
         const texto = this.normalizarTexto(
-          `${m.nombre ?? ''} ${m.cuentaNombre ?? ''} ${m.categoriaNombre ?? ''}`
+          `${m.nombre ?? ''} ${m.cuentaNombre ?? ''} ${m.categoriaNombre ?? ''} ${nombresEtiquetas}`
         );
         if (!texto.includes(q)) return false;
       }
@@ -120,6 +129,69 @@ export class MovimientosFrecuentes implements OnInit {
     });
   }
 
+  conteoEtiquetasExtra(item: MovimientoFrecuenteItem): number {
+    if (Array.isArray(item.etiquetas) && item.etiquetas.length > 1) {
+      return item.etiquetas.length - 1;
+    }
+    return 0;
+  }
+
+  obtenerNombreEtiquetaPrincipal(item: MovimientoFrecuenteItem): string {
+    if (Array.isArray(item.etiquetas) && item.etiquetas.length > 0) {
+      const primera = item.etiquetas[0];
+      const nombre = typeof primera === 'object' && primera !== null ? (primera.nombre || primera.categoria) : null;
+      if (nombre) return nombre;
+      if (typeof primera === 'number' || typeof primera === 'string') {
+        const encontrada = this.etiquetas.find((e) => String(e.id) === String(primera));
+        if (encontrada) return encontrada.nombre || encontrada.categoria || 'General';
+      }
+    }
+    return item.categoriaNombre || 'General';
+  }
+
+  obtenerTextoEtiquetasExtra(item: MovimientoFrecuenteItem): string {
+    if (Array.isArray(item.etiquetas) && item.etiquetas.length > 1) {
+      return item.etiquetas
+        .slice(1)
+        .map((e: any) => {
+          if (typeof e === 'object' && e !== null) return e.nombre || e.categoria;
+          const encontrada = this.etiquetas.find((et) => String(et.id) === String(e));
+          return encontrada ? (encontrada.nombre || encontrada.categoria) : '';
+        })
+        .filter(Boolean)
+        .join(', ');
+    }
+    return '';
+  }
+
+  obtenerColorPrincipal(item: MovimientoFrecuenteItem): string {
+    if (Array.isArray(item.etiquetas) && item.etiquetas.length > 0) {
+      const primera = item.etiquetas[0];
+      if (typeof primera === 'object' && primera?.color) return primera.color;
+    }
+    return item.categoriaColor || (item as any).color || '#6366f1';
+  }
+
+  obtenerIconoPrincipal(item: MovimientoFrecuenteItem): string {
+    if (Array.isArray(item.etiquetas) && item.etiquetas.length > 0) {
+      const primera = item.etiquetas[0];
+      if (typeof primera === 'object' && primera?.icono) return primera.icono;
+    }
+    return item.categoriaIcono || (item as any).icono || 'tag';
+  }
+
+  obtenerNombreCuenta(item: MovimientoFrecuenteItem): string {
+    if (item.cuentaNombre) return item.cuentaNombre;
+    if (item.cuentaId && this.cuentas.length > 0) {
+      const c = this.cuentas.find((cuenta) => String(cuenta.id) === String(item.cuentaId));
+      if (c) return c.nombre;
+    }
+    return 'Sin cuenta fija';
+  }
+
+  obtenerMontoAbsoluto(monto: number | string): number {
+    return Math.abs(Number(monto) || 0);
+  }
 
   getIconName(iconName?: string): string {
     return getCategoryIconName(iconName || 'tag');

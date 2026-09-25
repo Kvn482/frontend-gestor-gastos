@@ -180,10 +180,10 @@
             <div class="flex items-center gap-3.5 min-w-0 flex-1">
               <div
                 class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
-                [style.backgroundColor]="(item.categoriaColor || '#6366f1') + '1A'"
-                [style.color]="item.categoriaColor || '#6366f1'"
+                [style.backgroundColor]="obtenerColorPrincipal(item) + '1A'"
+                [style.color]="obtenerColorPrincipal(item)"
               >
-                <ng-icon [name]="getIconName(item.categoriaIcono)" class="text-xl" />
+                <ng-icon [name]="getIconName(obtenerIconoPrincipal(item))" class="text-xl" />
               </div>
 
               <div class="min-w-0 flex-1">
@@ -205,7 +205,7 @@
                 </div>
                 <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                   <span class="truncate">
-                    {{ item.cuentaNombre || 'Sin cuenta fija' }} · {{ obtenerNombreEtiquetaPrincipal(item) }}
+                    {{ obtenerNombreCuenta(item) }} · {{ obtenerNombreEtiquetaPrincipal(item) }}
                   </span>
                   @if (conteoEtiquetasExtra(item) > 0) {
                     <span
@@ -228,7 +228,7 @@
                 [class.text-emerald-600]="item.tipoMovimiento === 1"
                 [class.dark:text-emerald-400]="item.tipoMovimiento === 1"
               >
-                {{ item.tipoMovimiento === 2 ? '-' : '+' }}${{ item.monto | number:'1.2-2' }}
+                {{ item.tipoMovimiento === 2 ? '-' : '+' }}${{ obtenerMontoAbsoluto(item.monto) | number:'1.2-2' }}
               </span>
 
               <!-- Flecha Chevron e indicador 'Editar' igual que en etiquetas -->

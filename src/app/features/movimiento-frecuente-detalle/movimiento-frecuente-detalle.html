@@ -151,6 +151,11 @@
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
           {{ form.categoria?.nombre || form.categoria?.categoria || 'Sin etiqueta' }}
         </span>
+        @if (form.etiquetas.length > 1) {
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+            +{{ form.etiquetas.length - 1 }} más
+          </span>
+        }
       </div>
     </div>
 
@@ -252,15 +257,15 @@
       <!-- 4. ETIQUETA / CATEGORÍA -->
       <div>
         <h3 class="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase px-2 mb-2">
-          ETIQUETA
+          {{ form.etiquetas.length > 1 ? 'ETIQUETAS' : 'ETIQUETA' }}
         </h3>
-        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm">
+        <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3">
           <button
             type="button"
             (click)="abrirModalCategoria()"
             class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between text-left transition cursor-pointer group"
           >
-            <div class="flex items-center gap-3.5 min-w-0">
+            <div class="flex items-center gap-3.5 min-w-0 flex-1">
               <div
                 class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
                 [style.backgroundColor]="form.categoria ? (form.categoria?.color || '#6366f1') + '1A' : '#64748b1A'"
@@ -268,23 +273,56 @@
               >
                 <ng-icon [name]="getIconName(form.categoria?.icono || 'tag')" class="text-2xl" />
               </div>
-              <div class="min-w-0">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Categoría seleccionada</span>
+              <div class="min-w-0 flex-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  {{ form.etiquetas.length > 1 ? 'Etiquetas seleccionadas' : 'Categoría seleccionada' }}
+                </span>
                 <span
                   class="text-sm font-bold truncate block"
                   [class.text-slate-900]="form.categoria"
                   [class.dark:text-white]="form.categoria"
                   [class.text-slate-400]="!form.categoria"
                 >
-                  {{ form.categoria ? (form.categoria?.nombre || form.categoria?.categoria) : 'Seleccionar etiqueta *' }}
+                  @if (form.etiquetas.length === 0) {
+                    Seleccionar una o más etiquetas *
+                  } @else if (form.etiquetas.length === 1) {
+                    {{ form.categoria?.nombre || form.categoria?.categoria }}
+                  } @else {
+                    <span class="inline-flex items-center gap-1.5 overflow-hidden">
+                      <span class="truncate">{{ form.categoria?.nombre || form.categoria?.categoria }}</span>
+                      <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
+                        +{{ form.etiquetas.length - 1 }} más
+                      </span>
+                    </span>
+                  }
                 </span>
               </div>
             </div>
 
             <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 shrink-0 ml-2">
-              {{ form.categoria ? 'Cambiar' : 'Elegir' }} →
+              {{ form.etiquetas.length ? 'Cambiar' : 'Elegir' }} →
             </span>
           </button>
+
+          <!-- Badges de etiquetas seleccionadas con botón para remover -->
+          @if (form.etiquetas.length > 0) {
+            <div class="flex flex-wrap gap-1.5 pt-0.5">
+              @for (tag of form.etiquetas; track tag.id) {
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700">
+                  <span class="w-2 h-2 rounded-full shrink-0" [style.backgroundColor]="tag.color || '#6366f1'"></span>
+                  <span class="truncate max-w-[120px]">{{ tag.nombre || tag.categoria }}</span>
+                  <button
+                    type="button"
+                    (click)="quitarEtiqueta(tag, $event)"
+                    class="p-0.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                    title="Quitar etiqueta"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </span>
+              }
+            </div>
+          }
         </div>
       </div>
 
@@ -325,9 +363,13 @@
   <app-modal
     [isOpen]="modalCategoriaAbierto"
     (closed)="cerrarModalCategoria()"
-    modalTitle="Seleccionar Etiqueta"
+    modalTitle="Seleccionar Etiquetas"
   >
     <div class="space-y-4">
+      <p class="text-xs text-slate-500 dark:text-slate-400 -mt-2">
+        Selecciona una o más etiquetas para clasificar este atajo frecuente.
+      </p>
+
       <!-- Buscador -->
       <div class="relative">
         <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-slate-400">
@@ -355,21 +397,30 @@
       </div>
 
       <!-- Lista de Categorías en Cuadrícula -->
-      <div class="max-h-72 overflow-y-auto pr-1 grid grid-cols-2 gap-2">
+      <div class="max-h-72 overflow-y-auto pr-1 grid grid-cols-2 sm:grid-cols-3 gap-2">
         @for (cat of etiquetasFiltradas; track cat.id) {
           <button
             type="button"
             (click)="seleccionarCategoria(cat)"
-            class="p-2.5 rounded-xl border flex items-center gap-2.5 text-left transition-all cursor-pointer"
-            [class.bg-indigo-50]="form.categoria?.id === cat.id"
-            [class.dark:bg-indigo-950/30]="form.categoria?.id === cat.id"
-            [class.border-indigo-500]="form.categoria?.id === cat.id"
-            [class.bg-slate-50]="form.categoria?.id !== cat.id"
-            [class.dark:bg-slate-900/50]="form.categoria?.id !== cat.id"
-            [class.border-slate-200]="form.categoria?.id !== cat.id"
-            [class.dark:border-slate-800]="form.categoria?.id !== cat.id"
-            [class.hover:border-indigo-300]="form.categoria?.id !== cat.id"
+            class="relative p-2.5 rounded-xl border flex items-center gap-2.5 text-left transition-all cursor-pointer"
+            [class.bg-indigo-50]="estaEtiquetaSeleccionada(cat)"
+            [class.dark:bg-indigo-950/30]="estaEtiquetaSeleccionada(cat)"
+            [class.border-indigo-500]="estaEtiquetaSeleccionada(cat)"
+            [class.ring-1]="estaEtiquetaSeleccionada(cat)"
+            [class.ring-indigo-500]="estaEtiquetaSeleccionada(cat)"
+            [class.bg-slate-50]="!estaEtiquetaSeleccionada(cat)"
+            [class.dark:bg-slate-900/50]="!estaEtiquetaSeleccionada(cat)"
+            [class.border-slate-200]="!estaEtiquetaSeleccionada(cat)"
+            [class.dark:border-slate-800]="!estaEtiquetaSeleccionada(cat)"
+            [class.hover:border-indigo-300]="!estaEtiquetaSeleccionada(cat)"
           >
+            @if (estaEtiquetaSeleccionada(cat)) {
+              <div class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
+            }
             <div
               class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
               [style.backgroundColor]="(cat.color || '#6366f1') + '1A'"
@@ -382,10 +433,24 @@
             </span>
           </button>
         } @empty {
-          <div class="col-span-2 py-8 text-center text-slate-400 text-xs font-medium">
+          <div class="col-span-full py-8 text-center text-slate-400 text-xs font-medium">
             No se encontraron etiquetas para "{{ busquedaCategoria }}"
           </div>
         }
+      </div>
+
+      <!-- Footer del modal con contador y botón Listo -->
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+          {{ form.etiquetas.length }} seleccionada{{ form.etiquetas.length === 1 ? '' : 's' }}
+        </span>
+        <button
+          type="button"
+          (click)="cerrarModalCategoria()"
+          class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+        >
+          Listo
+        </button>
       </div>
     </div>
   </app-modal>

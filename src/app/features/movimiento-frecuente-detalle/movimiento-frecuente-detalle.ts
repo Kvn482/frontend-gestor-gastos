@@ -53,7 +53,17 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         return this.etiquetas[0] || null;
       },
       set categoria(cat: any | null) {
-        this.etiquetas = cat ? [cat] : [];
+        if (!cat) {
+          this.etiquetas = [];
+        } else {
+          const idx = this.etiquetas.findIndex((e) => String(e.id) === String(cat.id));
+          if (idx < 0) {
+            this.etiquetas = [cat, ...this.etiquetas];
+          } else if (idx > 0) {
+            const item = this.etiquetas.splice(idx, 1)[0];
+            this.etiquetas.unshift(item);
+          }
+        }
       },
     };
   }
@@ -135,16 +145,15 @@ export class MovimientoFrecuenteDetalle implements OnInit {
             this.etiquetas = res;
             if (this.form.etiquetas.length > 0) {
               this.form.etiquetas = this.form.etiquetas.map((t) => {
-                const encontrada = this.etiquetas.find((e) => String(e.id) === String(t.id));
+                const targetId = typeof t === 'object' && t !== null ? t.id : t;
+                const encontrada = this.etiquetas.find((e) => String(e.id) === String(targetId));
                 return encontrada || t;
               });
-              this.form.categoria = this.form.etiquetas[0] || null;
             } else if (this.form.categoria?.id) {
               const encontrada = this.etiquetas.find(
                 (e) => String(e.id) === String(this.form.categoria.id)
               );
               if (encontrada) {
-                this.form.categoria = encontrada;
                 this.form.etiquetas = [encontrada];
               }
             }
@@ -312,7 +321,6 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     this.form.tipoMovimiento = tipo;
     const tipoRequerido = tipo === 1 ? 'ingreso' : 'gasto';
     this.form.etiquetas = this.form.etiquetas.filter((cat) => !cat.tipo || cat.tipo === tipoRequerido);
-    this.form.categoria = this.form.etiquetas[0] || null;
     this.cd.detectChanges();
   }
 
@@ -333,7 +341,6 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     } else {
       this.form.etiquetas.push(cat);
     }
-    this.form.categoria = this.form.etiquetas[0] || null;
     this.cd.detectChanges();
   }
 
@@ -344,7 +351,6 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   quitarEtiqueta(cat: any, event?: Event): void {
     if (event) event.stopPropagation();
     this.form.etiquetas = this.form.etiquetas.filter((e) => String(e.id) !== String(cat.id));
-    this.form.categoria = this.form.etiquetas[0] || null;
     this.cd.detectChanges();
   }
 
@@ -420,16 +426,16 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     }
 
     this.guardando = true;
-    const primera = this.form.etiquetas[0];
+    const primera = this.form.categoria || this.form.etiquetas[0];
     const payload = {
       nombre,
       tipoMovimiento: Number(this.form.tipoMovimiento),
       monto,
       cuentaId: String(this.form.cuentaId).trim(),
-      categoriaId: Number(primera.id),
-      etiquetas: this.form.etiquetas.map((e) => Number(e.id)),
-      icono: primera?.icono || 'tag',
-      color: primera?.color || '#6366f1',
+      categoriaId: Number(typeof primera === 'object' && primera !== null ? primera.id : primera),
+      etiquetas: this.form.etiquetas.map((e) => Number(typeof e === 'object' && e !== null ? e.id : e)),
+      icono: (typeof primera === 'object' && primera !== null ? primera.icono : null) || 'tag',
+      color: (typeof primera === 'object' && primera !== null ? primera.color : null) || '#6366f1',
     };
 
     if (this.esNuevo) {

@@ -191,5 +191,25 @@ describe('MovimientoFrecuenteDetalle', () => {
     expect(swalSpy).toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
   });
+
+  it('debe permitir seleccionar y quitar múltiples etiquetas', async () => {
+    await setupTestBed('nuevo');
+
+    const cat1 = mockEtiquetas[0];
+    const cat2 = mockEtiquetas[1];
+
+    component.seleccionarCategoria(cat1);
+    expect(component.estaEtiquetaSeleccionada(cat1)).toBe(true);
+    expect(component.form.etiquetas.length).toBe(1);
+
+    component.seleccionarCategoria(cat2);
+    expect(component.estaEtiquetaSeleccionada(cat2)).toBe(true);
+    expect(component.form.etiquetas.length).toBe(2);
+
+    component.quitarEtiqueta(cat1);
+    expect(component.estaEtiquetaSeleccionada(cat1)).toBe(false);
+    expect(component.estaEtiquetaSeleccionada(cat2)).toBe(true);
+    expect(component.form.etiquetas.length).toBe(1);
+  });
 });
 
