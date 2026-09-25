@@ -705,7 +705,7 @@
             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl">
               <button
                 type="button"
-                (click)="nuevoFrecuente.tipoMovimiento = 2"
+                (click)="cambiarTipoFrecuente(2)"
                 class="py-2 text-xs font-bold rounded-xl transition cursor-pointer"
                 [class.bg-white]="nuevoFrecuente.tipoMovimiento === 2"
                 [class.dark:bg-slate-800]="nuevoFrecuente.tipoMovimiento === 2"
@@ -718,7 +718,7 @@
               </button>
               <button
                 type="button"
-                (click)="nuevoFrecuente.tipoMovimiento = 1"
+                (click)="cambiarTipoFrecuente(1)"
                 class="py-2 text-xs font-bold rounded-xl transition cursor-pointer"
                 [class.bg-white]="nuevoFrecuente.tipoMovimiento === 1"
                 [class.dark:bg-slate-800]="nuevoFrecuente.tipoMovimiento === 1"
@@ -885,7 +885,7 @@
           <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
             <div>
               <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                {{ seleccionandoCategoriaParaFrecuente ? 'Selecciona las etiquetas del atajo' : 'Selecciona las etiquetas' }}
+                {{ esSeleccionFrecuente ? 'Selecciona las etiquetas del atajo' : 'Selecciona las etiquetas' }}
               </h3>
               <p class="text-[11px] text-slate-500 dark:text-slate-400">
                 Puedes seleccionar una o más etiquetas
@@ -960,7 +960,7 @@
           <!-- Footer de confirmación para selección múltiple -->
           <div class="p-3 border-t border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#131b2a] flex items-center justify-between">
             <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
-              {{ (seleccionandoCategoriaParaFrecuente ? nuevoFrecuente.etiquetas.length : etiquetasSeleccionadas.length) }} seleccionada{{ (seleccionandoCategoriaParaFrecuente ? nuevoFrecuente.etiquetas.length : etiquetasSeleccionadas.length) === 1 ? '' : 's' }}
+              {{ (esSeleccionFrecuente ? nuevoFrecuente.etiquetas.length : etiquetasSeleccionadas.length) }} seleccionada{{ (esSeleccionFrecuente ? nuevoFrecuente.etiquetas.length : etiquetasSeleccionadas.length) === 1 ? '' : 's' }}
             </span>
             <button
               type="button"

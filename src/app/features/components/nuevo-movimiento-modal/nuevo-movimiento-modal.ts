@@ -332,6 +332,18 @@ export class NuevoMovimientoModal implements OnChanges {
     });
   }
 
+  cambiarTipoFrecuente(tipo: number) {
+    if (this.nuevoFrecuente.tipoMovimiento === tipo) return;
+    this.nuevoFrecuente.tipoMovimiento = tipo;
+    const tipoRequerido = tipo === 1 ? 'ingreso' : 'gasto';
+    this.nuevoFrecuente.etiquetas = this.nuevoFrecuente.etiquetas.filter((e) => {
+      const eTipo = (e.tipo || '').toLowerCase();
+      return !eTipo || eTipo === tipoRequerido;
+    });
+    this.nuevoFrecuente.categoria = this.nuevoFrecuente.etiquetas[0] || null;
+    this.cd.detectChanges();
+  }
+
   abrirSelectorCategoriasFrecuente() {
     this.seleccionandoCategoriaParaFrecuente = true;
     this.abrirSelectorCategorias();
@@ -685,15 +697,20 @@ export class NuevoMovimientoModal implements OnChanges {
   // ==========================================
   // GESTIÓN DE CATEGORÍAS
   // ==========================================
+  get esSeleccionFrecuente(): boolean {
+    return this.seleccionandoCategoriaParaFrecuente || this.vistaActual() === 'crear-frecuente';
+  }
+
   get categoriasFiltradas(): any[] {
-    const esIngreso = this.seleccionandoCategoriaParaFrecuente
+    const esIngreso = this.esSeleccionFrecuente
       ? Number(this.nuevoFrecuente.tipoMovimiento) === 1
       : Number(this.movimiento.tipoMovimiento) === 1;
+    const tipoRequerido = esIngreso ? 'ingreso' : 'gasto';
     const query = this.busquedaCategoria.trim().toLowerCase();
 
     return this.etiquetasDisponibles.filter((cat) => {
-      // Coincidencia con tipo si está presente
-      const coincideTipo = cat.tipo ? (esIngreso ? cat.tipo === 'ingreso' : cat.tipo === 'gasto') : true;
+      const catTipo = (cat.tipo || '').toLowerCase();
+      const coincideTipo = catTipo ? catTipo === tipoRequerido : true;
       if (!coincideTipo) return false;
 
       if (!query) return true;
@@ -713,7 +730,7 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   seleccionarCategoria(cat: any) {
-    if (this.seleccionandoCategoriaParaFrecuente) {
+    if (this.esSeleccionFrecuente) {
       const idx = this.nuevoFrecuente.etiquetas.findIndex((e) => String(e.id) === String(cat.id));
       if (idx >= 0) {
         this.nuevoFrecuente.etiquetas.splice(idx, 1);
@@ -737,7 +754,7 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   estaEtiquetaSeleccionada(cat: any): boolean {
-    if (this.seleccionandoCategoriaParaFrecuente) {
+    if (this.esSeleccionFrecuente) {
       return this.nuevoFrecuente.etiquetas.some((e) => String(e.id) === String(cat.id));
     }
     return this.etiquetasSeleccionadas.some((e) => String(e.id) === String(cat.id));
@@ -1135,10 +1152,13 @@ export class NuevoMovimientoModal implements OnChanges {
     if (!this.movimientoEditar) return;
 
     this.movimiento = {
-      tipoMovimiento: Number(this.movimientoEditar.id_tipo_movimiento ?? 2),
+      tipoMovimiento: Number(
+        this.movimientoEditar.id_tipo_movimiento ?? this.movimientoEditar.tipoMovimiento ?? 2
+      ),
       cuenta: String(
         this.movimientoEditar.id_cuenta ??
         this.movimientoEditar.cuenta_id ??
+        this.movimientoEditar.cuenta ??
         this.cuentaInicialId ??
         ''
       ),
@@ -1161,6 +1181,12 @@ export class NuevoMovimientoModal implements OnChanges {
           found ?? (typeof tag === 'object' ? tag : { id, nombre: 'Etiqueta ' + id, icono: 'tag' })
         );
       });
+    } else if (this.movimientoEditar?.categoriaId || this.movimientoEditar?.id_categoria) {
+      const catId = this.movimientoEditar.categoriaId ?? this.movimientoEditar.id_categoria;
+      const found = this.etiquetasDisponibles.find((item) => String(item.id) === String(catId));
+      this.etiquetasSeleccionadas = [
+        found ?? { id: catId, nombre: this.movimientoEditar.categoria ?? 'General', icono: 'tag' },
+      ];
     } else {
       this.etiquetasSeleccionadas = [];
     }

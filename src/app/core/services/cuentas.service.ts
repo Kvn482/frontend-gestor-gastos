@@ -4,6 +4,7 @@ import { Subject, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AlertaCredito } from '../models/alerta-credito.interface';
 import { MovimientosService } from './movimientos.service';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,11 +14,16 @@ export class CuentasService {
   private api = `${environment.apiUrl}/api/cuentas`;
   private cuentasActivasCache: any[] | null = null;
   private cuentasCache: any[] | null = null;
+  private usuarioIdCache: string | null = null;
   private movimientosService = inject(MovimientosService);
+  private authService = inject(AuthService);
 
   constructor(private http: HttpClient) {
     this.movimientosService.refreshBalanceObservable$.subscribe(() => {
       this.notificarCambioBalance();
+    });
+    this.authService.sesionCerrada$.subscribe(() => {
+      this.invalidarCache();
     });
   }
 
@@ -36,6 +42,24 @@ export class CuentasService {
   invalidarCache(): void {
     this.cuentasActivasCache = null;
     this.cuentasCache = null;
+    this.usuarioIdCache = null;
+  }
+
+  private obtenerUsuarioActualId(): string | null {
+    const decoded = this.authService.getDecodedToken();
+    const id = decoded?.id ?? decoded?.sub;
+    if (typeof id === 'string' || typeof id === 'number') {
+      return String(id);
+    }
+    return this.authService.getAccessToken();
+  }
+
+  private verificarUsuarioCache(): void {
+    const usuarioActual = this.obtenerUsuarioActualId();
+    if (this.usuarioIdCache !== usuarioActual) {
+      this.invalidarCache();
+      this.usuarioIdCache = usuarioActual;
+    }
   }
 
   crearCuenta(data: any) {
@@ -55,6 +79,7 @@ export class CuentasService {
   }
 
   consultarCuentas() {
+    this.verificarUsuarioCache();
     if (this.cuentasCache) {
       return of(this.cuentasCache);
     }
@@ -66,6 +91,7 @@ export class CuentasService {
   }
 
   consultarCuentasActivas() {
+    this.verificarUsuarioCache();
     if (this.cuentasActivasCache) {
       return of(this.cuentasActivasCache);
     }
@@ -81,7 +107,11 @@ export class CuentasService {
   }
 
   updateStatus(id: string, status: number) {
-    return this.http.patch(`${this.api}/update-status`, { id_cuenta: id, status });
+    return this.http.patch(`${this.api}/update-status`, { id_cuenta: id, status }).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
   }
 
   transferirSaldo(data: {
