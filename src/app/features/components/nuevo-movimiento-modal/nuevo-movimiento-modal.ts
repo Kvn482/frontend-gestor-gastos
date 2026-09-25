@@ -1,6 +1,7 @@
 import {
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   ElementRef,
   EventEmitter,
   HostListener,
@@ -10,14 +11,18 @@ import {
   SimpleChanges,
   ViewChild,
   signal,
+  inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
-import { finalize } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs';
 import { MovimientosService } from '../../../core/services/movimientos.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CuentasService } from '../../../core/services/cuentas.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { MovimientosRapidosCacheService } from '../../../core/services/movimientos-rapidos-cache.service';
 import { getCategoryIconName } from '../../../shared/utils/category-icons';
 
 export interface MovimientoRapido {
@@ -41,6 +46,9 @@ export interface MovimientoRapido {
   styleUrl: './nuevo-movimiento-modal.css',
 })
 export class NuevoMovimientoModal implements OnChanges {
+  private authService = inject(AuthService);
+  private movimientosRapidosCache = inject(MovimientosRapidosCacheService);
+  private destroyRef = inject(DestroyRef);
   @Input() isOpen = false;
   @Input() movimientoEditar: any | null = null;
   @Input() cuentaInicialId = '';
@@ -111,7 +119,11 @@ export class NuevoMovimientoModal implements OnChanges {
     private toastService: ToastService,
     private cuentasService: CuentasService,
     private cd: ChangeDetectorRef
-  ) {}
+  ) {
+    this.authService.sesionCerrada$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.movimientosRapidos.set([]);
+    });
+  }
 
   @HostListener('document:keydown.escape')
   onEscKey() {
@@ -431,51 +443,51 @@ export class NuevoMovimientoModal implements OnChanges {
   // ==========================================
   // GESTIÓN DE MOVIMIENTOS RÁPIDOS
   // ==========================================
-  private readonly STORAGE_KEY = 'monetra_movimientos_rapidos';
+  private get usuarioActualId(): string | null {
+    const id = this.authService.getDecodedToken()?.id;
+    return (typeof id === 'string' || typeof id === 'number') && String(id).trim()
+      ? String(id)
+      : null;
+  }
 
   cargarMovimientosRapidos() {
+    const usuarioId = this.usuarioActualId;
+    this.movimientosRapidos.set([]);
+    if (!usuarioId) return;
+
     // 1. Cargar desde el backend
-    this.movimientosService.consultarMovimientosRapidos().subscribe({
+    this.movimientosService.consultarMovimientosRapidos().pipe(
+      takeUntil(this.authService.sesionCerrada$),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: (res: any[]) => {
+        if (this.usuarioActualId !== usuarioId) return;
         const lista = Array.isArray(res) ? res : [];
         // Filtrar cualquier residuo de prueba
         const limpios = lista.filter((item) => !String(item.id).startsWith('rapido_'));
         this.movimientosRapidos.set(limpios);
-        this.guardarMovimientosRapidosEnStorage(limpios);
+        this.movimientosRapidosCache.guardar(usuarioId, limpios);
         this.cd.detectChanges();
       },
       error: () => {
+        if (this.usuarioActualId !== usuarioId) return;
         // Fallback local si el backend aún no responde o está offline
-        this.cargarDesdeLocalStorage();
+        this.cargarDesdeLocalStorage(usuarioId);
         this.cd.detectChanges();
       },
     });
   }
 
-  private cargarDesdeLocalStorage() {
-    try {
-      const guardados = localStorage.getItem(this.STORAGE_KEY);
-      if (guardados) {
-        const parsed = JSON.parse(guardados);
-        if (Array.isArray(parsed)) {
-          // Filtrar cualquier plantilla de prueba previa
-          const limpios = parsed.filter((item) => !String(item.id).startsWith('rapido_'));
-          this.movimientosRapidos.set(limpios);
-          return;
-        }
-      }
-    } catch {
-      // Ignorar error de parsing
-    }
-
-    this.movimientosRapidos.set([]);
+  private cargarDesdeLocalStorage(usuarioId: string) {
+    const guardados = this.movimientosRapidosCache.leer<MovimientoRapido>(usuarioId);
+    const limpios = guardados.filter((item) => item && !String(item.id).startsWith('rapido_'));
+    this.movimientosRapidos.set(limpios);
   }
 
   private guardarMovimientosRapidosEnStorage(lista: MovimientoRapido[]) {
-    try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(lista));
-    } catch {
-      // Ignorar quota
+    const usuarioId = this.usuarioActualId;
+    if (usuarioId) {
+      this.movimientosRapidosCache.guardar(usuarioId, lista);
     }
   }
 
