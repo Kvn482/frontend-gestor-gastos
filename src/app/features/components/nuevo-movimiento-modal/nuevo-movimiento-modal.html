@@ -200,9 +200,19 @@
                       <span class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {{ rapido.nombre }}
                       </span>
-                      <span class="text-[10px] text-slate-500 dark:text-slate-400">
-                        {{ rapido.cuentaNombre || 'Efectivo' }} · {{ rapido.categoriaNombre }}
-                      </span>
+                      <div class="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                        <span class="truncate">
+                          {{ rapido.cuentaNombre || 'Efectivo' }} · {{ obtenerNombreEtiquetaPrincipalRapido(rapido) }}
+                        </span>
+                        @if (conteoEtiquetasExtraRapido(rapido) > 0) {
+                          <span
+                            class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0"
+                            [title]="obtenerTextoEtiquetasExtraRapido(rapido)"
+                          >
+                            +{{ conteoEtiquetasExtraRapido(rapido) }}
+                          </span>
+                        }
+                      </div>
                     </div>
                   </div>
 
@@ -755,35 +765,67 @@
             </div>
 
             <!-- Etiqueta -->
-            <button
-              type="button"
-              (click)="abrirSelectorCategoriasFrecuente()"
-              class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-left transition cursor-pointer"
-            >
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  [style.backgroundColor]="nuevoFrecuente.categoria ? (nuevoFrecuente.categoria?.color || '#6366f1') + '1A' : '#64748b1A'"
-                  [style.color]="nuevoFrecuente.categoria ? (nuevoFrecuente.categoria?.color || '#6366f1') : '#94a3b8'"
-                >
-                  <ng-icon [name]="getIconName(nuevoFrecuente.categoria?.icono || 'tag')" class="text-xl" />
-                </div>
-                <div>
-                  <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">Etiqueta</span>
-                  <span
-                    class="text-sm font-bold"
-                    [class.text-slate-900]="nuevoFrecuente.categoria"
-                    [class.dark:text-white]="nuevoFrecuente.categoria"
-                    [class.text-slate-400]="!nuevoFrecuente.categoria"
+            <div class="space-y-2">
+              <button
+                type="button"
+                (click)="abrirSelectorCategoriasFrecuente()"
+                class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between text-left transition cursor-pointer group"
+              >
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div
+                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs transition-colors"
+                    [style.backgroundColor]="nuevoFrecuente.etiquetas.length ? ((nuevoFrecuente.categoria?.color || '#6366f1') + '1A') : 'rgba(148, 163, 184, 0.15)'"
+                    [style.color]="nuevoFrecuente.etiquetas.length ? (nuevoFrecuente.categoria?.color || '#6366f1') : '#94a3b8'"
                   >
-                    {{ nuevoFrecuente.categoria ? (nuevoFrecuente.categoria?.nombre || nuevoFrecuente.categoria?.categoria) : 'Seleccionar etiqueta *' }}
-                  </span>
+                    <ng-icon [name]="getIconName(nuevoFrecuente.categoria?.icono || 'tag')" class="text-xl" />
+                  </div>
+                  <div class="min-w-0 flex flex-col flex-1">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                      {{ nuevoFrecuente.etiquetas.length > 1 ? 'Etiquetas' : 'Etiqueta' }} *
+                    </span>
+                    @if (nuevoFrecuente.etiquetas.length === 1) {
+                      <span class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                        {{ nuevoFrecuente.categoria?.nombre || nuevoFrecuente.categoria?.categoria }}
+                      </span>
+                    } @else if (nuevoFrecuente.etiquetas.length > 1) {
+                      <div class="flex items-center gap-1.5 overflow-hidden">
+                        <span class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                          {{ nuevoFrecuente.categoria?.nombre || nuevoFrecuente.categoria?.categoria }}
+                        </span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
+                          +{{ nuevoFrecuente.etiquetas.length - 1 }} más
+                        </span>
+                      </div>
+                    } @else {
+                      <span class="text-sm font-medium text-slate-400 dark:text-slate-500 italic">
+                        Seleccionar una o más etiquetas *
+                      </span>
+                    }
+                  </div>
                 </div>
-              </div>
-              <span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold">
-                {{ nuevoFrecuente.categoria ? 'Cambiar' : 'Elegir' }}
-              </span>
-            </button>
+                <span class="text-xs text-indigo-600 dark:text-indigo-400 font-bold shrink-0 ml-2">
+                  {{ nuevoFrecuente.etiquetas.length ? 'Cambiar' : 'Elegir' }}
+                </span>
+              </button>
+
+              @if (nuevoFrecuente.etiquetas.length > 1) {
+                <div class="flex flex-wrap gap-1.5 px-1 pt-0.5">
+                  @for (tag of nuevoFrecuente.etiquetas; track tag.id) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700">
+                      <span class="w-2 h-2 rounded-full shrink-0" [style.backgroundColor]="tag.color || '#6366f1'"></span>
+                      <span class="truncate max-w-[120px]">{{ tag.nombre || tag.categoria }}</span>
+                      <button
+                        type="button"
+                        (click)="quitarEtiquetaFrecuente(tag, $event)"
+                        class="p-0.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                      >
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </span>
+                  }
+                </div>
+              }
+            </div>
 
             <!-- Cuenta Habitual -->
             <div class="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
@@ -821,7 +863,7 @@
             <button
               type="button"
               (click)="guardarNuevoFrecuente()"
-              [disabled]="isloading() || !nuevoFrecuente.nombre.trim() || !nuevoFrecuente.monto || !nuevoFrecuente.categoria?.id || !nuevoFrecuente.cuenta"
+              [disabled]="isloading() || !nuevoFrecuente.nombre.trim() || !nuevoFrecuente.monto || !nuevoFrecuente.etiquetas.length || !nuevoFrecuente.cuenta"
               class="flex-1 py-3 px-4 rounded-2xl text-white font-bold text-xs bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/25 active:scale-[0.99] transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (isloading()) {
@@ -843,13 +885,11 @@
           <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
             <div>
               <h3 class="text-sm font-bold text-slate-900 dark:text-white">
-                {{ seleccionandoCategoriaParaFrecuente ? 'Selecciona una etiqueta' : 'Selecciona las etiquetas' }}
+                {{ seleccionandoCategoriaParaFrecuente ? 'Selecciona las etiquetas del atajo' : 'Selecciona las etiquetas' }}
               </h3>
-              @if (!seleccionandoCategoriaParaFrecuente) {
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                  Puedes seleccionar una o más etiquetas
-                </p>
-              }
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                Puedes seleccionar una o más etiquetas
+              </p>
             </div>
             <button
               type="button"
@@ -918,20 +958,18 @@
           </div>
 
           <!-- Footer de confirmación para selección múltiple -->
-          @if (!seleccionandoCategoriaParaFrecuente) {
-            <div class="p-3 border-t border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#131b2a] flex items-center justify-between">
-              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
-                {{ etiquetasSeleccionadas.length }} seleccionada{{ etiquetasSeleccionadas.length === 1 ? '' : 's' }}
-              </span>
-              <button
-                type="button"
-                (click)="cerrarSelectorCategorias()"
-                class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
-              >
-                Listo
-              </button>
-            </div>
-          }
+          <div class="p-3 border-t border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#131b2a] flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {{ (seleccionandoCategoriaParaFrecuente ? nuevoFrecuente.etiquetas.length : etiquetasSeleccionadas.length) }} seleccionada{{ (seleccionandoCategoriaParaFrecuente ? nuevoFrecuente.etiquetas.length : etiquetasSeleccionadas.length) === 1 ? '' : 's' }}
+            </span>
+            <button
+              type="button"
+              (click)="cerrarSelectorCategorias()"
+              class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+            >
+              Listo
+            </button>
+          </div>
         </div>
       }
 

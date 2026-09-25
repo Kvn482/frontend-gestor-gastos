@@ -41,14 +41,24 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   modalCategoriaAbierto = false;
   busquedaCategoria = '';
 
-  form = {
-    id: null as number | string | null,
-    nombre: '',
-    tipoMovimiento: 2, // 2: gasto, 1: ingreso
-    monto: '',
-    cuentaId: '',
-    categoria: null as any,
-  };
+  crearFormularioVacio() {
+    return {
+      id: null as number | string | null,
+      nombre: '',
+      tipoMovimiento: 2, // 2: gasto, 1: ingreso
+      monto: '',
+      cuentaId: '',
+      etiquetas: [] as any[],
+      get categoria(): any | null {
+        return this.etiquetas[0] || null;
+      },
+      set categoria(cat: any | null) {
+        this.etiquetas = cat ? [cat] : [];
+      },
+    };
+  }
+
+  form = this.crearFormularioVacio();
 
   formOriginal = {
     nombre: '',
@@ -56,6 +66,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     monto: '',
     cuentaId: '',
     categoriaId: null as number | string | null,
+    etiquetasIds: [] as (number | string)[],
   };
 
   ngOnInit(): void {
@@ -65,20 +76,14 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         this.esNuevo = true;
         this.idFrecuente = null;
         this.cargando = false;
-        this.form = {
-          id: null,
-          nombre: '',
-          tipoMovimiento: 2,
-          monto: '',
-          cuentaId: '',
-          categoria: null,
-        };
+        this.form = this.crearFormularioVacio();
         this.formOriginal = {
           nombre: '',
           tipoMovimiento: 2,
           monto: '',
           cuentaId: '',
           categoriaId: null,
+          etiquetasIds: [],
         };
         this.cargarCatalogos();
       } else {
@@ -128,12 +133,19 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         next: (res: any) => {
           if (Array.isArray(res)) {
             this.etiquetas = res;
-            if (this.form.categoria?.id) {
+            if (this.form.etiquetas.length > 0) {
+              this.form.etiquetas = this.form.etiquetas.map((t) => {
+                const encontrada = this.etiquetas.find((e) => String(e.id) === String(t.id));
+                return encontrada || t;
+              });
+              this.form.categoria = this.form.etiquetas[0] || null;
+            } else if (this.form.categoria?.id) {
               const encontrada = this.etiquetas.find(
                 (e) => String(e.id) === String(this.form.categoria.id)
               );
               if (encontrada) {
                 this.form.categoria = encontrada;
+                this.form.etiquetas = [encontrada];
               }
             }
           }
@@ -178,23 +190,35 @@ export class MovimientoFrecuenteDetalle implements OnInit {
       cuentaId = String(rawCuentaId).trim();
     }
 
-    const cat = {
-      id: item.categoriaId ?? item.id_etiqueta,
-      nombre: item.categoriaNombre || item.nombreCategoria || 'General',
-      color: item.categoriaColor || item.color || '#6366f1',
-      icono: item.categoriaIcono || item.icono || 'tag',
-    };
+    let tags: any[] = [];
+    if (Array.isArray(item.etiquetas) && item.etiquetas.length > 0) {
+      tags = item.etiquetas.map((t: any) => {
+        const encontrada = this.etiquetas.find((e) => String(e.id) === String(t.id));
+        return encontrada || t;
+      });
+    } else if (item.categoriaId || item.id_etiqueta) {
+      const catId = item.categoriaId ?? item.id_etiqueta;
+      const encontrada = this.etiquetas.find((e) => String(e.id) === String(catId));
+      tags = [
+        encontrada || {
+          id: catId,
+          nombre: item.categoriaNombre || item.nombreCategoria || 'General',
+          color: item.categoriaColor || item.color || '#6366f1',
+          icono: item.categoriaIcono || item.icono || 'tag',
+        },
+      ];
+    }
 
     const montoLimpio = String(Math.abs(Number(item.monto) || 0));
 
-    this.form = {
-      id: item.id,
-      nombre: item.nombre || '',
-      tipoMovimiento: Number(item.tipoMovimiento) === 1 ? 1 : 2,
-      monto: montoLimpio,
-      cuentaId,
-      categoria: cat,
-    };
+    const formActualizado = this.crearFormularioVacio();
+    formActualizado.id = item.id;
+    formActualizado.nombre = item.nombre || '';
+    formActualizado.tipoMovimiento = Number(item.tipoMovimiento) === 1 ? 1 : 2;
+    formActualizado.monto = montoLimpio;
+    formActualizado.cuentaId = cuentaId;
+    formActualizado.etiquetas = tags;
+    this.form = formActualizado;
 
     if (item.cuentaNombre && !cuentaId) {
       this.resolverCuentaPorNombre(item.cuentaNombre);
@@ -208,6 +232,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
       monto: this.form.monto,
       cuentaId: this.form.cuentaId,
       categoriaId: this.form.categoria?.id,
+      etiquetasIds: this.form.etiquetas.map((e) => String(e.id)),
     };
   }
 
@@ -242,15 +267,18 @@ export class MovimientoFrecuenteDetalle implements OnInit {
       return Boolean(
         this.form.nombre.trim() ||
         Number(this.form.monto) > 0 ||
-        this.form.categoria !== null
+        this.form.etiquetas.length > 0
       );
     }
+    const idsActuales = this.form.etiquetas.map((e) => String(e.id)).sort().join(',');
+    const idsOriginales = (this.formOriginal.etiquetasIds || []).map((id) => String(id)).sort().join(',');
+
     return (
       this.form.nombre.trim() !== this.formOriginal.nombre.trim() ||
       this.form.tipoMovimiento !== this.formOriginal.tipoMovimiento ||
       String(this.form.monto).trim() !== String(this.formOriginal.monto).trim() ||
       String(this.form.cuentaId).trim() !== String(this.formOriginal.cuentaId).trim() ||
-      String(this.form.categoria?.id ?? '') !== String(this.formOriginal.categoriaId ?? '')
+      idsActuales !== idsOriginales
     );
   }
 
@@ -260,7 +288,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     return Boolean(
       nombre &&
       monto > 0 &&
-      this.form.categoria?.id &&
+      this.form.etiquetas.length > 0 &&
       this.form.cuentaId
     );
   }
@@ -282,13 +310,9 @@ export class MovimientoFrecuenteDetalle implements OnInit {
 
   cambiarTipoMovimiento(tipo: number): void {
     this.form.tipoMovimiento = tipo;
-    // Si la categoría seleccionada tiene un tipo incompatible, la limpiamos
-    if (this.form.categoria?.tipo) {
-      const tipoRequerido = tipo === 1 ? 'ingreso' : 'gasto';
-      if (this.form.categoria.tipo !== tipoRequerido) {
-        this.form.categoria = null;
-      }
-    }
+    const tipoRequerido = tipo === 1 ? 'ingreso' : 'gasto';
+    this.form.etiquetas = this.form.etiquetas.filter((cat) => !cat.tipo || cat.tipo === tipoRequerido);
+    this.form.categoria = this.form.etiquetas[0] || null;
     this.cd.detectChanges();
   }
 
@@ -303,9 +327,24 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   }
 
   seleccionarCategoria(cat: any): void {
-    this.form.categoria = cat;
-    this.modalCategoriaAbierto = false;
-    this.busquedaCategoria = '';
+    const idx = this.form.etiquetas.findIndex((e) => String(e.id) === String(cat.id));
+    if (idx >= 0) {
+      this.form.etiquetas.splice(idx, 1);
+    } else {
+      this.form.etiquetas.push(cat);
+    }
+    this.form.categoria = this.form.etiquetas[0] || null;
+    this.cd.detectChanges();
+  }
+
+  estaEtiquetaSeleccionada(cat: any): boolean {
+    return this.form.etiquetas.some((e) => String(e.id) === String(cat.id));
+  }
+
+  quitarEtiqueta(cat: any, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.form.etiquetas = this.form.etiquetas.filter((e) => String(e.id) !== String(cat.id));
+    this.form.categoria = this.form.etiquetas[0] || null;
     this.cd.detectChanges();
   }
 
@@ -371,8 +410,8 @@ export class MovimientoFrecuenteDetalle implements OnInit {
       this.toastService.show('Ingresa un monto válido mayor a 0', 'warning');
       return;
     }
-    if (!this.form.categoria?.id) {
-      this.toastService.show('Selecciona una etiqueta para el atajo frecuente', 'warning');
+    if (!this.form.etiquetas || this.form.etiquetas.length === 0) {
+      this.toastService.show('Selecciona al menos una etiqueta para el atajo frecuente', 'warning');
       return;
     }
     if (!this.form.cuentaId) {
@@ -381,14 +420,16 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     }
 
     this.guardando = true;
+    const primera = this.form.etiquetas[0];
     const payload = {
       nombre,
       tipoMovimiento: Number(this.form.tipoMovimiento),
       monto,
       cuentaId: String(this.form.cuentaId).trim(),
-      categoriaId: Number(this.form.categoria.id),
-      icono: this.form.categoria?.icono || 'tag',
-      color: this.form.categoria?.color || '#6366f1',
+      categoriaId: Number(primera.id),
+      etiquetas: this.form.etiquetas.map((e) => Number(e.id)),
+      icono: primera?.icono || 'tag',
+      color: primera?.color || '#6366f1',
     };
 
     if (this.esNuevo) {

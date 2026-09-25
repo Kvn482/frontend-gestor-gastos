@@ -36,6 +36,7 @@ export interface MovimientoRapido {
   categoriaNombre: string;
   categoriaColor: string;
   categoriaIcono: string;
+  etiquetas?: any[];
 }
 
 @Component({
@@ -73,6 +74,7 @@ export class NuevoMovimientoModal implements OnChanges {
     tipoMovimiento: 2, // 2 = Gasto, 1 = Ingreso
     monto: '' as number | string,
     cuenta: '',
+    etiquetas: [] as any[],
     categoria: null as any,
   };
 
@@ -247,7 +249,12 @@ export class NuevoMovimientoModal implements OnChanges {
       if (plantillaPrevia.cuentaId) {
         this.movimiento.cuenta = String(plantillaPrevia.cuentaId);
       }
-      if (plantillaPrevia.categoriaId) {
+      if (Array.isArray(plantillaPrevia.etiquetas) && plantillaPrevia.etiquetas.length > 0) {
+        this.etiquetasSeleccionadas = plantillaPrevia.etiquetas.map((t: any) => {
+          const encontrada = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(t.id));
+          return encontrada || t;
+        });
+      } else if (plantillaPrevia.categoriaId) {
         const cat = this.etiquetasDisponibles.find((e) => e.id === plantillaPrevia.categoriaId);
         if (cat) this.categoriaSeleccionada = cat;
       }
@@ -310,6 +317,7 @@ export class NuevoMovimientoModal implements OnChanges {
       tipoMovimiento: 2,
       monto: '',
       cuenta: '',
+      etiquetas: [],
       categoria: null,
     };
     this.cambiarVistaConTransicion(() => {
@@ -327,6 +335,17 @@ export class NuevoMovimientoModal implements OnChanges {
   abrirSelectorCategoriasFrecuente() {
     this.seleccionandoCategoriaParaFrecuente = true;
     this.abrirSelectorCategorias();
+  }
+
+  quitarEtiquetaFrecuente(cat: any, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.nuevoFrecuente.etiquetas = this.nuevoFrecuente.etiquetas.filter(
+      (e) => String(e.id) !== String(cat.id)
+    );
+    this.nuevoFrecuente.categoria = this.nuevoFrecuente.etiquetas[0] || null;
+    this.cd.detectChanges();
   }
 
   permitirSoloDigitosYPunto(event: KeyboardEvent): void {
@@ -387,8 +406,8 @@ export class NuevoMovimientoModal implements OnChanges {
       this.toastService.show('Ingresa un monto válido mayor a 0', 'warning');
       return;
     }
-    if (!this.nuevoFrecuente.categoria?.id) {
-      this.toastService.show('Selecciona una etiqueta para el movimiento frecuente', 'warning');
+    if (!this.nuevoFrecuente.etiquetas || this.nuevoFrecuente.etiquetas.length === 0) {
+      this.toastService.show('Selecciona al menos una etiqueta para el movimiento frecuente', 'warning');
       return;
     }
     if (!this.nuevoFrecuente.cuenta) {
@@ -398,14 +417,16 @@ export class NuevoMovimientoModal implements OnChanges {
 
     this.isloading.set(true);
 
+    const primera = this.nuevoFrecuente.etiquetas[0];
     const payload = {
       nombre,
       tipoMovimiento: Number(this.nuevoFrecuente.tipoMovimiento),
       monto,
       cuentaId: this.nuevoFrecuente.cuenta ? String(this.nuevoFrecuente.cuenta) : null,
-      categoriaId: Number(this.nuevoFrecuente.categoria.id),
-      icono: this.nuevoFrecuente.categoria?.icono || 'tag',
-      color: this.nuevoFrecuente.categoria?.color || '#6366f1',
+      categoriaId: Number(primera.id),
+      etiquetas: this.nuevoFrecuente.etiquetas.map((e) => Number(e.id)),
+      icono: primera?.icono || 'tag',
+      color: primera?.color || '#6366f1',
     };
 
     const peticion$ = this.frecuenteEditandoId
@@ -522,13 +543,15 @@ export class NuevoMovimientoModal implements OnChanges {
 
     this.isloading.set(true);
 
-    // Determinar etiqueta válida
+    // Determinar etiquetas válidas
     let etiquetasIds: number[] = [];
-    if (rapido.categoriaId) {
-      etiquetasIds = [rapido.categoriaId];
+    if (Array.isArray(rapido.etiquetas) && rapido.etiquetas.length > 0) {
+      etiquetasIds = rapido.etiquetas.map((e: any) => Number(e.id || e)).filter((id) => !isNaN(id) && id > 0);
+    } else if (rapido.categoriaId) {
+      etiquetasIds = [Number(rapido.categoriaId)];
     } else {
       const encontrada = this.etiquetasDisponibles.find(
-        (e) => e.nombre?.toLowerCase() === rapido.categoriaNombre.toLowerCase()
+        (e) => e.nombre?.toLowerCase() === rapido.categoriaNombre?.toLowerCase()
       );
       if (encontrada) {
         etiquetasIds = [encontrada.id];
@@ -586,20 +609,30 @@ export class NuevoMovimientoModal implements OnChanges {
     event.stopPropagation();
     this.frecuenteEditandoId = rapido.id;
 
-    const cat = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(rapido.categoriaId)) || {
-      id: rapido.categoriaId,
-      nombre: rapido.categoriaNombre || 'General',
-      color: rapido.categoriaColor || '#6366f1',
-      icono: rapido.categoriaIcono || 'tag',
-      tipo: Number(rapido.tipoMovimiento) === 1 ? 'ingreso' : 'gasto',
-    };
+    let tags: any[] = [];
+    if (Array.isArray(rapido.etiquetas) && rapido.etiquetas.length > 0) {
+      tags = rapido.etiquetas.map((t: any) => {
+        const encontrada = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(t.id));
+        return encontrada || t;
+      });
+    } else if (rapido.categoriaId) {
+      const cat = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(rapido.categoriaId)) || {
+        id: rapido.categoriaId,
+        nombre: rapido.categoriaNombre || 'General',
+        color: rapido.categoriaColor || '#6366f1',
+        icono: rapido.categoriaIcono || 'tag',
+        tipo: Number(rapido.tipoMovimiento) === 1 ? 'ingreso' : 'gasto',
+      };
+      tags = [cat];
+    }
 
     this.nuevoFrecuente = {
       nombre: rapido.nombre,
       tipoMovimiento: Number(rapido.tipoMovimiento),
       monto: String(Math.abs(rapido.monto)),
       cuenta: rapido.cuentaId ? String(rapido.cuentaId) : '',
-      categoria: cat,
+      etiquetas: tags,
+      categoria: tags[0] || null,
     };
 
     this.cambiarVistaConTransicion(() => {
@@ -621,6 +654,32 @@ export class NuevoMovimientoModal implements OnChanges {
     }
 
     this.toastService.show('Movimiento rápido eliminado', 'warning');
+  }
+
+  conteoEtiquetasExtraRapido(rapido: MovimientoRapido): number {
+    if (Array.isArray(rapido.etiquetas) && rapido.etiquetas.length > 1) {
+      return rapido.etiquetas.length - 1;
+    }
+    return 0;
+  }
+
+  obtenerNombreEtiquetaPrincipalRapido(rapido: MovimientoRapido): string {
+    if (Array.isArray(rapido.etiquetas) && rapido.etiquetas.length > 0) {
+      const primera = rapido.etiquetas[0];
+      return (typeof primera === 'object' ? primera.nombre : null) || rapido.categoriaNombre || 'General';
+    }
+    return rapido.categoriaNombre || 'General';
+  }
+
+  obtenerTextoEtiquetasExtraRapido(rapido: MovimientoRapido): string {
+    if (Array.isArray(rapido.etiquetas) && rapido.etiquetas.length > 1) {
+      return rapido.etiquetas
+        .slice(1)
+        .map((e: any) => (typeof e === 'object' ? e.nombre : e))
+        .filter(Boolean)
+        .join(', ');
+    }
+    return '';
   }
 
   // ==========================================
@@ -655,9 +714,14 @@ export class NuevoMovimientoModal implements OnChanges {
 
   seleccionarCategoria(cat: any) {
     if (this.seleccionandoCategoriaParaFrecuente) {
-      this.nuevoFrecuente.categoria = cat;
-      this.seleccionandoCategoriaParaFrecuente = false;
-      this.mostrarSelectorCategorias = false;
+      const idx = this.nuevoFrecuente.etiquetas.findIndex((e) => String(e.id) === String(cat.id));
+      if (idx >= 0) {
+        this.nuevoFrecuente.etiquetas.splice(idx, 1);
+      } else {
+        this.nuevoFrecuente.etiquetas.push(cat);
+      }
+      this.nuevoFrecuente.categoria = this.nuevoFrecuente.etiquetas[0] || null;
+      this.cd.detectChanges();
       return;
     }
 
@@ -674,7 +738,7 @@ export class NuevoMovimientoModal implements OnChanges {
 
   estaEtiquetaSeleccionada(cat: any): boolean {
     if (this.seleccionandoCategoriaParaFrecuente) {
-      return String(this.nuevoFrecuente.categoria?.id) === String(cat.id);
+      return this.nuevoFrecuente.etiquetas.some((e) => String(e.id) === String(cat.id));
     }
     return this.etiquetasSeleccionadas.some((e) => String(e.id) === String(cat.id));
   }

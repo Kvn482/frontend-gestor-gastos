@@ -152,4 +152,36 @@ describe('MovimientosFrecuentes', () => {
     expect(toastServiceMock.show).toHaveBeenCalledWith('Atajo frecuente eliminado', 'warning');
     expect(component.movimientosFrecuentes.length).toBe(1);
   });
+
+  it('debe calcular correctamente el conteo y nombre de etiquetas extra para un atajo', () => {
+    const itemMulti: any = {
+      id: 99,
+      nombre: 'Despensa y Farmacia',
+      tipoMovimiento: 2,
+      monto: 300,
+      cuentaNombre: 'BBVA Débito',
+      etiquetas: [
+        { id: 1, nombre: 'Supermercado' },
+        { id: 2, nombre: 'Farmacia' },
+        { id: 3, nombre: 'Hogar' },
+      ],
+    };
+
+    expect(component.obtenerNombreEtiquetaPrincipal(itemMulti)).toBe('Supermercado');
+    expect(component.conteoEtiquetasExtra(itemMulti)).toBe(2);
+    expect(component.obtenerTextoEtiquetasExtra(itemMulti)).toBe('Farmacia, Hogar');
+
+    const itemSimple: any = {
+      id: 100,
+      nombre: 'Gasolina',
+      tipoMovimiento: 2,
+      monto: 500,
+      categoriaNombre: 'Auto',
+      etiquetas: [{ id: 10, nombre: 'Auto' }],
+    };
+
+    expect(component.obtenerNombreEtiquetaPrincipal(itemSimple)).toBe('Auto');
+    expect(component.conteoEtiquetasExtra(itemSimple)).toBe(0);
+    expect(component.obtenerTextoEtiquetasExtra(itemSimple)).toBe('');
+  });
 });
