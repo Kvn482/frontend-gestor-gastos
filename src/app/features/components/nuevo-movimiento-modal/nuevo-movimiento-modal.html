@@ -363,52 +363,83 @@
 
             <!-- FILAS DE CONFIGURACIÓN ESTILO NATIVO -->
             <div class="space-y-2.5">
-              <!-- Fila 1: Categoría -->
-              <button
-                type="button"
-                (click)="abrirSelectorCategorias()"
-                class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border flex items-center justify-between text-left transition-all active:scale-[0.99] group cursor-pointer shadow-xs"
-                [class.border-slate-200/80]="!erroresValidacion().categoria"
-                [class.dark:border-slate-800/80]="!erroresValidacion().categoria"
-                [class.border-rose-500]="erroresValidacion().categoria"
-                [class.dark:border-rose-500]="erroresValidacion().categoria"
-                [class.bg-rose-50/20]="erroresValidacion().categoria"
-                [class.dark:bg-rose-950/20]="erroresValidacion().categoria"
-              >
-                <div class="flex items-center gap-3 min-w-0">
-                  <div
-                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs transition-colors"
-                    [style.backgroundColor]="categoriaSeleccionada ? (obtenerColorCategoria() + '1A') : 'rgba(148, 163, 184, 0.15)'"
-                    [style.color]="categoriaSeleccionada ? obtenerColorCategoria() : '#94a3b8'"
-                  >
-                    <ng-icon [name]="categoriaSeleccionada ? obtenerIconoCategoria() : 'lucideTag'" class="text-xl" />
-                  </div>
-                  <div class="min-w-0 flex flex-col">
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Etiqueta <span class="text-rose-500">*</span></span>
-                      @if (erroresValidacion().categoria) {
-                        <span class="text-[10px] font-semibold text-rose-500">Obligatoria</span>
+              <!-- Fila 1: Categoría / Etiquetas -->
+              <div class="space-y-1.5">
+                <button
+                  type="button"
+                  (click)="abrirSelectorCategorias()"
+                  class="w-full p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border flex items-center justify-between text-left transition-all active:scale-[0.99] group cursor-pointer shadow-xs"
+                  [class.border-slate-200/80]="!erroresValidacion().categoria"
+                  [class.dark:border-slate-800/80]="!erroresValidacion().categoria"
+                  [class.border-rose-500]="erroresValidacion().categoria"
+                  [class.dark:border-rose-500]="erroresValidacion().categoria"
+                  [class.bg-rose-50/20]="erroresValidacion().categoria"
+                  [class.dark:bg-rose-950/20]="erroresValidacion().categoria"
+                >
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div
+                      class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs transition-colors"
+                      [style.backgroundColor]="etiquetasSeleccionadas.length ? (obtenerColorCategoria() + '1A') : 'rgba(148, 163, 184, 0.15)'"
+                      [style.color]="etiquetasSeleccionadas.length ? obtenerColorCategoria() : '#94a3b8'"
+                    >
+                      <ng-icon [name]="etiquetasSeleccionadas.length ? obtenerIconoCategoria() : 'lucideTag'" class="text-xl" />
+                    </div>
+                    <div class="min-w-0 flex flex-col flex-1">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                          {{ etiquetasSeleccionadas.length > 1 ? 'Etiquetas' : 'Etiqueta' }} <span class="text-rose-500">*</span>
+                        </span>
+                        @if (erroresValidacion().categoria) {
+                          <span class="text-[10px] font-semibold text-rose-500">Obligatoria</span>
+                        }
+                      </div>
+                      @if (etiquetasSeleccionadas.length === 1) {
+                        <span class="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          {{ etiquetasSeleccionadas[0].nombre || etiquetasSeleccionadas[0].categoria }}
+                        </span>
+                      } @else if (etiquetasSeleccionadas.length > 1) {
+                        <div class="flex items-center gap-1.5 overflow-hidden">
+                          <span class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                            {{ etiquetasSeleccionadas[0].nombre || etiquetasSeleccionadas[0].categoria }}
+                          </span>
+                          <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
+                            +{{ etiquetasSeleccionadas.length - 1 }} más
+                          </span>
+                        </div>
+                      } @else {
+                        <span class="text-sm font-medium text-slate-400 dark:text-slate-500 italic">
+                          Selecciona una o más etiquetas...
+                        </span>
                       }
                     </div>
-                    @if (categoriaSeleccionada) {
-                      <span class="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        {{ categoriaSeleccionada.nombre }}
-                      </span>
-                    } @else {
-                      <span class="text-sm font-medium text-slate-400 dark:text-slate-500 italic">
-                        Selecciona una etiqueta...
+                  </div>
+
+                  <div class="flex items-center gap-1 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-colors pl-2">
+                    <span class="text-xs font-semibold hidden xs:inline">{{ etiquetasSeleccionadas.length ? 'Editar' : 'Elegir' }}</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </div>
+                </button>
+
+                @if (etiquetasSeleccionadas.length > 1) {
+                  <div class="flex flex-wrap gap-1.5 px-1 pt-0.5">
+                    @for (tag of etiquetasSeleccionadas; track tag.id) {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700">
+                        <span class="w-2 h-2 rounded-full shrink-0" [style.backgroundColor]="tag.color || '#6366f1'"></span>
+                        <span class="truncate max-w-[120px]">{{ tag.nombre || tag.categoria }}</span>
+                        <button
+                          type="button"
+                          (click)="quitarEtiqueta(tag, $event)"
+                          class="p-0.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                        >
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                       </span>
                     }
                   </div>
-                </div>
-
-                <div class="flex items-center gap-1 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-white transition-colors pl-2">
-                  <span class="text-xs font-semibold hidden xs:inline">{{ categoriaSeleccionada ? 'Cambiar' : 'Elegir' }}</span>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </div>
-              </button>
+                }
+              </div>
 
               <!-- Fila 2: Cuenta -->
               <div
@@ -810,7 +841,16 @@
         <div class="absolute inset-0 z-50 bg-white dark:bg-[#131b2a] flex flex-col vista-slide-enter">
           <!-- Header Selector -->
           <div class="px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Selecciona una etiqueta</h3>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white">
+                {{ seleccionandoCategoriaParaFrecuente ? 'Selecciona una etiqueta' : 'Selecciona las etiquetas' }}
+              </h3>
+              @if (!seleccionandoCategoriaParaFrecuente) {
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                  Puedes seleccionar una o más etiquetas
+                </p>
+              }
+            </div>
             <button
               type="button"
               (click)="cerrarSelectorCategorias()"
@@ -843,17 +883,26 @@
               <button
                 type="button"
                 (click)="seleccionarCategoria(cat)"
-                class="p-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer active:scale-95 border min-h-[88px]"
-                [class.bg-indigo-50]="categoriaSeleccionada?.id === cat.id"
-                [class.dark:bg-indigo-950/30]="categoriaSeleccionada?.id === cat.id"
-                [class.border-indigo-500]="categoriaSeleccionada?.id === cat.id"
-                [class.bg-slate-50]="categoriaSeleccionada?.id !== cat.id"
-                [class.dark:bg-slate-900/50]="categoriaSeleccionada?.id !== cat.id"
-                [class.hover:bg-slate-100]="categoriaSeleccionada?.id !== cat.id"
-                [class.dark:hover:bg-slate-800]="categoriaSeleccionada?.id !== cat.id"
-                [class.border-slate-200/80]="categoriaSeleccionada?.id !== cat.id"
-                [class.dark:border-slate-800/80]="categoriaSeleccionada?.id !== cat.id"
+                class="relative p-3 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer active:scale-95 border min-h-[88px]"
+                [class.bg-indigo-50]="estaEtiquetaSeleccionada(cat)"
+                [class.dark:bg-indigo-950/30]="estaEtiquetaSeleccionada(cat)"
+                [class.border-indigo-500]="estaEtiquetaSeleccionada(cat)"
+                [class.ring-1]="estaEtiquetaSeleccionada(cat)"
+                [class.ring-indigo-500]="estaEtiquetaSeleccionada(cat)"
+                [class.bg-slate-50]="!estaEtiquetaSeleccionada(cat)"
+                [class.dark:bg-slate-900/50]="!estaEtiquetaSeleccionada(cat)"
+                [class.hover:bg-slate-100]="!estaEtiquetaSeleccionada(cat)"
+                [class.dark:hover:bg-slate-800]="!estaEtiquetaSeleccionada(cat)"
+                [class.border-slate-200/80]="!estaEtiquetaSeleccionada(cat)"
+                [class.dark:border-slate-800/80]="!estaEtiquetaSeleccionada(cat)"
               >
+                @if (estaEtiquetaSeleccionada(cat)) {
+                  <div class="absolute top-2 right-2 w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  </div>
+                }
                 <div
                   class="w-10 h-10 rounded-xl flex items-center justify-center shadow-xs"
                   [style.backgroundColor]="(cat.color || '#6366f1') + '1A'"
@@ -867,6 +916,22 @@
               </button>
             }
           </div>
+
+          <!-- Footer de confirmación para selección múltiple -->
+          @if (!seleccionandoCategoriaParaFrecuente) {
+            <div class="p-3 border-t border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#131b2a] flex items-center justify-between">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                {{ etiquetasSeleccionadas.length }} seleccionada{{ etiquetasSeleccionadas.length === 1 ? '' : 's' }}
+              </span>
+              <button
+                type="button"
+                (click)="cerrarSelectorCategorias()"
+                class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
+              >
+                Listo
+              </button>
+            </div>
+          }
         </div>
       }
 

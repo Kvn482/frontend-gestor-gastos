@@ -81,8 +81,14 @@ export class NuevoMovimientoModal implements OnChanges {
   cuentas: any[] = [];
   tiposMovimiento: any[] = [];
 
-  // Categoría seleccionada actualmente para el movimiento
-  categoriaSeleccionada: any | null = null;
+  // Categorías/Etiquetas seleccionadas actualmente para el movimiento
+  etiquetasSeleccionadas: any[] = [];
+  get categoriaSeleccionada(): any | null {
+    return this.etiquetasSeleccionadas[0] ?? null;
+  }
+  set categoriaSeleccionada(cat: any | null) {
+    this.etiquetasSeleccionadas = cat ? [cat] : [];
+  }
 
   // Modales/Hojas secundarias dentro del flujo
   mostrarSelectorCategorias = false;
@@ -621,7 +627,9 @@ export class NuevoMovimientoModal implements OnChanges {
   // GESTIÓN DE CATEGORÍAS
   // ==========================================
   get categoriasFiltradas(): any[] {
-    const esIngreso = Number(this.movimiento.tipoMovimiento) === 1;
+    const esIngreso = this.seleccionandoCategoriaParaFrecuente
+      ? Number(this.nuevoFrecuente.tipoMovimiento) === 1
+      : Number(this.movimiento.tipoMovimiento) === 1;
     const query = this.busquedaCategoria.trim().toLowerCase();
 
     return this.etiquetasDisponibles.filter((cat) => {
@@ -642,17 +650,44 @@ export class NuevoMovimientoModal implements OnChanges {
   cerrarSelectorCategorias() {
     this.mostrarSelectorCategorias = false;
     this.seleccionandoCategoriaParaFrecuente = false;
+    this.validarErrores();
   }
 
   seleccionarCategoria(cat: any) {
     if (this.seleccionandoCategoriaParaFrecuente) {
       this.nuevoFrecuente.categoria = cat;
       this.seleccionandoCategoriaParaFrecuente = false;
-    } else {
-      this.categoriaSeleccionada = cat;
-      this.validarErrores();
+      this.mostrarSelectorCategorias = false;
+      return;
     }
-    this.mostrarSelectorCategorias = false;
+
+    const idx = this.etiquetasSeleccionadas.findIndex((e) => String(e.id) === String(cat.id));
+    if (idx >= 0) {
+      this.etiquetasSeleccionadas.splice(idx, 1);
+    } else {
+      this.etiquetasSeleccionadas.push(cat);
+    }
+
+    this.validarErrores();
+    this.cd.detectChanges();
+  }
+
+  estaEtiquetaSeleccionada(cat: any): boolean {
+    if (this.seleccionandoCategoriaParaFrecuente) {
+      return String(this.nuevoFrecuente.categoria?.id) === String(cat.id);
+    }
+    return this.etiquetasSeleccionadas.some((e) => String(e.id) === String(cat.id));
+  }
+
+  quitarEtiqueta(cat: any, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.etiquetasSeleccionadas = this.etiquetasSeleccionadas.filter(
+      (e) => String(e.id) !== String(cat.id)
+    );
+    this.validarErrores();
+    this.cd.detectChanges();
   }
 
   obtenerIconoCategoria(): string {
@@ -973,7 +1008,9 @@ export class NuevoMovimientoModal implements OnChanges {
     this.isloading.set(true);
 
     const tipo = Number(this.movimiento.tipoMovimiento);
-    const categoriaId = this.categoriaSeleccionada?.id;
+    const etiquetasIds = this.etiquetasSeleccionadas
+      .map((e) => Number(e.id ?? e))
+      .filter((id) => !isNaN(id) && id > 0);
     const descripcionFinal = this.movimiento.descripcion.trim();
 
     const payload = {
@@ -983,7 +1020,7 @@ export class NuevoMovimientoModal implements OnChanges {
       descripcion: descripcionFinal,
       notas: this.movimiento.notas.trim(),
       fecha: this.movimiento.fecha || this.obtenerFechaHoy(),
-      etiquetas: categoriaId ? [categoriaId] : [],
+      etiquetas: etiquetasIds,
     };
 
     const req$ = this.editando
@@ -1053,11 +1090,15 @@ export class NuevoMovimientoModal implements OnChanges {
 
   private precargarEtiquetasEdicion() {
     if (this.movimientoEditar?.etiquetas?.length) {
-      const firstTag = this.movimientoEditar.etiquetas[0];
-      const found = this.etiquetasDisponibles.find((item) => String(item.id) === String(firstTag.id ?? firstTag));
-      if (found) {
-        this.categoriaSeleccionada = found;
-      }
+      this.etiquetasSeleccionadas = this.movimientoEditar.etiquetas.map((tag: any) => {
+        const id = tag.id ?? tag;
+        const found = this.etiquetasDisponibles.find((item) => String(item.id) === String(id));
+        return (
+          found ?? (typeof tag === 'object' ? tag : { id, nombre: 'Etiqueta ' + id, icono: 'tag' })
+        );
+      });
+    } else {
+      this.etiquetasSeleccionadas = [];
     }
   }
 
