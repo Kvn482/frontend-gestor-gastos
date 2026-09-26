@@ -24,6 +24,7 @@ import { CuentasService } from '../../../core/services/cuentas.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MovimientosRapidosCacheService } from '../../../core/services/movimientos-rapidos-cache.service';
 import { getCategoryIconName } from '../../../shared/utils/category-icons';
+import { MontoSinComas } from '../../../shared/directives/monto-sin-comas';
 
 export interface MovimientoRapido {
   id: string | number;
@@ -42,7 +43,7 @@ export interface MovimientoRapido {
 @Component({
   selector: 'app-nuevo-movimiento-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, CurrencyPipe],
+  imports: [CommonModule, FormsModule, NgIcon, CurrencyPipe, MontoSinComas],
   templateUrl: './nuevo-movimiento-modal.html',
   styleUrl: './nuevo-movimiento-modal.css',
 })

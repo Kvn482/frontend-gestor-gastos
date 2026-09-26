@@ -11,11 +11,12 @@ import { ToastService } from '../../core/services/toast.service';
 import { Modal } from '../../shared/modal/modal';
 import { getCategoryIconName } from '../../shared/utils/category-icons';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
+import { MontoSinComas } from '../../shared/directives/monto-sin-comas';
 
 @Component({
   selector: 'app-movimiento-frecuente-detalle',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, Modal],
+  imports: [CommonModule, FormsModule, NgIcon, Modal, MontoSinComas],
   templateUrl: './movimiento-frecuente-detalle.html',
   styleUrl: './movimiento-frecuente-detalle.css',
 })
