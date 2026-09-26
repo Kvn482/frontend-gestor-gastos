@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import Swal from 'sweetalert2';
 import { MovimientoFrecuenteDetalle } from './movimiento-frecuente-detalle';
@@ -210,6 +210,25 @@ describe('MovimientoFrecuenteDetalle', () => {
     expect(component.estaEtiquetaSeleccionada(cat1)).toBe(false);
     expect(component.estaEtiquetaSeleccionada(cat2)).toBe(true);
     expect(component.form.etiquetas.length).toBe(1);
+  });
+
+  it('debe enviar una sola solicitud al guardar con doble clic y conexión lenta', async () => {
+    await setupTestBed('nuevo');
+    const respuestaPendiente = new Subject<any>();
+    movimientosServiceMock.crearMovimientoRapido.mockReturnValue(respuestaPendiente);
+    component.form.nombre = 'Almuerzo';
+    component.form.monto = '180';
+    component.form.etiquetas = [mockEtiquetas[0]];
+    component.form.categoria = mockEtiquetas[0];
+    component.form.cuentaId = 'uuid-cuenta-1';
+
+    component.guardar();
+    component.guardar();
+
+    expect(movimientosServiceMock.crearMovimientoRapido).toHaveBeenCalledTimes(1);
+    expect(component.guardando).toBe(true);
+    respuestaPendiente.next({ id: 10 });
+    respuestaPendiente.complete();
   });
 });
 

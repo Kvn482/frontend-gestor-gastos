@@ -406,6 +406,8 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   }
 
   guardar(): void {
+    if (this.guardando) return;
+
     const nombre = this.form.nombre.trim();
     const monto = Number(this.form.monto);
 

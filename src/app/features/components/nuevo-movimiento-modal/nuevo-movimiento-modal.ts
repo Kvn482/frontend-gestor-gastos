@@ -408,6 +408,8 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   guardarNuevoFrecuente() {
+    if (this.isloading()) return;
+
     const nombre = this.nuevoFrecuente.nombre.trim();
     const monto = Math.abs(Number(this.nuevoFrecuente.monto));
 
@@ -532,7 +534,7 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   ejecutarMovimientoRapido(rapido: MovimientoRapido) {
-    if (this.isloading()) return;
+    if (this.isloading() || this.isClosing) return;
 
     const cuentaId = rapido.cuentaId || this.movimiento.cuenta || (this.cuentas[0]?.id ?? '1');
     const tipo = Number(rapido.tipoMovimiento);
@@ -541,7 +543,7 @@ export class NuevoMovimientoModal implements OnChanges {
     // Validar saldo suficiente para egresos
     if (tipo === 2) {
       const cuentaObj = this.cuentas.find((c) => String(c.id) === String(cuentaId));
-      if (cuentaObj && cuentaObj.tipo !== 'CREDITO') {
+      if (cuentaObj) {
         const saldoDisponible = this.saldoMostradoCuenta(cuentaObj);
         const montoGasto = Math.abs(Number(rapido.monto));
         if (montoGasto > saldoDisponible) {
@@ -1020,12 +1022,34 @@ export class NuevoMovimientoModal implements OnChanges {
   }
 
   saldoMostradoCuenta(cuenta: any): number {
-    const saldoActual = Number(cuenta.saldo_actual ?? 0);
+    return this.calcularSaldoDisponible(cuenta, Number(cuenta.saldo_actual ?? 0));
+  }
+
+  private calcularSaldoDisponible(cuenta: any, saldoActual: number): number {
     if (cuenta.tipo === 'CREDITO') {
       const limiteCredito = Number(cuenta.limite_credito ?? 0);
       return Math.max(limiteCredito + Math.min(saldoActual, 0), 0);
     }
     return saldoActual;
+  }
+
+  private saldoDisponibleParaValidar(cuenta: any): number {
+    let saldoAntesDelMovimiento = Number(cuenta.saldo_actual ?? 0);
+    const cuentaOriginalId = this.movimientoEditar?.id_cuenta ?? this.movimientoEditar?.cuenta_id;
+
+    if (this.editando && String(cuenta.id) === String(cuentaOriginalId)) {
+      const montoOriginal = Math.abs(Number(this.movimientoEditar?.monto ?? 0));
+      const tipoOriginal = Number(
+        this.movimientoEditar?.id_tipo_movimiento ?? this.movimientoEditar?.tipoMovimiento
+      );
+      const montoOriginalFirmado = tipoOriginal === 2 ? -montoOriginal : montoOriginal;
+
+      // El saldo actual ya incluye el movimiento editado. Lo revertimos para validar
+      // el nuevo importe contra el saldo que había antes de registrarlo.
+      saldoAntesDelMovimiento -= montoOriginalFirmado;
+    }
+
+    return this.calcularSaldoDisponible(cuenta, saldoAntesDelMovimiento);
   }
 
   etiquetaSaldoCuenta(cuenta: any): string {
@@ -1034,16 +1058,16 @@ export class NuevoMovimientoModal implements OnChanges {
 
   validarErrores(forzarMostrar: boolean = false): boolean {
     const montoNum = Number(this.movimiento.monto);
-    const saldoDisponible = this.cuentaSeleccionadaObj ? this.saldoMostradoCuenta(this.cuentaSeleccionadaObj) : 0;
+    const saldoDisponible = this.cuentaSeleccionadaObj
+      ? this.saldoDisponibleParaValidar(this.cuentaSeleccionadaObj)
+      : 0;
 
     const montoInvalido = !Number.isFinite(montoNum) || montoNum <= 0;
     const saldoInsuficiente =
-      !this.editando &&
       this.esEgreso &&
       !!this.cuentaSeleccionadaObj &&
       Number.isFinite(montoNum) &&
-      montoNum > saldoDisponible &&
-      this.cuentaSeleccionadaObj?.tipo !== 'CREDITO';
+      montoNum > saldoDisponible;
 
     const categoriaInvalida = !this.categoriaSeleccionada || !this.categoriaSeleccionada.id;
     const cuentaInvalida = !this.movimiento.cuenta || String(this.movimiento.cuenta).trim() === '' || String(this.movimiento.cuenta) === '0';
@@ -1080,7 +1104,7 @@ export class NuevoMovimientoModal implements OnChanges {
   // GUARDAR FORMULARIO
   // ==========================================
   guardar() {
-    if (this.isloading()) return;
+    if (this.isloading() || this.isClosing) return;
 
     if (this.validarErrores(true)) {
       this.toastService.show('Completa los campos obligatorios en rojo', 'error');

@@ -186,6 +186,8 @@
                 <div
                   (click)="ejecutarMovimientoRapido(rapido)"
                   class="w-full p-3 rounded-2xl bg-slate-50/90 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer shadow-xs"
+                  [class.pointer-events-none]="isloading() || isClosing"
+                  [class.opacity-60]="isloading() || isClosing"
                 >
                   <!-- Área táctil izquierda -->
                   <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -367,7 +369,7 @@
                   <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
-                  <span>El egreso supera el saldo disponible de la cuenta</span>
+                  <span>El egreso supera el saldo o crédito disponible de la cuenta</span>
                 </p>
               }
             </div>
@@ -644,7 +646,7 @@
             <button
               type="button"
               (click)="guardar()"
-              [disabled]="isloading()"
+              [disabled]="isloading() || isClosing"
               class="flex-1 py-3 px-4 rounded-2xl text-white font-bold text-xs shadow-lg active:scale-[0.99] transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               [class.bg-indigo-600]="!isloading()"
               [class.hover:bg-indigo-500]="!isloading()"

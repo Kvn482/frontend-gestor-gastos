@@ -106,4 +106,14 @@ describe('MovimientoDetalleModal', () => {
     expect(editEmitted).toBe(true);
     expect(deleteEmitted).toBe(true);
   });
+
+  it('conserva el día recibido al convertir una fecha sin hora para el detalle', () => {
+    component.movimiento = { fecha: '2026-09-26' };
+
+    const fecha = component.fechaDate as Date;
+
+    expect(fecha.getFullYear()).toBe(2026);
+    expect(fecha.getMonth()).toBe(8);
+    expect(fecha.getDate()).toBe(26);
+  });
 });
