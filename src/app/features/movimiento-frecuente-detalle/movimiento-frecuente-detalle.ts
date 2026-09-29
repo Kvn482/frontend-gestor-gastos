@@ -37,6 +37,8 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   idFrecuente: number | string | null = null;
   cuentas: any[] = [];
   etiquetas: any[] = [];
+  private cuentasCargadas = false;
+  private etiquetasCargadas = false;
 
   // Modal selector de categorías
   modalCategoriaAbierto = false;
@@ -124,12 +126,14 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         next: (res: any) => {
           if (Array.isArray(res)) {
             this.cuentas = res;
+            this.cuentasCargadas = true;
             if (this.esNuevo && !this.form.cuentaId && this.cuentas.length > 0) {
               this.form.cuentaId = String(this.cuentas[0].id);
               this.formOriginal.cuentaId = this.form.cuentaId;
             } else if (!this.esNuevo && this.form.cuentaId) {
               this.resolverCuentaSeleccionada();
             }
+            this.reconciliarReferenciasDisponibles();
           }
           this.cd.detectChanges();
         },
@@ -144,6 +148,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         next: (res: any) => {
           if (Array.isArray(res)) {
             this.etiquetas = res;
+            this.etiquetasCargadas = true;
             if (this.form.etiquetas.length > 0) {
               this.form.etiquetas = this.form.etiquetas.map((t) => {
                 const targetId = typeof t === 'object' && t !== null ? t.id : t;
@@ -158,6 +163,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
                 this.form.etiquetas = [encontrada];
               }
             }
+            this.reconciliarReferenciasDisponibles();
           }
           this.cd.detectChanges();
         },
@@ -236,6 +242,8 @@ export class MovimientoFrecuenteDetalle implements OnInit {
       this.resolverCuentaSeleccionada();
     }
 
+    this.reconciliarReferenciasDisponibles();
+
     this.formOriginal = {
       nombre: this.form.nombre,
       tipoMovimiento: this.form.tipoMovimiento,
@@ -263,6 +271,28 @@ export class MovimientoFrecuenteDetalle implements OnInit {
     );
     if (match) {
       this.form.cuentaId = String(match.id);
+    }
+  }
+
+  private reconciliarReferenciasDisponibles(): void {
+    if (this.esNuevo) return;
+
+    if (this.cuentasCargadas && this.form.cuentaId) {
+      const cuentaDisponible = this.cuentas.some(
+        (cuenta) => String(cuenta.id) === String(this.form.cuentaId)
+      );
+      if (!cuentaDisponible) {
+        this.form.cuentaId = '';
+      }
+    }
+
+    if (this.etiquetasCargadas && this.form.etiquetas.length > 0) {
+      const tipoRequerido = this.form.tipoMovimiento === 1 ? 'ingreso' : 'gasto';
+      this.form.etiquetas = this.form.etiquetas
+        .map((etiqueta) =>
+          this.etiquetas.find((disponible) => String(disponible.id) === String(etiqueta.id))
+        )
+        .filter((etiqueta) => etiqueta && (!etiqueta.tipo || etiqueta.tipo === tipoRequerido));
     }
   }
 

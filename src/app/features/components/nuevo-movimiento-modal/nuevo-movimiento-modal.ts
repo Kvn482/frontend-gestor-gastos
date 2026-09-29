@@ -624,31 +624,43 @@ export class NuevoMovimientoModal implements OnChanges {
     event.stopPropagation();
     this.frecuenteEditandoId = rapido.id;
 
+    const tipoMovimiento = Number(rapido.tipoMovimiento);
+    const tipoRequerido = tipoMovimiento === 1 ? 'ingreso' : 'gasto';
+    const cuentaDisponible = this.cuentas.some(
+      (cuenta) => String(cuenta.id) === String(rapido.cuentaId)
+    );
+
     let tags: any[] = [];
     if (Array.isArray(rapido.etiquetas) && rapido.etiquetas.length > 0) {
-      tags = rapido.etiquetas.map((t: any) => {
-        const encontrada = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(t.id));
-        return encontrada || t;
-      });
+      tags = rapido.etiquetas
+        .map((t: any) =>
+          this.etiquetasDisponibles.find((e) => Number(e.id) === Number(t.id || t))
+        )
+        .filter((etiqueta) => etiqueta && (!etiqueta.tipo || etiqueta.tipo === tipoRequerido));
     } else if (rapido.categoriaId) {
-      const cat = this.etiquetasDisponibles.find((e) => Number(e.id) === Number(rapido.categoriaId)) || {
-        id: rapido.categoriaId,
-        nombre: rapido.categoriaNombre || 'General',
-        color: rapido.categoriaColor || '#6366f1',
-        icono: rapido.categoriaIcono || 'tag',
-        tipo: Number(rapido.tipoMovimiento) === 1 ? 'ingreso' : 'gasto',
-      };
-      tags = [cat];
+      const cat = this.etiquetasDisponibles.find(
+        (e) =>
+          Number(e.id) === Number(rapido.categoriaId) &&
+          (!e.tipo || e.tipo === tipoRequerido)
+      );
+      tags = cat ? [cat] : [];
     }
 
     this.nuevoFrecuente = {
       nombre: rapido.nombre,
-      tipoMovimiento: Number(rapido.tipoMovimiento),
+      tipoMovimiento,
       monto: String(Math.abs(rapido.monto)),
-      cuenta: rapido.cuentaId ? String(rapido.cuentaId) : '',
+      cuenta: cuentaDisponible && rapido.cuentaId ? String(rapido.cuentaId) : '',
       etiquetas: tags,
       categoria: tags[0] || null,
     };
+
+    if (!cuentaDisponible || tags.length === 0) {
+      this.toastService.show(
+        'Elige una cuenta y categorias disponibles antes de guardar el atajo',
+        'warning'
+      );
+    }
 
     this.cambiarVistaConTransicion(() => {
       this.vistaActual.set('crear-frecuente');

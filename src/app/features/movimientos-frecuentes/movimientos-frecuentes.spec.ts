@@ -122,6 +122,82 @@ describe('MovimientosFrecuentes', () => {
     expect(component.frecuentesFiltrados.length).toBe(0);
   });
 
+  it('debe buscar por nombre, cuenta y categoria ignorando acentos', () => {
+    component.movimientosFrecuentes = [
+      {
+        id: 20,
+        nombre: 'Caf\u00e9 de la ma\u00f1ana',
+        tipoMovimiento: 2,
+        monto: 80,
+        cuentaId: 'cuenta-acentos',
+        cuentaNombre: 'D\u00e9bito principal',
+        categoriaId: 200,
+        categoriaNombre: 'Alimentaci\u00f3n',
+      },
+    ];
+
+    component.busqueda = 'cafe';
+    expect(component.frecuentesFiltrados).toHaveLength(1);
+
+    component.busqueda = 'debito';
+    expect(component.frecuentesFiltrados).toHaveLength(1);
+
+    component.busqueda = 'alimentacion';
+    expect(component.frecuentesFiltrados).toHaveLength(1);
+  });
+
+  it('debe aplicar Todos, Gastos e Ingresos conservando sus contadores', () => {
+    component.filtroActivo = 'todos';
+    expect(component.frecuentesFiltrados).toHaveLength(2);
+    expect(component.totalFrecuentes).toBe(2);
+    expect(component.totalGastos).toBe(1);
+    expect(component.totalIngresos).toBe(1);
+
+    component.filtroActivo = 'gasto';
+    expect(component.frecuentesFiltrados).toHaveLength(1);
+    expect(component.frecuentesFiltrados[0].tipoMovimiento).toBe(2);
+
+    component.filtroActivo = 'ingreso';
+    expect(component.frecuentesFiltrados).toHaveLength(1);
+    expect(component.frecuentesFiltrados[0].tipoMovimiento).toBe(1);
+    expect(component.totalFrecuentes).toBe(2);
+    expect(component.totalGastos).toBe(1);
+    expect(component.totalIngresos).toBe(1);
+  });
+
+  it('debe mostrar y limpiar una lista vacia producida por filtro y busqueda', () => {
+    component.filtroActivo = 'gasto';
+    component.busqueda = 'salario';
+    fixture.detectChanges();
+
+    expect(component.frecuentesFiltrados).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).toContain('No hay coincidencias');
+
+    const botonLimpiar = Array.from(
+      fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
+    ).find((boton) => boton.textContent?.includes('Limpiar'));
+
+    expect(botonLimpiar).toBeTruthy();
+    botonLimpiar!.click();
+    fixture.detectChanges();
+
+    expect(component.busqueda).toBe('');
+    expect(component.frecuentesFiltrados).toHaveLength(1);
+  });
+
+  it('debe mostrar el estado vacio general cuando no existen atajos', () => {
+    component.movimientosFrecuentes = [];
+    component.filtroActivo = 'todos';
+    component.busqueda = '';
+    fixture.detectChanges();
+
+    expect(component.totalFrecuentes).toBe(0);
+    expect(component.totalGastos).toBe(0);
+    expect(component.totalIngresos).toBe(0);
+    expect(component.frecuentesFiltrados).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).toContain('Crear primer atajo');
+  });
+
   it('debe navegar a la pantalla de crear nuevo movimiento frecuente', () => {
     component.irACrear();
     expect(router.navigate).toHaveBeenCalledWith(['/configuracion/movimientos-frecuentes/nuevo']);

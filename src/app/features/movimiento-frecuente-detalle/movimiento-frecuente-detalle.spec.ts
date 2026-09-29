@@ -230,5 +230,55 @@ describe('MovimientoFrecuenteDetalle', () => {
     respuestaPendiente.next({ id: 10 });
     respuestaPendiente.complete();
   });
+
+  it('debe quitar categorias incompatibles al cambiar entre gasto e ingreso', async () => {
+    await setupTestBed('nuevo');
+
+    component.form.etiquetas = [mockEtiquetas[0]];
+    component.cambiarTipoMovimiento(1);
+
+    expect(component.form.tipoMovimiento).toBe(1);
+    expect(component.form.etiquetas).toEqual([]);
+    expect(component.etiquetasFiltradas).toEqual([mockEtiquetas[1]]);
+
+    component.form.etiquetas = [mockEtiquetas[1]];
+    component.cambiarTipoMovimiento(2);
+
+    expect(component.form.tipoMovimiento).toBe(2);
+    expect(component.form.etiquetas).toEqual([]);
+    expect(component.etiquetasFiltradas).toEqual([mockEtiquetas[0]]);
+  });
+
+  it('debe exigir reemplazos si la cuenta esta desactivada y la categoria fue eliminada', async () => {
+    await setupTestBed('5');
+
+    (component as any).aplicarDatosFrecuente({
+      id: 5,
+      nombre: 'Atajo desactualizado',
+      tipoMovimiento: 2,
+      monto: 250,
+      cuentaId: 'cuenta-desactivada',
+      cuentaNombre: 'Cuenta anterior',
+      categoriaId: 999,
+      categoriaNombre: 'Categoria eliminada',
+    });
+
+    expect(component.form.cuentaId).toBe('');
+    expect(component.form.etiquetas).toEqual([]);
+    expect(component.formValido).toBe(false);
+
+    component.form.cuentaId = 'uuid-cuenta-1';
+    component.form.etiquetas = [mockEtiquetas[0]];
+    component.guardar();
+
+    expect(movimientosServiceMock.actualizarMovimientoRapido).toHaveBeenCalledWith(
+      '5',
+      expect.objectContaining({
+        cuentaId: 'uuid-cuenta-1',
+        categoriaId: 100,
+        etiquetas: [100],
+      })
+    );
+  });
 });
 

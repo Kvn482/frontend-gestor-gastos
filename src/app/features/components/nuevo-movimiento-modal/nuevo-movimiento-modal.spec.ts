@@ -564,6 +564,73 @@ describe('NuevoMovimientoModal', () => {
     solicitudes[0].flush({ id: 1 });
   });
 
+  it('limpia la cuenta desactivada y la categoria eliminada al editar un atajo', () => {
+    component.cuentas = [
+      { id: 'cuenta-activa', nombre: 'Cuenta activa', tipo: 'EFECTIVO', saldo_actual: 1000 },
+    ];
+    component.etiquetasDisponibles = [
+      { id: 10, nombre: 'Comida', tipo: 'gasto' },
+    ];
+    const rapido: MovimientoRapido = {
+      id: 4,
+      nombre: 'Atajo desactualizado',
+      tipoMovimiento: 2,
+      monto: 100,
+      cuentaId: 'cuenta-desactivada',
+      cuentaNombre: 'Cuenta anterior',
+      categoriaId: 99,
+      categoriaNombre: 'Categoria eliminada',
+      categoriaColor: '#64748b',
+      categoriaIcono: 'tag',
+    };
+
+    component.editarMovimientoRapido(rapido, { stopPropagation: vi.fn() } as any);
+
+    expect(component.nuevoFrecuente.cuenta).toBe('');
+    expect(component.nuevoFrecuente.etiquetas).toEqual([]);
+    expect(component.nuevoFrecuente.categoria).toBeNull();
+  });
+
+  it('ejecuta un atajo con su cuenta, importe, categoria y fecha de hoy', () => {
+    const rapido: MovimientoRapido = {
+      id: 3,
+      nombre: 'Caf\u00e9 de prueba',
+      tipoMovimiento: 2,
+      monto: 65.5,
+      cuentaId: 'cuenta-1',
+      cuentaNombre: 'Efectivo',
+      categoriaId: 10,
+      categoriaNombre: 'Comida',
+      categoriaColor: '#f59e0b',
+      categoriaIcono: 'coffee',
+    };
+    component.cuentas = [
+      { id: 'cuenta-1', nombre: 'Efectivo', tipo: 'EFECTIVO', saldo_actual: 1000 },
+    ];
+
+    component.ejecutarMovimientoRapido(rapido);
+
+    const solicitud = http.expectOne(`${environment.apiUrl}/api/movimientos`);
+    const hoy = new Date();
+    const fechaHoy = [
+      hoy.getFullYear(),
+      String(hoy.getMonth() + 1).padStart(2, '0'),
+      String(hoy.getDate()).padStart(2, '0'),
+    ].join('/');
+
+    expect(solicitud.request.body).toEqual({
+      tipoMovimiento: 2,
+      cuenta: 'cuenta-1',
+      monto: -65.5,
+      descripcion: 'Caf\u00e9 de prueba',
+      notas: '',
+      fecha: fechaHoy,
+      etiquetas: [10],
+    });
+
+    solicitud.flush({ id: 88 });
+  });
+
   it('no ejecuta dos veces un movimiento frecuente durante el cierre del modal', () => {
     vi.useFakeTimers();
     const rapido: MovimientoRapido = {
