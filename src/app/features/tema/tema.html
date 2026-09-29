@@ -1,0 +1,115 @@
+<div class="max-w-xl mx-auto space-y-5 pt-2 pb-12 transition-colors duration-200">
+  <div class="flex items-center justify-between px-1">
+    <button
+      type="button"
+      (click)="volver()"
+      class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-xs"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+      <span>Configuración</span>
+    </button>
+
+    <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+      {{ temaActualLabel }}
+    </span>
+  </div>
+
+  <div class="px-1">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Tema</h1>
+    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+      Elige cómo quieres ver Monetra
+    </p>
+  </div>
+
+  <div class="space-y-3">
+    <button
+      type="button"
+      (click)="seleccionarTema('claro')"
+      class="w-full overflow-hidden rounded-3xl border bg-white text-left shadow-sm transition-all cursor-pointer"
+      [class.border-indigo-500]="temaActual === 'claro'"
+      [class.ring-2]="temaActual === 'claro'"
+      [class.ring-indigo-500/20]="temaActual === 'claro'"
+      [class.border-slate-200]="temaActual !== 'claro'"
+    >
+      <div class="h-24 bg-slate-100 p-3">
+        <div class="h-full rounded-2xl bg-white border border-slate-200 p-3 flex gap-2">
+          <div class="w-10 rounded-xl bg-indigo-100"></div>
+          <div class="flex-1 space-y-2 pt-1">
+            <div class="h-2.5 w-2/3 rounded-full bg-slate-300"></div>
+            <div class="h-2 w-full rounded-full bg-slate-200"></div>
+            <div class="h-2 w-4/5 rounded-full bg-slate-200"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-3 p-4">
+        <div>
+          <p class="text-sm font-bold text-slate-900">Claro</p>
+          <p class="text-xs text-slate-500">Fondo luminoso y alto contraste</p>
+        </div>
+        @if (temaActual === 'claro') {
+          <span class="grid h-7 w-7 place-items-center rounded-full bg-indigo-600 text-white">✓</span>
+        }
+      </div>
+    </button>
+
+    <button
+      type="button"
+      (click)="seleccionarTema('oscuro')"
+      class="w-full overflow-hidden rounded-3xl border bg-[#131b2a] text-left shadow-sm transition-all cursor-pointer"
+      [class.border-indigo-500]="temaActual === 'oscuro'"
+      [class.ring-2]="temaActual === 'oscuro'"
+      [class.ring-indigo-500/20]="temaActual === 'oscuro'"
+      [class.border-slate-800]="temaActual !== 'oscuro'"
+    >
+      <div class="h-24 bg-slate-950 p-3">
+        <div class="h-full rounded-2xl bg-[#131b2a] border border-slate-800 p-3 flex gap-2">
+          <div class="w-10 rounded-xl bg-indigo-500/25"></div>
+          <div class="flex-1 space-y-2 pt-1">
+            <div class="h-2.5 w-2/3 rounded-full bg-slate-600"></div>
+            <div class="h-2 w-full rounded-full bg-slate-800"></div>
+            <div class="h-2 w-4/5 rounded-full bg-slate-800"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center justify-between gap-3 p-4">
+        <div>
+          <p class="text-sm font-bold text-white">Oscuro</p>
+          <p class="text-xs text-slate-400">Menos brillo para ambientes oscuros</p>
+        </div>
+        @if (temaActual === 'oscuro') {
+          <span class="grid h-7 w-7 place-items-center rounded-full bg-indigo-600 text-white">✓</span>
+        }
+      </div>
+    </button>
+
+    <button
+      type="button"
+      (click)="seleccionarTema('sistema')"
+      class="w-full rounded-3xl border bg-white dark:bg-[#131b2a] p-4 text-left shadow-sm transition-all cursor-pointer"
+      [class.border-indigo-500]="temaActual === 'sistema'"
+      [class.ring-2]="temaActual === 'sistema'"
+      [class.ring-indigo-500/20]="temaActual === 'sistema'"
+      [class.border-slate-200]="temaActual !== 'sistema'"
+      [class.dark:border-slate-800]="temaActual !== 'sistema'"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3.5">
+          <div class="grid h-11 w-11 place-items-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007A3 3 0 018.121 20.38L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25M3 5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-gray-900 dark:text-white">Usar configuración del sistema</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Cambia automáticamente con tu dispositivo</p>
+          </div>
+        </div>
+        @if (temaActual === 'sistema') {
+          <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-indigo-600 text-white">✓</span>
+        }
+      </div>
+    </button>
+  </div>
+</div>

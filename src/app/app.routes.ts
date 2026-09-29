@@ -20,6 +20,7 @@ import { CategoriaDetalle } from './features/categoria-detalle/categoria-detalle
 import { MovimientosFrecuentes } from './features/movimientos-frecuentes/movimientos-frecuentes';
 import { MovimientoFrecuenteDetalle } from './features/movimiento-frecuente-detalle/movimiento-frecuente-detalle';
 import { pendingChangesGuard } from './core/guards/pending-changes.guard';
+import { Tema } from './features/tema/tema';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -59,6 +60,7 @@ export const routes: Routes = [
             { path: 'movimientos', component: Movimientos },
             { path: 'configuracion', component: Settings },
             { path: 'configuracion/perfil', component: Perfil },
+            { path: 'configuracion/tema', component: Tema },
             { path: 'perfil', redirectTo: 'configuracion/perfil', pathMatch: 'full' },
             { path: 'configuracion/categorias', component: Categorias },
             { path: 'configuracion/categorias/nueva', component: CategoriaDetalle },

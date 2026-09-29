@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, HostListener } from '@angular/core'
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router'
 import { AuthService } from '../core/services/auth.service'
+import { ToastService } from '../core/services/toast.service'
 
 @Component({
   selector: 'app-layout',
@@ -13,7 +14,8 @@ export class Layout {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   nombreCompleto = ''
@@ -41,7 +43,8 @@ export class Layout {
     this.nombreCompleto = `${this.nombre} ${this.apellido}`.trim() || 'Usuario'
     this.email = currentUser?.email ?? ''
     const theme = localStorage.getItem('theme')
-    const systemPrefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+    const hasMatchMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    const systemPrefersDark = hasMatchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
     this.darkMode = theme === 'dark' || (theme !== 'light' && systemPrefersDark)
     this.applyTheme()
 
@@ -174,6 +177,7 @@ export class Layout {
     this.darkMode = !this.darkMode
     localStorage.setItem('theme', this.darkMode ? 'dark' : 'light')
     this.applyTheme()
+    this.toastService.show(`Tema cambiado a ${this.darkMode ? 'Oscuro' : 'Claro'}`, 'info')
   }
 
   private applyTheme() {
