@@ -19,6 +19,7 @@ import { Categorias } from './features/categorias/categorias';
 import { CategoriaDetalle } from './features/categoria-detalle/categoria-detalle';
 import { MovimientosFrecuentes } from './features/movimientos-frecuentes/movimientos-frecuentes';
 import { MovimientoFrecuenteDetalle } from './features/movimiento-frecuente-detalle/movimiento-frecuente-detalle';
+import { pendingChangesGuard } from './core/guards/pending-changes.guard';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -64,8 +65,8 @@ export const routes: Routes = [
             { path: 'configuracion/categorias/:id', component: CategoriaDetalle },
             { path: 'categorias', redirectTo: 'configuracion/categorias', pathMatch: 'full' },
             { path: 'configuracion/movimientos-frecuentes', component: MovimientosFrecuentes },
-            { path: 'configuracion/movimientos-frecuentes/nuevo', component: MovimientoFrecuenteDetalle },
-            { path: 'configuracion/movimientos-frecuentes/:id', component: MovimientoFrecuenteDetalle },
+            { path: 'configuracion/movimientos-frecuentes/nuevo', component: MovimientoFrecuenteDetalle, canDeactivate: [pendingChangesGuard] },
+            { path: 'configuracion/movimientos-frecuentes/:id', component: MovimientoFrecuenteDetalle, canDeactivate: [pendingChangesGuard] },
             { path: 'movimientos-frecuentes', redirectTo: 'configuracion/movimientos-frecuentes', pathMatch: 'full' },
             { path: 'movimientos-frecuentes/nuevo', redirectTo: 'configuracion/movimientos-frecuentes/nuevo', pathMatch: 'full' },
             { path: 'movimientos-frecuentes/:id', redirectTo: 'configuracion/movimientos-frecuentes/:id', pathMatch: 'full' },

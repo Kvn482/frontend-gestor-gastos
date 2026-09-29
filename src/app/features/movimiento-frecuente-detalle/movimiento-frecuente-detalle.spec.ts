@@ -58,9 +58,13 @@ describe('MovimientoFrecuenteDetalle', () => {
     show: vi.fn(),
   };
 
-  const setupTestBed = async (paramId: string | null = 'nuevo', stateData: any = null) => {
+  const setupTestBed = async (
+    paramId: string | null = 'nuevo',
+    stateData: any = null,
+    frecuentes: any[] = mockFrecuentes,
+  ) => {
     vi.clearAllMocks();
-    movimientosServiceMock.consultarMovimientosRapidos.mockReturnValue(of(mockFrecuentes));
+    movimientosServiceMock.consultarMovimientosRapidos.mockReturnValue(of(frecuentes));
     movimientosServiceMock.consultarEtiquetas.mockReturnValue(of(mockEtiquetas));
     cuentasServiceMock.consultarCuentasActivas.mockReturnValue(of(mockCuentas));
 
@@ -190,6 +194,38 @@ describe('MovimientoFrecuenteDetalle', () => {
 
     expect(swalSpy).toHaveBeenCalled();
     expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('debe descartar los cambios y salir cuando el usuario lo confirma', async () => {
+    await setupTestBed('5');
+    vi.spyOn(Swal, 'fire').mockResolvedValue({ isConfirmed: true } as any);
+
+    component.form.nombre = 'Cambio no guardado';
+    await component.volver();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/configuracion/movimientos-frecuentes']);
+    await expect(component.confirmarSalida()).resolves.toBe(true);
+    expect(Swal.fire).toHaveBeenCalledTimes(1);
+  });
+
+  it('debe bloquear una recarga del navegador cuando hay cambios pendientes', async () => {
+    await setupTestBed('5');
+    component.form.nombre = 'Cambio no guardado';
+    const event = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent;
+
+    component.protegerRecarga(event);
+
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('debe redirigir al listado si el ID solicitado no existe', async () => {
+    await setupTestBed('999', null, []);
+
+    expect(toastServiceMock.show).toHaveBeenCalledWith(
+      'Movimiento frecuente no encontrado',
+      'error'
+    );
+    expect(router.navigate).toHaveBeenCalledWith(['/configuracion/movimientos-frecuentes']);
   });
 
   it('debe permitir seleccionar y quitar múltiples etiquetas', async () => {

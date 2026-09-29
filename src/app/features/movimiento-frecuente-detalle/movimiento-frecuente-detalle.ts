@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,6 +33,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   cargando = false;
   guardando = false;
   eliminando = false;
+  private salidaConfirmada = false;
 
   idFrecuente: number | string | null = null;
   cuentas: any[] = [];
@@ -417,22 +418,38 @@ export class MovimientoFrecuenteDetalle implements OnInit {
   }
 
   async volver(): Promise<void> {
-    if (this.hayCambios) {
-      const result = await Swal.fire({
-        title: '¿Descartar cambios?',
-        text: 'Tienes modificaciones sin guardar que se perderán.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Descartar',
-        cancelButtonText: 'Seguir editando',
-        reverseButtons: true,
-        customClass: monetraSweetAlertClasses,
-        buttonsStyling: false,
-      });
-
-      if (!result.isConfirmed) return;
-    }
+    if (!(await this.confirmarSalida())) return;
     this.router.navigate(['/configuracion/movimientos-frecuentes']);
+  }
+
+  async confirmarSalida(): Promise<boolean> {
+    if (this.salidaConfirmada || !this.hayCambios) return true;
+
+    const result = await Swal.fire({
+      title: '¿Descartar cambios?',
+      text: 'Tienes modificaciones sin guardar que se perderán.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Descartar',
+      cancelButtonText: 'Seguir editando',
+      reverseButtons: true,
+      customClass: monetraSweetAlertClasses,
+      buttonsStyling: false,
+    });
+
+    if (result.isConfirmed) {
+      this.salidaConfirmada = true;
+    }
+
+    return result.isConfirmed;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  protegerRecarga(event: BeforeUnloadEvent): void {
+    if (!this.salidaConfirmada && this.hayCambios) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
   }
 
   guardar(): void {
@@ -478,6 +495,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         .subscribe({
           next: () => {
             this.guardando = false;
+            this.salidaConfirmada = true;
             this.toastService.show('✓ Atajo frecuente guardado', 'success');
             this.router.navigate(['/configuracion/movimientos-frecuentes']);
           },
@@ -494,6 +512,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
         .subscribe({
           next: () => {
             this.guardando = false;
+            this.salidaConfirmada = true;
             this.toastService.show('✓ Atajo frecuente actualizado', 'success');
             this.router.navigate(['/configuracion/movimientos-frecuentes']);
           },
@@ -530,6 +549,7 @@ export class MovimientoFrecuenteDetalle implements OnInit {
       .subscribe({
         next: () => {
           this.eliminando = false;
+          this.salidaConfirmada = true;
           this.toastService.show('✓ Atajo frecuente eliminado', 'success');
           this.router.navigate(['/configuracion/movimientos-frecuentes']);
         },
