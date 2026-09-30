@@ -1,8 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Subject, tap } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Subject, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AlertaCredito } from '../models/alerta-credito.interface';
+import { MovimientosService } from './movimientos.service';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,8 +12,20 @@ import { AlertaCredito } from '../models/alerta-credito.interface';
 export class CuentasService {
 
   private api = `${environment.apiUrl}/api/cuentas`;
+  private cuentasActivasCache: any[] | null = null;
+  private cuentasCache: any[] | null = null;
+  private usuarioIdCache: string | null = null;
+  private movimientosService = inject(MovimientosService);
+  private authService = inject(AuthService);
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.movimientosService.refreshBalanceObservable$.subscribe(() => {
+      this.notificarCambioBalance();
+    });
+    this.authService.sesionCerrada$.subscribe(() => {
+      this.invalidarCache();
+    });
+  }
 
   // Subject para notificar cambios
   private refreshBalance$ = new Subject<void>();
@@ -20,10 +34,33 @@ export class CuentasService {
   refreshBalanceObservable$ = this.refreshBalance$.asObservable();
 
   // Método para emitir evento
-  private notificarCambioBalance() {
+  notificarCambioBalance() {
+    this.invalidarCache();
     this.refreshBalance$.next();
   }
 
+  invalidarCache(): void {
+    this.cuentasActivasCache = null;
+    this.cuentasCache = null;
+    this.usuarioIdCache = null;
+  }
+
+  private obtenerUsuarioActualId(): string | null {
+    const decoded = this.authService.getDecodedToken();
+    const id = decoded?.id ?? decoded?.sub;
+    if (typeof id === 'string' || typeof id === 'number') {
+      return String(id);
+    }
+    return this.authService.getAccessToken();
+  }
+
+  private verificarUsuarioCache(): void {
+    const usuarioActual = this.obtenerUsuarioActualId();
+    if (this.usuarioIdCache !== usuarioActual) {
+      this.invalidarCache();
+      this.usuarioIdCache = usuarioActual;
+    }
+  }
 
   crearCuenta(data: any) {
     return this.http.post(`${this.api}`, data).pipe(
@@ -42,11 +79,27 @@ export class CuentasService {
   }
 
   consultarCuentas() {
-    return this.http.get(`${this.api}`);
+    this.verificarUsuarioCache();
+    if (this.cuentasCache) {
+      return of(this.cuentasCache);
+    }
+    return this.http.get<any[]>(`${this.api}`).pipe(
+      tap((res) => {
+        if (Array.isArray(res)) this.cuentasCache = res;
+      })
+    );
   }
 
   consultarCuentasActivas() {
-    return this.http.get(`${this.api}/activas`);
+    this.verificarUsuarioCache();
+    if (this.cuentasActivasCache) {
+      return of(this.cuentasActivasCache);
+    }
+    return this.http.get<any[]>(`${this.api}/activas`).pipe(
+      tap((res) => {
+        if (Array.isArray(res)) this.cuentasActivasCache = res;
+      })
+    );
   }
 
   consultarAlertasCreditos() {
@@ -54,7 +107,11 @@ export class CuentasService {
   }
 
   updateStatus(id: string, status: number) {
-    return this.http.patch(`${this.api}/update-status`, { id_cuenta: id, status });
+    return this.http.patch(`${this.api}/update-status`, { id_cuenta: id, status }).pipe(
+      tap(() => {
+        this.notificarCambioBalance();
+      })
+    );
   }
 
   transferirSaldo(data: {

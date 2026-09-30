@@ -83,6 +83,7 @@ interface ResultadoConsulta<T> {
 })
 export class CuentaDetalle implements OnInit {
   cuenta: CuentaDetalleModel | null = null;
+  todasLasCuentas: CuentaDetalleModel[] = [];
   movimientos: MovimientoCuenta[] = [];
   movimientoSeleccionado: MovimientoCuenta | null = null;
   cargando = true;
@@ -127,6 +128,10 @@ export class CuentaDetalle implements OnInit {
       .subscribe(({ idCuenta, cuentas, movimientos }) => {
         this.aplicarDetalle(idCuenta, cuentas, movimientos);
       });
+
+    this.cuentasService.refreshBalanceObservable$.subscribe(() => {
+      this.recargarDetalle();
+    });
   }
 
   get esCredito(): boolean {
@@ -484,6 +489,7 @@ export class CuentaDetalle implements OnInit {
       return;
     }
 
+    this.todasLasCuentas = cuentas.data;
     const cuentaEncontrada = cuentas.data.find((cuenta) => String(cuenta.id) === String(idCuenta));
 
     if (!cuentaEncontrada) {

@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { jwtDecode } from 'jwt-decode';
 import { Observable, Subject, finalize, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { MovimientosRapidosCacheService } from './movimientos-rapidos-cache.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,9 @@ export class AuthService {
 
   private api = `${environment.apiUrl}/api/auth`;
   private perfilInFlight$?: Observable<any> | null = null;
+  private movimientosRapidosCache = inject(MovimientosRapidosCacheService);
+  private cierreSesion$ = new Subject<void>();
+  readonly sesionCerrada$ = this.cierreSesion$.asObservable();
 
   private _perfilActualizado$ = new Subject<{ nombre: string; apellido: string }>();
   readonly perfilActualizado$ = this._perfilActualizado$.asObservable();
@@ -116,7 +120,9 @@ export class AuthService {
   }
 
   logout() {
+    this.cierreSesion$.next();
     this.perfilInFlight$ = null;
+    this.movimientosRapidosCache.limpiar();
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('perfilOverride');

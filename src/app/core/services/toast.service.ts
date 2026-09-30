@@ -1,9 +1,15 @@
 import { Injectable, signal } from '@angular/core';
 
-interface ToastData {
+export interface ToastAction {
+  label: string;
+  callback: () => void;
+}
+
+export interface ToastData {
   message: string;
   type: string;
   exiting?: boolean;
+  action?: ToastAction;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -12,10 +18,10 @@ export class ToastService {
   readonly toast = this._toast.asReadonly();
   private timer: any;
 
-  show(message: string, type = 'success', duration = 3000) {
+  show(message: string, type = 'success', duration = 3000, action?: ToastAction) {
     this.clearImmediate();
 
-    this._toast.set({ message, type, exiting: false });
+    this._toast.set({ message, type, exiting: false, action });
 
     this.timer = setTimeout(() => {
       this.clear();

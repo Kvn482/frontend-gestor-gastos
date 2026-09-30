@@ -121,6 +121,7 @@
   <app-movimiento-detalle-modal
     [isOpen]="modalAbierto"
     [movimiento]="movimientoSeleccionado"
+    [cuentas]="cuentas"
     [eliminandoMovimiento]="eliminandoMovimiento"
     (closed)="cerrarModal()"
     (editRequested)="abrirEditarMovimiento()"

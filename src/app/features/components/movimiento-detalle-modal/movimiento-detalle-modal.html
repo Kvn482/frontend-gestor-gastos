@@ -1,114 +1,262 @@
-@if (movimiento) {
-  <app-modal
-    [isOpen]="isOpen"
-    [modalTitle]="(movimiento.fecha | date:'dd/MM/yyyy') ?? 'Detalle del movimiento'"
-    (closed)="closed.emit()"
+@if (isOpen && movimiento) {
+  <!-- Backdrop con efecto Blur (optimizado para móviles sin lag de shader) -->
+  <div
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/80 sm:bg-slate-950/70 sm:backdrop-blur-xs p-0 sm:p-4 overflow-hidden modal-backdrop-in"
+    [class.modal-backdrop-out]="isClosing"
+    (click)="cerrarModal()"
   >
-    <div class="flex flex-col items-center justify-center py-3 mt-10 mb-10 text-center">
-      <span class="font-semibold text-gray-700 dark:text-slate-200">
-        {{ movimiento.descripcion }}
-      </span>
-      <span
-        class="mt-2 text-3xl font-bold"
-        [class.text-emerald-600]="esIngreso"
-        [class.dark:text-emerald-400]="esIngreso"
-        [class.text-rose-600]="!esIngreso"
-        [class.dark:text-rose-400]="!esIngreso"
-      >
-        {{ esIngreso ? '+' : '' }}{{ movimiento.monto | currency:'MXN':'symbol-narrow' }}
-      </span>
-      <span
-        class="mt-2 rounded-full px-3 py-1 text-xs font-black"
-        [class.bg-emerald-50]="esIngreso"
-        [class.text-emerald-700]="esIngreso"
-        [class.dark:bg-emerald-950/40]="esIngreso"
-        [class.dark:text-emerald-300]="esIngreso"
-        [class.bg-rose-50]="!esIngreso"
-        [class.text-rose-700]="!esIngreso"
-        [class.dark:bg-rose-950/40]="!esIngreso"
-        [class.dark:text-rose-300]="!esIngreso"
-      >
-        {{ esIngreso ? 'Ingreso' : 'Gasto' }}
-      </span>
-    </div>
-
-    <div class="flex flex-col divide-y divide-default dark:divide-slate-700 text-sm">
-      <div class="flex flex-col items-start justify-between py-3">
-        <span class="mb-2 flex items-center gap-2 text-body dark:text-slate-400">
-          <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-            height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M6 14h2m3 0h5M3 7v10a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1Z"/>
-          </svg>
-          Cuenta
-        </span>
-        <span class="font-medium text-body dark:text-slate-400">
-          {{ nombreCuenta }}
-          @if (tipoCuenta) {
-            - {{ tipoCuenta }}
-          }
-        </span>
+    <!-- Contenedor Bottom Sheet / Modal Tarjeta Nativo con Aceleración GPU -->
+    <div
+      class="relative w-full max-w-[430px] bg-white dark:bg-[#131b2a] border border-slate-200/90 dark:border-slate-800/80 rounded-t-[32px] sm:rounded-[32px] shadow-xl sm:shadow-2xl overflow-hidden flex flex-col max-h-[90vh] modal-card-enter modal-card-gpu"
+      [class.modal-card-exit]="isClosing"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Indicador táctil superior estilo iOS -->
+      <div class="pt-2.5 pb-1 flex justify-center sm:hidden shrink-0">
+        <div class="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
       </div>
 
-      <div class="flex flex-col items-start justify-between py-3">
-        <span class="mb-2 flex items-center gap-2 text-body dark:text-slate-400">
-          <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-            height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.583 8.445h.01M10.86 19.71l-6.573-6.63a.993.993 0 0 1 0-1.4l7.329-7.394A.98.98 0 0 1 12.31 4l5.734.007A1.968 1.968 0 0 1 20 5.983v5.5a.992.992 0 0 1-.316.727l-7.44 7.5a.974.974 0 0 1-1.384.001Z"/>
+      <!-- Header del Detalle -->
+      <div class="px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
+        <div class="flex items-center gap-2">
+          <span
+            class="px-2.5 py-1 rounded-full text-[11px] font-bold"
+            [class.bg-emerald-500/10]="esIngreso && !esTransferencia"
+            [class.text-emerald-600]="esIngreso && !esTransferencia"
+            [class.dark:text-emerald-400]="esIngreso && !esTransferencia"
+            [class.bg-rose-500/10]="!esIngreso && !esTransferencia"
+            [class.text-rose-600]="!esIngreso && !esTransferencia"
+            [class.dark:text-rose-400]="!esIngreso && !esTransferencia"
+            [class.bg-sky-500/10]="esTransferencia"
+            [class.text-sky-600]="esTransferencia"
+            [class.dark:text-sky-400]="esTransferencia"
+          >
+            {{ esTransferencia ? 'Transferencia' : (esIngreso ? 'Ingreso' : 'Gasto') }}
+          </span>
+          <span class="text-xs text-slate-300 dark:text-slate-600">·</span>
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400">
+            {{ fechaDate | date:'dd MMM yyyy' }}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          (click)="cerrarModal()"
+          class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:white flex items-center justify-center transition cursor-pointer"
+          title="Cerrar"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Etiquetas
-        </span>
-        <div class="flex flex-wrap gap-1.5">
-          @for (etiqueta of etiquetasMostradas; track etiqueta.id) {
-            <span
-              class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold"
-              [style.backgroundColor]="etiqueta.color + '33'"
-              [style.color]="etiqueta.color"
-              [style.borderColor]="etiqueta.color"
+        </button>
+      </div>
+
+      <!-- Contenido Scrollable -->
+      <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+        <!-- HERO DEL MONTO Y CONCEPTO -->
+        <div class="py-5 px-4 text-center rounded-2xl bg-slate-50/80 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/60">
+          <!-- Icono de categoría flotante -->
+          <div class="flex justify-center mb-2.5">
+            <div
+              class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs transition-transform"
+              [style.backgroundColor]="colorCategoria + '1A'"
+              [style.color]="colorCategoria"
             >
-              {{ etiqueta.nombre }}
+              <ng-icon [name]="iconoCategoria" class="text-2xl" />
+            </div>
+          </div>
+
+          <!-- Concepto Principal -->
+          <h2 class="text-base font-black text-slate-900 dark:text-white tracking-tight mb-1">
+            {{ movimiento.descripcion || 'Sin concepto' }}
+          </h2>
+
+          <!-- Monto Destacado -->
+          <div class="flex items-center justify-center gap-1">
+            <span
+              class="text-4xl font-black tracking-tight"
+              [class.text-emerald-500]="esIngreso && !esTransferencia"
+              [class.text-rose-500]="!esIngreso && !esTransferencia"
+              [class.text-sky-500]="esTransferencia"
+            >
+              {{ esTransferencia ? '' : (esIngreso ? '+' : '-') }}${{ montoAbsoluto | number:'1.2-2' }}
             </span>
-          } @empty {
-            <span class="text-xs text-body dark:text-slate-400">Sin etiquetas</span>
-          }
+            <span class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase self-end pb-1">
+              MXN
+            </span>
+          </div>
+        </div>
+
+        <!-- TARJETAS DE INFORMACIÓN CLAVE (TILES LUKAS STYLE) -->
+        <div class="space-y-2.5">
+          <!-- Fila 1: Cuenta / Origen -->
+          <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div
+                class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                [class.bg-sky-500/10]="esTransferencia"
+                [class.text-sky-500]="esTransferencia"
+                [class.dark:text-sky-400]="esTransferencia"
+                [class.bg-indigo-500/10]="!esTransferencia"
+                [class.text-indigo-500]="!esTransferencia"
+                [class.dark:text-indigo-400]="!esTransferencia"
+              >
+                @if (esTransferencia) {
+                  <ng-icon name="lucideArrowLeftRight" class="text-xl" />
+                } @else {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                  </svg>
+                }
+              </div>
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Cuenta</span>
+                @if (esTransferencia && cuentaDestinoNombre) {
+                  <div class="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white truncate">
+                    <span class="truncate">{{ cuentaOrigenNombre }}</span>
+                    <span class="text-sky-500 font-black shrink-0">➔</span>
+                    <span class="truncate">{{ cuentaDestinoNombre }}</span>
+                  </div>
+                  <span class="text-[10px] text-slate-500 dark:text-slate-400 block truncate">Transferencia entre cuentas</span>
+                } @else if (esTransferencia) {
+                  <span class="text-xs font-bold text-slate-900 dark:text-white block truncate">{{ cuentaOrigenNombre }}</span>
+                  <span class="text-[10px] text-slate-500 dark:text-slate-400 block truncate">Transferencia entre cuentas</span>
+                } @else {
+                  <span class="text-xs font-bold text-slate-900 dark:text-white block truncate">{{ nombreCuenta }}</span>
+                  <span class="text-[10px] text-slate-500 dark:text-slate-400 block truncate">{{ tipoCuenta || 'Cuenta asociada' }}</span>
+                }
+              </div>
+            </div>
+            @if (esTransferencia) {
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 shrink-0">
+                Transferencia
+              </span>
+            } @else if (tipoCuenta) {
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
+                {{ tipoCuenta }}
+              </span>
+            }
+          </div>
+
+          <!-- Fila 2: Etiquetas / Categoría -->
+          <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div
+                class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                [style.backgroundColor]="colorCategoria + '1A'"
+                [style.color]="colorCategoria"
+              >
+                <ng-icon [name]="iconoCategoria" class="text-xl" />
+              </div>
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Etiquetas</span>
+                @if (etiquetasMostradas.length > 0) {
+                  <span class="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                    {{ primeraEtiqueta?.nombre }}
+                  </span>
+                  <span class="text-[10px] text-slate-500 dark:text-slate-400">
+                    {{ etiquetasMostradas.length > 1 ? '+' + (etiquetasMostradas.length - 1) + ' adicionales' : 'Categoría principal' }}
+                  </span>
+                } @else if (esTransferencia) {
+                  <span class="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                    Transferencias
+                  </span>
+                  <span class="text-[10px] text-slate-500 dark:text-slate-400">
+                    Movimiento entre cuentas
+                  </span>
+                } @else {
+                  <span class="text-xs font-medium text-slate-400 italic block">Sin etiquetas</span>
+                }
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 shrink-0 max-w-[45%] justify-end">
+              @if (etiquetasMostradas.length > 0) {
+                @for (tag of etiquetasMostradas; track tag.id) {
+                  <span
+                    class="px-2 py-0.5 rounded-lg text-[10px] font-bold border"
+                    [style.backgroundColor]="(tag.color || '#6366f1') + '1A'"
+                    [style.color]="tag.color || '#6366f1'"
+                    [style.borderColor]="(tag.color || '#6366f1') + '40'"
+                  >
+                    {{ tag.nombre }}
+                  </span>
+                }
+              } @else if (esTransferencia) {
+                <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                  Transferencia
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Fila 3: Fecha Completa -->
+          <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-slate-500/10 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 9v7.5" />
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Fecha de Registro</span>
+                <span class="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                  {{ fechaDate | date:'EEEE, d \'de\' MMMM yyyy' }}
+                </span>
+                <span class="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
+                  {{ fechaDate | date:'d/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fila 4: Notas / Observaciones -->
+          <div class="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+              </svg>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Notas adicionales</span>
+            </div>
+            @if (movimiento.notas) {
+              <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic whitespace-pre-wrap">
+                "{{ movimiento.notas }}"
+              </p>
+            } @else {
+              <p class="text-xs text-slate-400 dark:text-slate-500 italic">
+                Sin notas adicionales registradas.
+              </p>
+            }
+          </div>
         </div>
       </div>
 
-      <div class="flex flex-col items-start justify-between py-3">
-        <span class="mb-2 flex items-center gap-2 text-body dark:text-slate-400">
-          <svg class="w-4 h-4 text-indigo-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-            height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3-4v4m-6 8h6m-6 4h6"/>
+      <!-- ACCIONES INFERIORES NATIVAS (STICKY BOTTOM BAR) -->
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/60 flex items-center gap-3">
+        <!-- Botón Eliminar -->
+        <button
+          type="button"
+          (click)="solicitarEliminacion()"
+          [disabled]="eliminandoMovimiento"
+          class="py-3 px-4 rounded-2xl bg-rose-50/70 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 font-bold text-xs transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
           </svg>
-          Notas
-        </span>
-        <span class="whitespace-pre-wrap font-medium text-body dark:text-slate-200">
-          {{ movimiento.notas || 'Sin notas' }}
-        </span>
+          <span>{{ eliminandoMovimiento ? 'Eliminando...' : 'Eliminar' }}</span>
+        </button>
+
+        <!-- Botón Editar -->
+        <button
+          type="button"
+          (click)="solicitarEdicion()"
+          class="flex-1 py-3 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/25 active:scale-[0.98] transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+          </svg>
+          <span>Editar Movimiento</span>
+        </button>
       </div>
     </div>
-
-    <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-      <button
-        type="button"
-        (click)="deleteRequested.emit()"
-        [disabled]="eliminandoMovimiento"
-        class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-base border border-rose-200 bg-white px-4 py-2.5 text-sm font-bold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-900/60 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/30 dark:focus:ring-rose-950"
-      >
-        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12m-10 0 1 13h6l1-13M9 7V4h6v3" />
-        </svg>
-        {{ eliminandoMovimiento ? 'Eliminando...' : 'Eliminar' }}
-      </button>
-      <button
-        type="button"
-        (click)="editRequested.emit()"
-        class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-base bg-brand px-4 py-2.5 text-sm font-bold text-white transition hover:bg-brand-strong focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-900"
-      >
-        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14.3 4.8 4.9 4.9M4 20h4.6L19.5 9.1a2.1 2.1 0 0 0-3-3L5.6 17H4v3Z" />
-        </svg>
-        Editar
-      </button>
-    </div>
-  </app-modal>
+  </div>
 }

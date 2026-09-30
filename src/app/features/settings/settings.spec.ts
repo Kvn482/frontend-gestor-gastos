@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { MovimientosService } from '../../core/services/movimientos.service';
 import { ToastService } from '../../core/services/toast.service';
 import { provideRouter } from '@angular/router';
+import { vi } from 'vitest';
 
 describe('Settings', () => {
   let component: Settings;
@@ -24,17 +25,15 @@ describe('Settings', () => {
   };
 
   const movimientosServiceMock = {
-    consultarEtiquetas: () => of([]),
     consultarMovimientos: () => of([]),
-    crearEtiqueta: () => of({ id: 1, nombre: 'Test', color: '#14b8a6', id_usuario: 1 }),
-    eliminarEtiqueta: () => of({ success: true }),
   };
 
   const toastServiceMock = {
-    show: () => {},
+    show: vi.fn(),
   };
 
   beforeEach(async () => {
+    vi.clearAllMocks();
     await TestBed.configureTestingModule({
       imports: [Settings],
       providers: [
@@ -74,15 +73,19 @@ describe('Settings', () => {
     expect(component.contrasena.actual).toBe('');
   });
 
-  it('debe permitir cambiar de tema', () => {
-    component.seleccionarTema('claro');
-    expect(component.temaActual).toBe('claro');
-    expect(component.temaActualLabel).toBe('Claro');
+  it('debe enlazar a la pantalla de tema', () => {
+    const enlace = fixture.nativeElement.querySelector('a[href="/configuracion/tema"]');
+    expect(enlace).toBeTruthy();
   });
 
   it('debe permitir cambiar de moneda', () => {
     component.seleccionarMoneda('EUR');
     expect(component.monedaActual).toBe('EUR');
   });
-});
 
+  it('debe abrir modal informativo correctamente', () => {
+    component.abrirInfoModal('terminos');
+    expect(component.modalInfoAbierto).toBe(true);
+    expect(component.infoModalTitulo).toBe('Términos de Servicio');
+  });
+});

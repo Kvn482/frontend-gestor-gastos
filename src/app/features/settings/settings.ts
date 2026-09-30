@@ -8,13 +8,14 @@ import { MovimientosService } from '../../core/services/movimientos.service';
 import { ToastService } from '../../core/services/toast.service';
 import { monetraSweetAlertClasses } from '../../shared/utils/sweet-alert';
 import { environment } from '../../../environments/environment';
+import { CommonModule } from '@angular/common';
 
 export type TemaOpcion = 'oscuro' | 'claro' | 'sistema';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
@@ -35,7 +36,6 @@ export class Settings {
   // Estados de modales
   modalContrasenaAbierto = false;
   modalMonedaAbierto = false;
-  modalTemaAbierto = false;
   modalInfoAbierto = false;
 
   infoModalTitulo = '';
@@ -73,7 +73,6 @@ export class Settings {
   onEscapeKey() {
     this.cerrarModalContrasena();
     this.modalMonedaAbierto = false;
-    this.modalTemaAbierto = false;
     this.modalInfoAbierto = false;
   }
 
@@ -193,24 +192,6 @@ export class Settings {
   }
 
   // ----- Métodos de Preferencias -----
-  seleccionarTema(tema: TemaOpcion) {
-    this.temaActual = tema;
-    if (tema === 'oscuro') {
-      localStorage.setItem('theme', 'dark');
-      document.documentElement.classList.add('dark');
-    } else if (tema === 'claro') {
-      localStorage.setItem('theme', 'light');
-      document.documentElement.classList.remove('dark');
-    } else {
-      localStorage.setItem('theme', 'system');
-      const hasMatchMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function';
-      const prefersDark = hasMatchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', prefersDark);
-    }
-    this.modalTemaAbierto = false;
-    this.toastService.show(`Tema cambiado a ${this.temaActualLabel}`, 'success');
-  }
-
   seleccionarMoneda(codigo: string) {
     this.monedaActual = codigo;
     localStorage.setItem('moneda', codigo);
@@ -360,6 +341,8 @@ export class Settings {
     }
     this.modalInfoAbierto = true;
   }
+
+
 
   // ----- Cerrar sesión / Eliminar datos -----
   async confirmarCerrarSesion(): Promise<void> {

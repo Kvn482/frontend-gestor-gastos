@@ -400,6 +400,7 @@
   <app-movimiento-detalle-modal
     [isOpen]="modalMovimientoAbierto"
     [movimiento]="movimientoSeleccionado"
+    [cuentas]="cuentas"
     [eliminandoMovimiento]="eliminandoMovimiento"
     (closed)="cerrarDetalleMovimiento()"
     (editRequested)="abrirEditarMovimiento()"

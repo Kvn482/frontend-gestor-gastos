@@ -1,0 +1,250 @@
+<div class="max-w-xl mx-auto space-y-5 pt-2 pb-16 transition-colors duration-200 px-3 sm:px-0">
+
+  <!-- ==================== HEADER NATIVO MÓVIL ==================== -->
+  <div class="flex items-center justify-between px-1">
+    <!-- Botón volver atrás -->
+    <button
+      type="button"
+      (click)="volver()"
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-xs"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+      <span>Configuración</span>
+    </button>
+
+    <!-- Header actions: Badge contador + Botón para crear -->
+    <div class="flex items-center gap-2">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+        <span>{{ totalFrecuentes }} {{ totalFrecuentes === 1 ? 'atajo' : 'atajos' }}</span>
+      </div>
+
+      <button
+        type="button"
+        (click)="irACrear()"
+        class="w-8 h-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xs shadow-indigo-600/30"
+        title="Crear nuevo atajo frecuente"
+        aria-label="Crear nuevo atajo frecuente"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== ENCABEZADO DE PANTALLA ==================== -->
+  <div class="px-1">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Movimientos Frecuentes</h1>
+    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+      Atajos para registrar tus transacciones habituales en un toque desde Inicio
+    </p>
+  </div>
+
+  <!-- ==================== BARRA DE BÚSQUEDA ==================== -->
+  <div class="relative">
+    <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+    </svg>
+    <input
+      type="text"
+      [(ngModel)]="busqueda"
+      placeholder="Buscar por nombre, cuenta o etiqueta..."
+      class="h-11 w-full rounded-2xl border border-slate-200/80 bg-white pl-10 pr-10 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800/80 dark:bg-[#131b2a] dark:text-white dark:placeholder:text-slate-500 shadow-xs"
+    />
+    @if (busqueda.trim()) {
+      <button
+        type="button"
+        (click)="busqueda = ''"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 cursor-pointer"
+        title="Limpiar búsqueda"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    }
+  </div>
+
+  <!-- ==================== FILTRO DE TIPO (SEGMENTED CONTROL) ==================== -->
+  <div class="p-1 bg-slate-100 dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex items-center gap-1 shadow-xs">
+    <button
+      type="button"
+      (click)="filtroActivo = 'todos'"
+      class="flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center select-none"
+      [class.bg-white]="filtroActivo === 'todos'"
+      [class.dark:bg-slate-800]="filtroActivo === 'todos'"
+      [class.text-indigo-600]="filtroActivo === 'todos'"
+      [class.dark:text-indigo-400]="filtroActivo === 'todos'"
+      [class.shadow-xs]="filtroActivo === 'todos'"
+      [class.text-slate-500]="filtroActivo !== 'todos'"
+      [class.dark:text-slate-400]="filtroActivo !== 'todos'"
+    >
+      Todos ({{ totalFrecuentes }})
+    </button>
+    <button
+      type="button"
+      (click)="filtroActivo = 'gasto'"
+      class="flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center select-none"
+      [class.bg-white]="filtroActivo === 'gasto'"
+      [class.dark:bg-slate-800]="filtroActivo === 'gasto'"
+      [class.text-rose-600]="filtroActivo === 'gasto'"
+      [class.dark:text-rose-400]="filtroActivo === 'gasto'"
+      [class.shadow-xs]="filtroActivo === 'gasto'"
+      [class.text-slate-500]="filtroActivo !== 'gasto'"
+      [class.dark:text-slate-400]="filtroActivo !== 'gasto'"
+    >
+      Gastos ({{ totalGastos }})
+    </button>
+    <button
+      type="button"
+      (click)="filtroActivo = 'ingreso'"
+      class="flex-1 py-1.5 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-center select-none"
+      [class.bg-white]="filtroActivo === 'ingreso'"
+      [class.dark:bg-slate-800]="filtroActivo === 'ingreso'"
+      [class.text-emerald-600]="filtroActivo === 'ingreso'"
+      [class.dark:text-emerald-400]="filtroActivo === 'ingreso'"
+      [class.shadow-xs]="filtroActivo === 'ingreso'"
+      [class.text-slate-500]="filtroActivo !== 'ingreso'"
+      [class.dark:text-slate-400]="filtroActivo !== 'ingreso'"
+    >
+      Ingresos ({{ totalIngresos }})
+    </button>
+  </div>
+
+  <!-- ==================== ESTADO DE CARGA ==================== -->
+  @if (cargando) {
+    <div class="py-16 flex flex-col items-center justify-center text-slate-400">
+      <div class="w-7 h-7 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+      <span class="text-xs font-medium">Cargando movimientos frecuentes...</span>
+    </div>
+  } @else {
+
+    <!-- ==================== LISTA DE ATAJOS FRECUENTES ==================== -->
+    @if (frecuentesFiltrados.length === 0) {
+      <div class="bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 text-center shadow-sm">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+        </div>
+        <p class="text-sm font-bold text-gray-900 dark:text-white">
+          @if (busqueda.trim()) {
+            No hay coincidencias para "{{ busqueda.trim() }}"
+          } @else if (movimientosFrecuentes.length === 0) {
+            Aún no tienes atajos frecuentes
+          } @else {
+            No hay atajos en esta categoría
+          }
+        </p>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto">
+          @if (busqueda.trim()) {
+            Prueba buscando con otro término o limpia el buscador.
+          } @else if (movimientosFrecuentes.length === 0) {
+            Crea atajos para tus compras diarias, pagos recurrentes o ingresos fijos y regístralos en un solo toque desde la pantalla principal.
+          } @else {
+            Cambia de pestaña para ver los atajos de otros tipos de movimiento.
+          }
+        </p>
+        @if (busqueda.trim()) {
+          <button
+            type="button"
+            (click)="busqueda = ''"
+            class="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
+          >
+            <span>Limpiar búsqueda</span>
+          </button>
+        } @else if (movimientosFrecuentes.length === 0) {
+          <button
+            type="button"
+            (click)="irACrear()"
+            class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-xs shadow-indigo-600/30"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Crear primer atajo</span>
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- Grilla de tarjetas estilizadas -->
+      <div class="space-y-2.5">
+        @for (item of frecuentesFiltrados; track item.id) {
+          <div
+            (click)="irADetalle(item)"
+            class="w-full flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-indigo-300 dark:hover:border-slate-700 transition-all cursor-pointer group"
+          >
+            <!-- Lado izquierdo: Icono + Detalles -->
+            <div class="flex items-center gap-3.5 min-w-0 flex-1">
+              <div
+                class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-transform group-hover:scale-105"
+                [style.backgroundColor]="obtenerColorPrincipal(item) + '1A'"
+                [style.color]="obtenerColorPrincipal(item)"
+              >
+                <ng-icon [name]="getIconName(obtenerIconoPrincipal(item))" class="text-xl" />
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm font-bold text-slate-900 dark:text-white truncate">
+                    {{ item.nombre }}
+                  </h3>
+                  <span
+                    class="px-2 py-0.5 rounded-md text-[10px] font-bold"
+                    [class.bg-rose-500/10]="item.tipoMovimiento === 2"
+                    [class.text-rose-600]="item.tipoMovimiento === 2"
+                    [class.dark:text-rose-400]="item.tipoMovimiento === 2"
+                    [class.bg-emerald-500/10]="item.tipoMovimiento === 1"
+                    [class.text-emerald-600]="item.tipoMovimiento === 1"
+                    [class.dark:text-emerald-400]="item.tipoMovimiento === 1"
+                  >
+                    {{ item.tipoMovimiento === 2 ? 'Gasto' : 'Ingreso' }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                  <span class="truncate">
+                    {{ obtenerNombreCuenta(item) }} · {{ obtenerNombreEtiquetaPrincipal(item) }}
+                  </span>
+                  @if (conteoEtiquetasExtra(item) > 0) {
+                    <span
+                      class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0"
+                      [title]="obtenerTextoEtiquetasExtra(item)"
+                    >
+                      +{{ conteoEtiquetasExtra(item) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Lado derecho: Monto + Indicador 'Editar' igual que en etiquetas -->
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-3">
+              <span
+                class="text-sm sm:text-base font-black tracking-tight"
+                [class.text-rose-600]="item.tipoMovimiento === 2"
+                [class.dark:text-rose-400]="item.tipoMovimiento === 2"
+                [class.text-emerald-600]="item.tipoMovimiento === 1"
+                [class.dark:text-emerald-400]="item.tipoMovimiento === 1"
+              >
+                {{ item.tipoMovimiento === 2 ? '-' : '+' }}${{ obtenerMontoAbsoluto(item.monto) | number:'1.2-2' }}
+              </span>
+
+              <!-- Flecha Chevron e indicador 'Editar' igual que en etiquetas -->
+              <div class="flex items-center gap-1 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors pl-1 shrink-0">
+                <span class="text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
+                  Editar
+                </span>
+                <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>
