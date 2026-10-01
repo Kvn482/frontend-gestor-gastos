@@ -8,8 +8,7 @@
     <!-- Contenedor Bottom Sheet / Modal Tarjeta Nativo con Aceleración GPU -->
     <div
       #modalCardRef
-      class="relative w-full max-w-[430px] bg-white dark:bg-[#131b2a] border border-slate-200/90 dark:border-slate-800/80 rounded-t-[32px] sm:rounded-[32px] shadow-xl sm:shadow-2xl overflow-hidden flex flex-col max-h-[90vh] modal-card-enter modal-card-gpu"
-      [class.modal-card-exit]="isClosing"
+      class="relative w-full max-w-[430px] bg-white dark:bg-[#131b2a] border border-slate-200/90 dark:border-slate-800/80 rounded-t-[32px] sm:rounded-[32px] shadow-xl sm:shadow-2xl overflow-hidden flex flex-col max-h-[90vh] origin-bottom sm:origin-center"
       (click)="$event.stopPropagation()"
     >
       <!-- Indicador táctil superior estilo iOS -->
@@ -46,7 +45,7 @@
             <button
               type="button"
               (click)="irAFormulario('gasto')"
-              class="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-rose-300 dark:hover:border-rose-500/40 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs"
+              class="menu-btn-anim w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-rose-300 dark:hover:border-rose-500/40 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs"
             >
               <div class="flex items-center gap-3.5">
                 <div class="w-11 h-11 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -70,7 +69,7 @@
             <button
               type="button"
               (click)="irAFormulario('ingreso')"
-              class="w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-500/40 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs"
+              class="menu-btn-anim w-full p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 hover:bg-slate-100/90 dark:hover:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-500/40 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs"
             >
               <div class="flex items-center gap-3.5">
                 <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -94,7 +93,7 @@
             <button
               type="button"
               (click)="irAMovimientosRapidos()"
-              class="w-full p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 hover:bg-indigo-100/70 dark:hover:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-500/25 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs mt-1"
+              class="menu-btn-anim w-full p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 hover:bg-indigo-100/70 dark:hover:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-500/25 flex items-center justify-between transition-all active:scale-[0.98] group cursor-pointer text-left shadow-xs mt-1"
             >
               <div class="flex items-center gap-3.5">
                 <div class="w-11 h-11 rounded-2xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">

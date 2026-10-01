@@ -33,6 +33,7 @@
     "@ng-icons/core": "^34.0.0",
     "@ng-icons/heroicons": "^34.0.0",
     "@ng-icons/lucide": "^34.0.0",
+    "animejs": "^4.5.0",
     "flowbite": "^4.0.1",
     "flowbite-datepicker": "^2.0.0",
     "jwt-decode": "^4.0.0",

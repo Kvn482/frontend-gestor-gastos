@@ -25,6 +25,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { MovimientosRapidosCacheService } from '../../../core/services/movimientos-rapidos-cache.service';
 import { getCategoryIconName } from '../../../shared/utils/category-icons';
 import { MontoSinComas } from '../../../shared/directives/monto-sin-comas';
+import { animate, stagger } from 'animejs';
 
 export interface MovimientoRapido {
   id: string | number;
@@ -175,6 +176,50 @@ export class NuevoMovimientoModal implements OnChanges {
     if (changes['isOpen']?.currentValue === true) {
       this.isClosing = false;
       this.inicializarModal();
+      this.cd.detectChanges();
+      requestAnimationFrame(() => {
+        this.animarEntradaModal();
+      });
+    }
+  }
+
+  animarEntradaModal() {
+    const card = this.modalCardRef?.nativeElement;
+    if (!card) return;
+
+    const esMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
+    if (esMobile) {
+      animate(card, {
+        translateY: ['100%', '0%'],
+        opacity: [0.6, 1],
+        duration: 420,
+        ease: 'outBack(1.15)',
+      });
+    } else {
+      animate(card, {
+        scale: [0.84, 1],
+        opacity: [0, 1],
+        translateY: [20, 0],
+        duration: 380,
+        ease: 'outBack(1.45)',
+      });
+    }
+
+    if (this.vistaActual() === 'menu') {
+      setTimeout(() => {
+        const botones = card.querySelectorAll('.menu-btn-anim');
+        if (botones && botones.length > 0) {
+          animate(botones, {
+            opacity: [0, 1],
+            translateY: [16, 0],
+            scale: [0.96, 1],
+            delay: stagger(65, { start: 60 }),
+            duration: 340,
+            ease: 'outBack(1.25)',
+          });
+        }
+      }, 30);
     }
   }
 
@@ -284,56 +329,31 @@ export class NuevoMovimientoModal implements OnChanges {
     });
 
     setTimeout(() => {
-      // Auto-enfocar sólo en pantallas grandes (desktop) para prevenir que el teclado virtual
-      // de teléfonos móviles interrumpa la animación o force recálculos bruscos de viewport
+      // Auto-enfocar sólo en pantallas grandes (desktop)
       if (typeof window !== 'undefined' && window.innerWidth >= 640) {
         this.montoInputRef?.nativeElement?.focus();
         this.montoInputRef?.nativeElement?.select();
       }
-    }, 280);
+    }, 180);
   }
 
-  private animacionAltura?: Animation;
-
   cambiarVistaConTransicion(cambio: () => void) {
-    const card = this.modalCardRef?.nativeElement;
-    if (!card || typeof card.animate !== 'function') {
-      cambio();
-      this.cd.detectChanges();
-      return;
-    }
-
-    if (this.animacionAltura) {
-      this.animacionAltura.cancel();
-      this.animacionAltura = undefined;
-    }
-
-    const alturaInicial = card.getBoundingClientRect().height;
-
     cambio();
     this.cd.detectChanges();
 
-    const alturaFinal = card.getBoundingClientRect().height;
-
-    if (Math.abs(alturaInicial - alturaFinal) < 2) {
-      return;
-    }
-
-    this.animacionAltura = card.animate(
-      [
-        { height: `${alturaInicial}px` },
-        { height: `${alturaFinal}px` },
-      ],
-      {
-        duration: 300,
-        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-        fill: 'none',
+    const card = this.modalCardRef?.nativeElement;
+    if (card) {
+      const vista = card.querySelector('.vista-slide-enter');
+      if (vista) {
+        animate(vista, {
+          opacity: [0, 1],
+          translateY: [14, 0],
+          scale: [0.98, 1],
+          duration: 280,
+          ease: 'outBack(1.2)',
+        });
       }
-    );
-
-    this.animacionAltura.onfinish = () => {
-      this.animacionAltura = undefined;
-    };
+    }
   }
 
   irAMovimientosRapidos() {
@@ -508,20 +528,44 @@ export class NuevoMovimientoModal implements OnChanges {
 
   cerrarModal() {
     if (this.isClosing) return;
-    if (this.animacionAltura) {
-      this.animacionAltura.cancel();
-      this.animacionAltura = undefined;
-    }
     this.isClosing = true;
     this.haIntentadoGuardar.set(false);
     this.mostrarSelectorCategorias = false;
     this.mostrarSelectorFecha = false;
     this.frecuenteEditandoId = null;
 
-    setTimeout(() => {
+    const card = this.modalCardRef?.nativeElement;
+    const esMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
+    if (card) {
+      if (esMobile) {
+        animate(card, {
+          translateY: [0, '100%'],
+          opacity: [1, 0],
+          duration: 200,
+          ease: 'inQuad',
+          onComplete: () => {
+            this.isClosing = false;
+            this.closed.emit();
+          },
+        });
+      } else {
+        animate(card, {
+          scale: [1, 0.88],
+          opacity: [1, 0],
+          translateY: [0, 14],
+          duration: 190,
+          ease: 'inQuad',
+          onComplete: () => {
+            this.isClosing = false;
+            this.closed.emit();
+          },
+        });
+      }
+    } else {
       this.isClosing = false;
       this.closed.emit();
-    }, 200);
+    }
   }
 
   // ==========================================
