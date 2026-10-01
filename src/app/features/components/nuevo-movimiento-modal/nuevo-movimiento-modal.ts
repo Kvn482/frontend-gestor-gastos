@@ -293,9 +293,47 @@ export class NuevoMovimientoModal implements OnChanges {
     }, 280);
   }
 
+  private animacionAltura?: Animation;
+
   cambiarVistaConTransicion(cambio: () => void) {
+    const card = this.modalCardRef?.nativeElement;
+    if (!card || typeof card.animate !== 'function') {
+      cambio();
+      this.cd.detectChanges();
+      return;
+    }
+
+    if (this.animacionAltura) {
+      this.animacionAltura.cancel();
+      this.animacionAltura = undefined;
+    }
+
+    const alturaInicial = card.getBoundingClientRect().height;
+
     cambio();
     this.cd.detectChanges();
+
+    const alturaFinal = card.getBoundingClientRect().height;
+
+    if (Math.abs(alturaInicial - alturaFinal) < 2) {
+      return;
+    }
+
+    this.animacionAltura = card.animate(
+      [
+        { height: `${alturaInicial}px` },
+        { height: `${alturaFinal}px` },
+      ],
+      {
+        duration: 300,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'none',
+      }
+    );
+
+    this.animacionAltura.onfinish = () => {
+      this.animacionAltura = undefined;
+    };
   }
 
   irAMovimientosRapidos() {
@@ -470,6 +508,10 @@ export class NuevoMovimientoModal implements OnChanges {
 
   cerrarModal() {
     if (this.isClosing) return;
+    if (this.animacionAltura) {
+      this.animacionAltura.cancel();
+      this.animacionAltura = undefined;
+    }
     this.isClosing = true;
     this.haIntentadoGuardar.set(false);
     this.mostrarSelectorCategorias = false;
